@@ -1,0 +1,6 @@
+langchain
+langflow
+openai
+python-dotenv
+faiss-cpu
+jupyter
