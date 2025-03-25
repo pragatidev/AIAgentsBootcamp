@@ -1,1 +1,5 @@
-langflow
+langflow==1.2.0
+langchain==0.3.10
+openai
+jupyter
+python-dotenv
