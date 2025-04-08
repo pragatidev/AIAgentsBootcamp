@@ -95,9 +95,7 @@ code .  # Open in VS Code
 
 Created by **Pragati Kunwer** – Engineering Manager, Educator, and AI Automation Specialist.
 
-📺 YouTube: [@pragatikunwer](https://www.youtube.com/@pragatikunwer)  
-🌐 Website: [pragatikunwer.com](https://pragatikunwer.com)  
-📧 Contact: collab@pragatikunwer.com
+📧 Contact: pragatikunwer@gmail.com
 
 ---
 
