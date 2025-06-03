@@ -59,3 +59,4 @@ coverage.xml
 .cache
 nosetests.xml
 pytest_cache/
+.env
