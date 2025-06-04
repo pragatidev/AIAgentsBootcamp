@@ -47,17 +47,17 @@ Whether you're a developer, entrepreneur, or AI enthusiast, this bootcamp gives 
 ```
 AI-Agents-Bootcamp/
 │
-├── Section_01_Intro/
-│   └── Lecture_01_Course_Overview.ipynb
+├── Section_1_Introduction/
+│   └── Lecture_1_Course_Introduction_and_Overview.ipynb
 │
-├── Section_02_Setup_Toolkit/
-│   ├── Lecture_01_Setup_Environment.ipynb
+├── Section_2_Setup/
+│   ├── Lecture_1_Setup_Env.ipynb
 │   └── ...
 │
-├── Section_06_RAG_Advanced/
-│   ├── Lecture_02_Intro_to_RAG.ipynb
-│   ├── Lecture_03_Advanced_RAG_Techniques.ipynb
-│   └── Lecture_04_Document_QA_Agent.ipynb
+├── Section_6_Custom_Tools_RAG/
+│   ├── Lecture_2_Intro_to_RAG_Modern.ipynb
+│   ├── Lecture_3_Advanced_RAG_Techniques.ipynb
+│   └── Lecture_4_Document_QA_Agent.ipynb
 │
 ├── README.md
 └── requirements.txt
