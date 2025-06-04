@@ -30,7 +30,6 @@ venv.bak/
 
 # Python environment
 *.env
-.env
 
 # Mac system files
 .DS_Store
