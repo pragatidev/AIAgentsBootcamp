@@ -6,11 +6,7 @@ Purpose: Provide students with cost-effective, reliable LLM access
 Strategy: Local-first (FREE) → Ultra-cheap cloud scaling
 Goal: Fearless experimentation for AI agent development
 
-Design Principles:
-✅ Students never pay more than $5/month (even heavy usage)
-✅ Local models available for 100% FREE practice
-✅ Smart model selection based on task requirements
-✅ Professional patterns from day one
+Enhanced with ALL free tier providers mentioned in the course!
 """
 
 import os
@@ -19,18 +15,18 @@ import requests
 from typing import Optional, Dict, List, Tuple
 from pathlib import Path
 from datetime import datetime, date
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from dotenv import load_dotenv
 
-# Load environment variables from multiple possible locations
+# Smart environment loading
 def load_environment():
-    """Smart environment loading - finds .env wherever it is"""
+    """Find and load .env file from multiple possible locations"""
     possible_locations = [
-        '.env',                    # Current directory
-        '../.env',                 # Parent directory  
-        '../../.env',              # Grandparent directory
-        Path.cwd() / '.env',       # Explicit current
-        Path.cwd().parent / '.env', # Explicit parent
+        '.env',
+        '../.env', 
+        '../../.env',
+        Path.cwd() / '.env',
+        Path.cwd().parent / '.env',
     ]
     
     for env_path in possible_locations:
@@ -54,18 +50,10 @@ class ModelSpec:
     cost_per_1m_output: float
     max_tokens: int
     specialties: List[str]
-    speed_tier: str  # "ultra_fast", "fast", "medium", "slow"
-    
+    speed_tier: str
+
 class FoundationLLMManager:
-    """
-    Foundation LLM Manager for Cost-Free Agentic AI Development
-    
-    Key Features:
-    - Local-first strategy (FREE unlimited)
-    - Ultra-cheap cloud scaling ($0.05-0.14/1M tokens)
-    - Task-based model selection
-    - Usage tracking and cost management
-    """
+    """Foundation LLM Manager for Cost-Free Agentic AI Development"""
     
     def __init__(self, daily_budget: float = 5.0):
         self.daily_budget = daily_budget
@@ -75,7 +63,7 @@ class FoundationLLMManager:
         self.usage_data = self._load_usage_data()
         
     def _define_models(self) -> Dict[str, ModelSpec]:
-        """Define all available models with their specifications"""
+        """Define all available models with 2025 pricing"""
         return {
             # FREE LOCAL MODELS
             "ollama_llama32": ModelSpec(
@@ -87,10 +75,9 @@ class FoundationLLMManager:
                 specialties=["general", "learning", "free"],
                 speed_tier="medium"
             ),
-            
             "ollama_deepseek_coder": ModelSpec(
                 name="deepseek-coder",
-                provider="ollama", 
+                provider="ollama",
                 cost_per_1m_input=0.0,
                 cost_per_1m_output=0.0,
                 max_tokens=4096,
@@ -98,37 +85,7 @@ class FoundationLLMManager:
                 speed_tier="medium"
             ),
             
-            "ollama_deepseek_r1": ModelSpec(
-                name="deepseek-r1:latest",
-                provider="ollama",
-                cost_per_1m_input=0.0,
-                cost_per_1m_output=0.0,
-                max_tokens=8192,
-                specialties=["reasoning", "logic", "free"],
-                speed_tier="slow"
-            ),
-            
             # ULTRA-CHEAP CLOUD MODELS
-            "groq_llama": ModelSpec(
-                name="llama-3.1-8b-instant",
-                provider="groq",
-                cost_per_1m_input=0.05,
-                cost_per_1m_output=0.08,
-                max_tokens=8192,
-                specialties=["speed", "general"],
-                speed_tier="ultra_fast"
-            ),
-            
-            "google_gemini_flash": ModelSpec(
-                name="gemini-1.5-flash",
-                provider="google",
-                cost_per_1m_input=0.075,
-                cost_per_1m_output=0.30,
-                max_tokens=8192,
-                specialties=["general", "multimodal"],
-                speed_tier="fast"
-            ),
-            
             "deepseek_chat": ModelSpec(
                 name="deepseek-chat",
                 provider="deepseek",
@@ -138,8 +95,7 @@ class FoundationLLMManager:
                 specialties=["general", "budget"],
                 speed_tier="medium"
             ),
-            
-            "deepseek_coder_cloud": ModelSpec(
+            "deepseek_coder": ModelSpec(
                 name="deepseek-coder",
                 provider="deepseek",
                 cost_per_1m_input=0.14,
@@ -148,49 +104,61 @@ class FoundationLLMManager:
                 specialties=["coding", "budget"],
                 speed_tier="medium"
             ),
-            
-            # PREMIUM MODELS (for quality-critical tasks)
-            "openai_gpt4o_mini": ModelSpec(
-                name="gpt-4o-mini",
-                provider="openai",
-                cost_per_1m_input=0.15,
-                cost_per_1m_output=0.60,
-                max_tokens=4096,
-                specialties=["general", "quality"],
+            "groq_llama": ModelSpec(
+                name="llama-3.3-70b-versatile",
+                provider="groq",
+                cost_per_1m_input=0.79,
+                cost_per_1m_output=0.79,
+                max_tokens=8192,
+                specialties=["speed", "general"],
+                speed_tier="ultra_fast"
+            ),
+            "groq_llama_8b": ModelSpec(
+                name="llama-3.1-8b-instant",
+                provider="groq",
+                cost_per_1m_input=0.05,
+                cost_per_1m_output=0.08,
+                max_tokens=8192,
+                specialties=["speed", "budget"],
+                speed_tier="ultra_fast"
+            ),
+            "google_flash": ModelSpec(
+                name="gemini-2.0-flash-exp",
+                provider="google",
+                cost_per_1m_input=0.075,
+                cost_per_1m_output=0.30,
+                max_tokens=8192,
+                specialties=["multimodal", "speed"],
                 speed_tier="fast"
             ),
-            
-            "anthropic_haiku": ModelSpec(
-                name="claude-3-haiku-20240307",
-                provider="anthropic",
-                cost_per_1m_input=0.25,
-                cost_per_1m_output=1.25,
+            "mistral_small": ModelSpec(
+                name="ministral-3b-latest",
+                provider="mistral",
+                cost_per_1m_input=0.04,
+                cost_per_1m_output=0.04,
                 max_tokens=4096,
-                specialties=["quality", "reasoning"],
-                speed_tier="medium"
+                specialties=["budget", "multilingual"],
+                speed_tier="fast"
             ),
         }
     
     def _check_availability(self) -> Dict[str, bool]:
-        """Check which providers are actually available"""
+        """Check which providers are available"""
         available = {}
         
-        # Check Ollama (local)
+        # Check Ollama
         try:
             response = requests.get("http://localhost:11434/api/tags", timeout=2)
-            if response.status_code == 200:
-                models = response.json().get('models', [])
-                available['ollama'] = len(models) > 0
-            else:
-                available['ollama'] = False
+            available['ollama'] = response.status_code == 200
         except:
             available['ollama'] = False
             
         # Check cloud providers
         api_keys = {
-            'google': 'GOOGLE_API_KEY',
             'deepseek': 'DEEPSEEK_API_KEY',
-            'groq': 'GROQ_API_KEY', 
+            'groq': 'GROQ_API_KEY',
+            'google': 'GOOGLE_API_KEY',
+            'mistral': 'MISTRAL_API_KEY',
             'anthropic': 'ANTHROPIC_API_KEY',
             'openai': 'OPENAI_API_KEY'
         }
@@ -216,39 +184,6 @@ class FoundationLLMManager:
             "last_reset": str(date.today())
         }
     
-    def _save_usage_data(self):
-        """Save usage tracking data"""
-        try:
-            with open(self.usage_file, 'w') as f:
-                json.dump(self.usage_data, f, indent=2)
-        except:
-            pass  # Fail silently to not break functionality
-    
-    def _estimate_tokens(self, text: str) -> int:
-        """Rough token estimation"""
-        return len(text.split()) * 1.3  # Conservative estimate
-    
-    def _track_usage(self, model_key: str, input_text: str, output_text: str):
-        """Track usage and costs"""
-        model = self.models[model_key]
-        
-        if model.cost_per_1m_input == 0:  # Free local model
-            return
-            
-        today = str(date.today())
-        input_tokens = self._estimate_tokens(input_text)
-        output_tokens = self._estimate_tokens(output_text)
-        
-        cost = (input_tokens * model.cost_per_1m_input + 
-                output_tokens * model.cost_per_1m_output) / 1_000_000
-        
-        if today not in self.usage_data["daily_spending"]:
-            self.usage_data["daily_spending"][today] = 0.0
-            
-        self.usage_data["daily_spending"][today] += cost
-        self.usage_data["total_requests"] += 1
-        self._save_usage_data()
-    
     def get_daily_spending(self) -> float:
         """Get today's spending"""
         today = str(date.today())
@@ -258,171 +193,159 @@ class FoundationLLMManager:
         """Get remaining daily budget"""
         return max(0, self.daily_budget - self.get_daily_spending())
     
-    def select_model(self, 
-                    task_type: str = "general", 
-                    priority: str = "cost",
-                    force_provider: Optional[str] = None) -> Tuple[str, ModelSpec]:
-        """
-        Smart model selection based on task and priority
+    def _get_preferred_provider(self) -> str:
+        """Smart provider selection with FREE priority"""
+        # Check .env preference first
+        preferred = os.getenv('PREFERRED_PROVIDER', 'auto').lower()
+        if preferred != 'auto' and preferred in self.available_providers:
+            if self.available_providers[preferred]:
+                return preferred
         
-        Args:
-            task_type: "general", "coding", "reasoning", "speed", "quality"
-            priority: "cost", "speed", "quality", "balanced"
-            force_provider: Force specific provider
-            
-        Returns:
-            (model_key, model_spec)
-        """
+        # Smart auto-selection (FREE and cheap first)
+        priority_order = [
+            'ollama',    # FREE unlimited (best for learning)
+            'groq',      # FREE tier + ultra-fast
+            'google',    # FREE tier + multimodal
+            'deepseek',  # FREE tier + ultra cheap scaling
+            'mistral',   # Ultra cheap + multilingual
+            'anthropic', # Premium quality
+            'openai'     # Popular premium
+        ]
         
-        # Filter available models
-        candidates = []
-        for key, model in self.models.items():
-            if not self.available_providers.get(model.provider, False):
-                continue
+        for provider in priority_order:
+            if self.available_providers.get(provider, False):
+                return provider
                 
-            if force_provider and model.provider != force_provider:
-                continue
-                
-            # Check if model fits task
-            if task_type in model.specialties or task_type == "general":
-                candidates.append((key, model))
-        
-        if not candidates:
-            raise ValueError(f"No models available for task '{task_type}' with provider '{force_provider}'")
-        
-        # Sort by priority
-        if priority == "cost":
-            candidates.sort(key=lambda x: x[1].cost_per_1m_input)
-        elif priority == "speed":
-            speed_order = {"ultra_fast": 0, "fast": 1, "medium": 2, "slow": 3}
-            candidates.sort(key=lambda x: speed_order.get(x[1].speed_tier, 4))
-        elif priority == "quality":
-            # Prefer premium models, then by cost (higher cost = better quality)
-            candidates.sort(key=lambda x: (
-                0 if "quality" in x[1].specialties else 1,
-                -x[1].cost_per_1m_input
-            ))
-        else:  # balanced
-            # Balance cost and quality
-            candidates.sort(key=lambda x: x[1].cost_per_1m_input * 0.7 + 
-                           (4 - {"ultra_fast": 0, "fast": 1, "medium": 2, "slow": 3}.get(x[1].speed_tier, 3)) * 0.3)
-        
-        return candidates[0]
+        raise ValueError("No LLM providers available. Install Ollama or add API keys to .env")
     
-    def _get_llm_client(self, model_spec: ModelSpec):
-        """Get LangChain LLM client for the model"""
+    def get_llm(self, provider: Optional[str] = None, model: Optional[str] = None):
+        """Get LLM client with smart provider selection"""
         
-        if model_spec.provider == "ollama":
-            from langchain_ollama import ChatOllama
-            return ChatOllama(
-                model=model_spec.name,
-                base_url="http://localhost:11434",
-                temperature=0.1
-            )
+        if provider is None:
+            provider = self._get_preferred_provider()
+        elif provider not in self.available_providers or not self.available_providers[provider]:
+            raise ValueError(f"Provider '{provider}' not available")
             
-        elif model_spec.provider == "google":
-            from langchain_google_genai import ChatGoogleGenerativeAI
-            return ChatGoogleGenerativeAI(
-                model=model_spec.name,
-                google_api_key=os.getenv('GOOGLE_API_KEY'),
-                temperature=0.1
-            )
-            
-        elif model_spec.provider == "deepseek":
-            from langchain_openai import ChatOpenAI
-            return ChatOpenAI(
-                model=model_spec.name,
-                api_key=os.getenv('DEEPSEEK_API_KEY'),
-                base_url="https://api.deepseek.com",
-                temperature=0.1
-            )
-            
-        elif model_spec.provider == "groq":
-            from langchain_groq import ChatGroq
-            return ChatGroq(
-                model=model_spec.name,
-                groq_api_key=os.getenv('GROQ_API_KEY'),
-                temperature=0.1
-            )
-            
-        elif model_spec.provider == "anthropic":
-            from langchain_anthropic import ChatAnthropic
-            return ChatAnthropic(
-                model=model_spec.name,
-                anthropic_api_key=os.getenv('ANTHROPIC_API_KEY'),
-                temperature=0.1
-            )
-            
-        elif model_spec.provider == "openai":
-            from langchain_openai import ChatOpenAI
-            return ChatOpenAI(
-                model=model_spec.name,
-                api_key=os.getenv('OPENAI_API_KEY'),
-                temperature=0.1
-            )
-            
+        # Get provider-specific LLM with model selection
+        if provider == 'ollama':
+            return self._get_ollama(model)
+        elif provider == 'google':
+            return self._get_google(model)
+        elif provider == 'deepseek':
+            return self._get_deepseek(model)
+        elif provider == 'groq':
+            return self._get_groq(model)
+        elif provider == 'mistral':
+            return self._get_mistral(model)
+        elif provider == 'anthropic':
+            return self._get_anthropic(model)
+        elif provider == 'openai':
+            return self._get_openai(model)
         else:
-            raise ValueError(f"Unknown provider: {model_spec.provider}")
+            raise ValueError(f"Unknown provider: {provider}")
     
-    def chat(self, 
-             message: str, 
-             task_type: str = "general",
-             priority: str = "cost",
-             force_provider: Optional[str] = None,
-             force_model: Optional[str] = None) -> str:
-        """
-        Chat with optimal model selection
+    def _get_ollama(self, model=None):
+        """Local Ollama - FREE unlimited learning"""
+        from langchain_ollama import ChatOllama
+        default_model = os.getenv('OLLAMA_DEFAULT_MODEL', 'llama3.2')
+        return ChatOllama(
+            model=model or default_model,
+            base_url="http://localhost:11434",
+            temperature=0.1
+        )
+    
+    def _get_google(self, model=None):
+        """Google Gemini - Great value + FREE tier"""
+        from langchain_google_genai import ChatGoogleGenerativeAI
+        default_model = os.getenv('GOOGLE_DEFAULT_MODEL', 'gemini-2.0-flash-exp')
+        return ChatGoogleGenerativeAI(
+            model=model or default_model,
+            google_api_key=os.getenv('GOOGLE_API_KEY'),
+            temperature=0.1
+        )
+    
+    def _get_deepseek(self, model=None):
+        """DeepSeek - Ultra cheap + FREE tier"""
+        from langchain_openai import ChatOpenAI
+        default_model = os.getenv('DEEPSEEK_DEFAULT_MODEL', 'deepseek-chat')
+        return ChatOpenAI(
+            model=model or default_model,
+            api_key=os.getenv('DEEPSEEK_API_KEY'),
+            base_url="https://api.deepseek.com",
+            temperature=0.1
+        )
+    
+    def _get_groq(self, model=None):
+        """Groq - Ultra fast + FREE tier"""
+        from langchain_groq import ChatGroq
+        default_model = os.getenv('GROQ_DEFAULT_MODEL', 'llama-3.1-8b-instant')
+        return ChatGroq(
+            model=model or default_model,
+            groq_api_key=os.getenv('GROQ_API_KEY'),
+            temperature=0.1
+        )
+    
+    def _get_mistral(self, model=None):
+        """Mistral - European AI + multilingual"""
+        from langchain_mistralai import ChatMistralAI
+        default_model = os.getenv('MISTRAL_DEFAULT_MODEL', 'ministral-3b-latest')
+        return ChatMistralAI(
+            model=model or default_model,
+            mistral_api_key=os.getenv('MISTRAL_API_KEY'),
+            temperature=0.1
+        )
+    
+    def _get_anthropic(self, model=None):
+        """Anthropic Claude - Premium quality"""
+        from langchain_anthropic import ChatAnthropic
+        default_model = os.getenv('ANTHROPIC_DEFAULT_MODEL', 'claude-3-haiku-20240307')
+        return ChatAnthropic(
+            model=model or default_model,
+            anthropic_api_key=os.getenv('ANTHROPIC_API_KEY'),
+            temperature=0.1
+        )
+    
+    def _get_openai(self, model=None):
+        """OpenAI GPT - Popular premium"""
+        from langchain_openai import ChatOpenAI
+        default_model = os.getenv('OPENAI_DEFAULT_MODEL', 'gpt-4o-mini')
+        return ChatOpenAI(
+            model=model or default_model,
+            api_key=os.getenv('OPENAI_API_KEY'),
+            temperature=0.1
+        )
+    
+    def chat(self, message: str, task_type: str = "general", priority: str = "cost", provider: Optional[str] = None) -> str:
+        """Chat with optimal model selection"""
         
-        Args:
-            message: The message to send
-            task_type: "general", "coding", "reasoning", "speed", "quality"  
-            priority: "cost", "speed", "quality", "balanced"
-            force_provider: Force specific provider
-            force_model: Force specific model
-        """
+        # If specific provider requested, use it directly
+        if provider:
+            if provider not in self.available_providers or not self.available_providers[provider]:
+                raise ValueError(f"Provider '{provider}' not available")
+            llm = self.get_llm(provider)
+            result = llm.invoke(message)
+            return result.content
         
-        # Handle forced model
-        if force_model:
-            model_key = None
-            for key, model in self.models.items():
-                if model.name == force_model:
-                    model_key = key
-                    model_spec = model
-                    break
-            if not model_key:
-                raise ValueError(f"Model '{force_model}' not found")
+        # Original logic for auto-selection
+        selected_provider = self._get_preferred_provider()
+        
+        # Task-specific model selection
+        if task_type == "coding" and self.available_providers.get('deepseek'):
+            llm = self.get_llm('deepseek', 'deepseek-coder')
+        elif task_type == "speed" and self.available_providers.get('groq'):
+            llm = self.get_llm('groq', 'llama-3.1-8b-instant')
+        elif task_type == "multimodal" and self.available_providers.get('google'):
+            llm = self.get_llm('google', 'gemini-2.0-flash-exp')
         else:
-            model_key, model_spec = self.select_model(task_type, priority, force_provider)
+            llm = self.get_llm(selected_provider)
         
-        # Check budget for paid models
-        if model_spec.cost_per_1m_input > 0:
-            estimated_cost = (self._estimate_tokens(message) * 2) * model_spec.cost_per_1m_input / 1_000_000
-            if estimated_cost > self.get_remaining_budget():
-                print(f"⚠️ Estimated cost ${estimated_cost:.4f} exceeds remaining budget ${self.get_remaining_budget():.4f}")
-                print("🔄 Switching to FREE local model...")
-                
-                # Fall back to local model
-                for key, model in self.models.items():
-                    if model.provider == "ollama" and self.available_providers.get("ollama"):
-                        model_key, model_spec = key, model
-                        break
-                else:
-                    raise ValueError("No free local models available and budget exceeded")
-        
-        # Get LLM client and generate response
-        llm = self._get_llm_client(model_spec)
         result = llm.invoke(message)
-        response = result.content
-        
-        # Track usage
-        self._track_usage(model_key, message, response)
-        
-        return response
+        return result.content
     
     def show_status(self):
-        """Show comprehensive system status"""
+        """Show system status"""
         print("🚀 Cost-Free LLM Foundation Status")
-        print("=" * 60)
+        print("=" * 50)
         
         # Budget info
         daily_spending = self.get_daily_spending()
@@ -431,40 +354,50 @@ class FoundationLLMManager:
         print(f"💸 Today's Spending: ${daily_spending:.4f}")
         print(f"💵 Remaining: ${remaining:.2f}")
         
-        # Available models by category
-        print(f"\n🔗 Available Models:")
+        # Available models
+        print(f"\n🔗 Available Providers:")
         
-        categories = {
-            "🆓 FREE (Local)": [k for k, m in self.models.items() 
-                               if m.cost_per_1m_input == 0 and self.available_providers.get(m.provider)],
-            "💰 Ultra-Cheap ($0.05-0.14)": [k for k, m in self.models.items() 
-                                           if 0 < m.cost_per_1m_input <= 0.14 and self.available_providers.get(m.provider)],
-            "🏆 Premium ($0.15+)": [k for k, m in self.models.items() 
-                                   if m.cost_per_1m_input > 0.14 and self.available_providers.get(m.provider)]
-        }
-        
-        for category, model_keys in categories.items():
-            print(f"\n{category}:")
-            if model_keys:
-                for key in model_keys:
-                    model = self.models[key]
-                    cost_str = "FREE" if model.cost_per_1m_input == 0 else f"${model.cost_per_1m_input:.3f}/1M"
-                    specialties = ", ".join(model.specialties[:2])
-                    print(f"  ✅ {model.name} ({model.provider}) - {cost_str} - {specialties}")
-            else:
-                print(f"  ❌ None configured")
-        
-        # Setup recommendations
-        total_available = sum(len(models) for models in categories.values())
-        if total_available == 0:
-            print(f"\n⚠️ No models available!")
-            print(f"🔧 Quick Setup:")
-            print(f"   1. Install Ollama: https://ollama.ai")
-            print(f"   2. Run: ollama pull llama3.2")
-            print(f"   3. Add GOOGLE_API_KEY to .env for scaling")
+        if self.available_providers.get('ollama'):
+            print(f"  ✅ Ollama (Local): FREE unlimited")
         else:
-            print(f"\n✅ {total_available} models ready for cost-free AI development!")
-
+            print(f"  ❌ Ollama: Not available")
+            print(f"     💡 Install: https://ollama.ai → ollama pull llama3.2")
+        
+        # FREE TIER providers
+        free_providers = [
+            ('groq', '⚡ Groq', 'FREE tier + ultra-fast LPU'),
+            ('google', '🌟 Google Gemini', 'FREE tier + multimodal'),
+            ('deepseek', '💰 DeepSeek', 'FREE tier + $0.14/1M scaling'),
+            ('mistral', '🇪🇺 Mistral', '$0.04/1M tokens'),
+        ]
+        
+        # PREMIUM providers  
+        premium_providers = [
+            ('anthropic', '🧠 Claude', '$0.25+/1M tokens'),
+            ('openai', '🏆 OpenAI', '$0.15+/1M tokens'),
+        ]
+        
+        print(f"\n🆓 FREE TIER PROVIDERS:")
+        for provider, name, cost in free_providers:
+            if self.available_providers.get(provider):
+                print(f"  ✅ {name}: Available ({cost})")
+            else:
+                print(f"  ❌ {name}: Not configured")
+        
+        print(f"\n💎 PREMIUM PROVIDERS:")
+        for provider, name, cost in premium_providers:
+            if self.available_providers.get(provider):
+                print(f"  ✅ {name}: Available ({cost})")
+            else:
+                print(f"  ❌ {name}: Not configured")
+        
+        available_count = sum(1 for available in self.available_providers.values() if available)
+        if available_count == 0:
+            print(f"\n⚠️ No providers available!")
+            print(f"🔧 Quick setup: Install Ollama for FREE unlimited usage")
+        else:
+            print(f"\n✅ {available_count} provider(s) ready!")
+            print(f"🎯 Recommended: Get all FREE API keys for maximum power!")
 
 # Global manager instance
 _global_manager = None
@@ -476,34 +409,28 @@ def get_manager(daily_budget: float = 5.0) -> FoundationLLMManager:
         _global_manager = FoundationLLMManager(daily_budget)
     return _global_manager
 
-# Convenient functions for students
-def chat(message: str, task_type: str = "general", priority: str = "cost", **kwargs) -> str:
-    """
-    Smart chat with cost-optimized model selection
-    
-    Examples:
-        chat("Hello!")                                    # Cheapest available
-        chat("Write Python code", task_type="coding")    # Coding-optimized
-        chat("Solve puzzle", task_type="reasoning")      # Reasoning-optimized
-        chat("Quick answer", priority="speed")           # Speed-optimized
-        chat("Important analysis", priority="quality")   # Quality-optimized
-    """
-    return get_manager().chat(message, task_type, priority, **kwargs)
+# Simple functions for students
+def chat(message: str, **kwargs) -> str:
+    """Smart chat with cost-optimized selection"""
+    return get_manager().chat(message, **kwargs)
 
 def free_chat(message: str) -> str:
     """Force free local models only"""
-    return chat(message, force_provider="ollama")
+    manager = get_manager()
+    if not manager.available_providers.get('ollama'):
+        raise ValueError("Ollama not available. Install Ollama and pull llama3.2")
+    return chat(message, provider='ollama')
 
 def budget_chat(message: str) -> str:
-    """Ultra-cheap models (prefer under $0.15/1M tokens)"""
+    """Ultra-cheap models (FREE tiers first)"""
     return chat(message, priority="cost")
 
 def speed_chat(message: str) -> str:
-    """Ultra-fast models (Groq, Gemini Flash)"""
-    return chat(message, priority="speed")
+    """Ultra-fast models (Groq priority)"""
+    return chat(message, task_type="speed")
 
 def quality_chat(message: str) -> str:
-    """Highest quality models (Claude, GPT-4)"""
+    """Highest quality models"""
     return chat(message, priority="quality")
 
 def coding_chat(message: str) -> str:
@@ -514,22 +441,20 @@ def reasoning_chat(message: str) -> str:
     """Reasoning-optimized models"""
     return chat(message, task_type="reasoning")
 
+def multimodal_chat(message: str) -> str:
+    """Multimodal models (Google Gemini)"""
+    return chat(message, task_type="multimodal")
+
 def show_status():
-    """Show system status and available models"""
+    """Show system status"""
     get_manager().show_status()
 
 def setup_foundation(daily_budget: float = 5.0):
-    """
-    Initialize the cost-free LLM foundation
-    
-    Args:
-        daily_budget: Maximum daily spending (default: $5)
-    """
+    """Initialize the cost-free LLM foundation"""
     manager = get_manager(daily_budget)
     print("🚀 Cost-Free LLM Foundation Initialized!")
     manager.show_status()
     return manager
 
 if __name__ == "__main__":
-    # Quick test
     setup_foundation()
