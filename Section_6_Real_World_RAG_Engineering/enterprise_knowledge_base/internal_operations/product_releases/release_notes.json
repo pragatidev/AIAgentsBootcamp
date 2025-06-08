@@ -1,0 +1,321 @@
+{
+  "releases": [
+    {
+      "version": "2.3.0",
+      "release_date": "2024-03-01",
+      "type": "major",
+      "description": "Introduced advanced analytics and API enhancements, improving performance for 5,000+ customers (customer_analytics.csv).",
+      "new_features": [
+        {
+          "name": "Calculated Fields",
+          "description": "Create custom metrics using formulas (product_user_guide.md, Section 8.1).",
+          "impact": "30% increase in dashboard customization (customer_analytics.csv, Feature_Usage).",
+          "use_case": "Customer 1025 (customer_analytics.csv) calculated profit margins for retail analytics."
+        },
+        {
+          "name": "API Endpoint: /reports/schedule",
+          "description": "Schedule recurring reports via API (api_documentation.json, /reports/schedule).",
+          "impact": "20% adoption by developers (customer_analytics.csv).",
+          "use_case": "Customer 1006 (customer_analytics.csv) automated monthly sales reports."
+        }
+      ],
+      "improvements": [
+        {
+          "name": "Dashboard Load Time",
+          "description": "Reduced load time from 3s to 2s for 10 widgets (system_architecture.md, Section 7).",
+          "impact": "15% reduction in DB-2002 tickets (troubleshooting_guide.txt)."
+        },
+        {
+          "name": "Data Source Connections",
+          "description": "Improved SQL connection stability (product_user_guide.md, Section 3.1).",
+          "impact": "10% decrease in DS-1001 errors (troubleshooting_guide.txt)."
+        }
+      ],
+      "bug_fixes": [
+        {
+          "name": "API-4001: Unauthorized",
+          "description": "Fixed OAuth token validation (troubleshooting_guide.txt, API-4001).",
+          "impact": "Resolved for Customer 1018 (customer_analytics.csv)."
+        },
+        {
+          "name": "PERM-5005: Access Denied",
+          "description": "Corrected permission checks for View-Only users (troubleshooting_guide.txt, PERM-5005).",
+          "impact": "Affected 5% of Starter customers (customer_analytics.csv)."
+        }
+      ],
+      "breaking_changes": [],
+      "migration_guide": "No migration required. Update SDKs to v2.3.0 for /reports/schedule (api_documentation.json, SDKs)."
+    },
+    {
+      "version": "2.3.1",
+      "release_date": "2024-05-15",
+      "type": "minor",
+      "description": "Patch release addressing performance and mobile issues, enhancing user experience.",
+      "new_features": [],
+      "improvements": [
+        {
+          "name": "Mobile App Performance",
+          "description": "Optimized widget rendering on iOS/Android (product_user_guide.md, Section 7.2).",
+          "impact": "20% reduction in MOB-6006 tickets (troubleshooting_guide.txt)."
+        },
+        {
+          "name": "CSV Upload Speed",
+          "description": "Increased upload limit to 500MB for Starter (billing_and_pricing.csv, product_user_guide.md, Section 3.3).",
+          "impact": "15% faster uploads for Customer 1011 (customer_analytics.csv)."
+        }
+      ],
+      "bug_fixes": [
+        {
+          "name": "MOB-6007: Map Widget Failure",
+          "description": "Fixed rendering on older devices (troubleshooting_guide.txt, MOB-6007).",
+          "impact": "Resolved for Customer 1023 (customer_analytics.csv)."
+        },
+        {
+          "name": "COL-11001: Comments Not Loading",
+          "description": "Corrected comment sync issue (troubleshooting_guide.txt, COL-11001).",
+          "impact": "Affected 10% of Professional customers (customer_analytics.csv)."
+        }
+      ],
+      "breaking_changes": [],
+      "migration_guide": "Update mobile app to v2.3.1 (product_user_guide.md, Section 7). No API changes."
+    },
+    {
+      "version": "2.4.0",
+      "release_date": "2024-09-01",
+      "type": "major",
+      "description": "Introduced real-time analytics and SSO enhancements, driving enterprise adoption.",
+      "new_features": [
+        {
+          "name": "Real-Time Analytics",
+          "description": "Support for real-time dashboards and maps (product_user_guide.md, Section 8.2, system_architecture.md, Section 4).",
+          "impact": "30% adoption by Enterprise customers (customer_analytics.csv, Feature_Usage).",
+          "use_case": "Customer 1045 (customer_analytics.csv) implemented real-time shipment maps."
+        },
+        {
+          "name": "SSO with SAML 2.0",
+          "description": "Enterprise-only SSO integration (product_user_guide.md, Section 2.1, security_policies.txt, Section 3).",
+          "impact": "25% of Enterprise customers enabled SSO (customer_analytics.csv).",
+          "use_case": "Customer 1033 (customer_analytics.csv) streamlined login for 500 users."
+        }
+      ],
+      "improvements": [
+        {
+          "name": "API Rate Limits",
+          "description": "Increased limits to 10,000/month for Professional (api_documentation.json, Rate Limits, billing_and_pricing.csv).",
+          "impact": "50% reduction in API-4004 tickets (troubleshooting_guide.txt)."
+        },
+        {
+          "name": "Multi-Tenant Scalability",
+          "description": "Optimized sharding by tenant_id (system_architecture.md, Section 2).",
+          "impact": "Supported 600 usage hours for Customer 1036 (customer_analytics.csv)."
+        }
+      ],
+      "bug_fixes": [
+        {
+          "name": "DR-3003: Refresh Timeout",
+          "description": "Fixed real-time refresh failures (troubleshooting_guide.txt, DR-3003).",
+          "impact": "Resolved for Customer 1002 (customer_analytics.csv)."
+        },
+        {
+          "name": "INT-7001: Salesforce Sync Failure",
+          "description": "Corrected API key validation (troubleshooting_guide.txt, INT-7001, integration_partners.csv).",
+          "impact": "Affected 15% of Enterprise customers (customer_analytics.csv)."
+        }
+      ],
+      "breaking_changes": [
+        {
+          "name": "API Endpoint Deprecation",
+          "description": "Deprecated /v1/dashboards in favor of /v2/dashboards (api_documentation.json).",
+          "impact": "5% of API users affected (customer_analytics.csv)."
+        }
+      ],
+      "migration_guide": "Update API calls to /v2/dashboards by December 1, 2024 (api_documentation.json). Contact support@dataflow.com for assistance (customer_support_procedures.md)."
+    },
+    {
+      "version": "2.4.1",
+      "release_date": "2025-03-15",
+      "type": "minor",
+      "description": "Patch release enhancing real-time maps and API stability, addressing customer feedback.",
+      "new_features": [
+        {
+          "name": "Real-Time Map Visualizations",
+          "description": "Added heatmaps and pins for geographic data (product_user_guide.md, Section 5.3).",
+          "impact": "40% adoption by Professional/Enterprise customers (customer_analytics.csv, Feature_Usage).",
+          "use_case": "Customer 1001 (customer_analytics.csv) visualized regional sales."
+        }
+      ],
+      "improvements": [
+        {
+          "name": "Map Rendering Performance",
+          "description": "Reduced map load time to 3s (troubleshooting_guide.txt, MAP-12001).",
+          "impact": "20% reduction in map-related tickets (customer_support_procedures.md)."
+        },
+        {
+          "name": "Webhook Reliability",
+          "description": "Improved delivery for dashboard_updated event (api_documentation.json, Webhooks).",
+          "impact": "50% reduction in WH-13001 errors (troubleshooting_guide.txt)."
+        }
+      ],
+      "bug_fixes": [
+        {
+          "name": "API-4004: Too Many Requests",
+          "description": "Fixed rate limit enforcement (troubleshooting_guide.txt, API-4004).",
+          "impact": "Resolved for Customer 1006 (customer_analytics.csv)."
+        },
+        {
+          "name": "SSO-9001: Login Failure",
+          "description": "Corrected SAML configuration (troubleshooting_guide.txt, SSO-9001).",
+          "impact": "Affected 10% of Enterprise customers (customer_analytics.csv)."
+        }
+      ],
+      "breaking_changes": [],
+      "migration_guide": "No migration required. Update to v2.4.1 for map improvements (product_user_guide.md, Section 5.3)."
+    },
+    {
+      "version": "2.5.0",
+      "release_date": "2025-06-01",
+      "type": "major",
+      "description": "Major release introducing custom dashboard templates and predictive analytics, enhancing enterprise capabilities.",
+      "new_features": [
+        {
+          "name": "Custom Dashboard Templates",
+          "description": "Create and share reusable templates (product_user_guide.md, Section 4.2).",
+          "impact": "25% adoption by Professional customers (customer_analytics.csv, Feature_Usage).",
+          "use_case": "Customer 1025 (customer_analytics.csv) shared retail templates across teams."
+        },
+        {
+          "name": "Predictive Analytics (Beta)",
+          "description": "AI-driven insights for Enterprise (product_roadmap.json, product_user_guide.md, Section 8).",
+          "impact": "10% beta adoption by healthcare customers (customer_analytics.csv).",
+          "use_case": "Customer 1015 (customer_analytics.csv) predicted patient trends."
+        },
+        {
+          "name": "API Endpoint: /embed/token",
+          "description": "Generate tokens for white-labeled embedding (api_documentation.json, /embed/token).",
+          "impact": "15% adoption by Enterprise customers (customer_analytics.csv).",
+          "use_case": "Customer 1033 (customer_analytics.csv) embedded dashboards in intranet."
+        }
+      ],
+      "improvements": [
+        {
+          "name": "Multi-Region Failover",
+          "description": "Added eu-central-1 failover for GDPR compliance (system_architecture.md, Section 8).",
+          "impact": "Reduced RTO to 3 hours for EU customers (Customer 1009, customer_analytics.csv)."
+        },
+        {
+          "name": "Audit Log Performance",
+          "description": "Optimized log queries for SOC 2 compliance (security_policies.txt, Section 10).",
+          "impact": "50% faster audit reports (compliance_certifications.csv)."
+        }
+      ],
+      "bug_fixes": [
+        {
+          "name": "CALC-7007: Invalid Formula",
+          "description": "Fixed calculated field errors (troubleshooting_guide.txt, CALC-7007).",
+          "impact": "Resolved for Customer 1025 (customer_analytics.csv)."
+        },
+        {
+          "name": "EXP-10001: Export Failure",
+          "description": "Increased export limit to 2GB for Professional (troubleshooting_guide.txt, EXP-10001).",
+          "impact": "Affected 5% of Professional customers (customer_analytics.csv)."
+        },
+        {
+          "name": "REP-8001: Report Timeout",
+          "description": "Fixed report generation for large datasets (troubleshooting_guide.txt, REP-8001).",
+          "impact": "Resolved for Customer 1030 (customer_analytics.csv)."
+        }
+      ],
+      "breaking_changes": [
+        {
+          "name": "API Response Format Change",
+          "description": "Updated /dashboards response to include tenant_id (api_documentation.json).",
+          "impact": "10% of API users affected (customer_analytics.csv)."
+        }
+      ],
+      "migration_guide": "Update API clients to handle tenant_id in /dashboards response by September 1, 2025 (api_documentation.json). Contact support@dataflow.com for migration support (customer_support_procedures.md)."
+    },
+    {
+      "version": "2.5.1",
+      "release_date": "2025-06-07",
+      "type": "minor",
+      "description": "Patch release addressing predictive analytics stability and compliance updates.",
+      "new_features": [],
+      "improvements": [
+        {
+          "name": "Predictive Analytics Stability",
+          "description": "Optimized AI model for beta users (product_roadmap.json).",
+          "impact": "10% reduction in analytics errors (customer_analytics.csv)."
+        },
+        {
+          "name": "HIPAA Compliance Enhancements",
+          "description": "Added dedicated schemas for healthcare (security_policies.txt, Section 5).",
+          "impact": "Enabled HIPAA for Customer 1039 (customer_analytics.csv)."
+        }
+      ],
+      "bug_fixes": [
+        {
+          "name": "INT-7002: Google Drive Failure",
+          "description": "Fixed OAuth token refresh (troubleshooting_guide.txt, INT-7002).",
+          "impact": "Resolved for Customer 1015 (customer_analytics.csv)."
+        },
+        {
+          "name": "MAP-12001: Map Not Updating",
+          "description": "Corrected Kafka stream for real-time maps (troubleshooting_guide.txt, MAP-12001).",
+          "impact": "Affected 20% of Enterprise customers (customer_analytics.csv)."
+        }
+      ],
+      "breaking_changes": [],
+      "migration_guide": "No migration required. Update integrations for Google Drive (integration_partners.csv)."
+    }
+  ],
+  "references": [
+    {
+      "document": "product_user_guide.md",
+      "description": "Feature usage and setup (e.g., Section 4.2)."
+    },
+    {
+      "document": "troubleshooting_guide.txt",
+      "description": "Bug fixes and error resolutions (e.g., API-4004)."
+    },
+    {
+      "document": "api_documentation.json",
+      "description": "API endpoint updates and migration guides."
+    },
+    {
+      "document": "customer_analytics.csv",
+      "description": "Feature adoption and customer impact."
+    },
+    {
+      "document": "billing_and_pricing.csv",
+      "description": "Plan-specific feature availability."
+    },
+    {
+      "document": "customer_support_procedures.md",
+      "description": "Support impact and escalation."
+    },
+    {
+      "document": "security_policies.txt",
+      "description": "Security updates (e.g., SSO, HIPAA)."
+    },
+    {
+      "document": "system_architecture.md",
+      "description": "Infrastructure changes (e.g., failover)."
+    },
+    {
+      "document": "sales_playbook.json",
+      "description": "Demo highlights for new features."
+    },
+    {
+      "document": "privacy_policy.txt",
+      "description": "Data protection compliance."
+    },
+    {
+      "document": "compliance_certifications.csv",
+      "description": "Compliance standards (e.g., HIPAA)."
+    },
+    {
+      "document": "onboarding_checklist.json",
+      "description": "Onboarding updates for new features."
+    }
+  ]
+}

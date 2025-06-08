@@ -1,0 +1,301 @@
+{
+  "onboarding_checklist": {
+    "version": "2.5",
+    "last_updated": "2025-06-08",
+    "description": "This checklist guides the onboarding of new customers onto DataFlow Solutions’ BI platform, ensuring a seamless 30-day adoption process for 5,000+ customers (customer_analytics.csv). It aligns with our customer-centric mission (employee_handbook.txt, Section 1) and targets 90% completion rate and 4.5/5 satisfaction (customer_support_procedures.md).",
+    "metrics": {
+      "completion_rate": "90% within 30 days",
+      "satisfaction_score": "4.5/5 (customer_analytics.csv)",
+      "onboarding_duration": "Average 25 days",
+      "churn_risk_reduction": "20% post-onboarding (customer_analytics.csv)"
+    }
+  },
+  "onboarding_steps": [
+    {
+      "step": 1,
+      "title": "Assign Customer Success Manager (CSM)",
+      "description": "Assign a dedicated CSM based on plan type to guide onboarding (billing_and_pricing.csv). CSM contacts customer within 24 hours.",
+      "timeline": "Day 1",
+      "assignee": "CSM Team",
+      "dependencies": "Signed contract (terms_of_service.md)",
+      "success_criteria": "CSM assigned, initial email sent",
+      "related_document": "customer_support_procedures.md, Section 2; employee_handbook.txt, Section 15",
+      "use_case": "Customer 1001 (customer_analytics.csv) assigned a CSM for Professional plan onboarding."
+    },
+    {
+      "step": 2,
+      "title": "Send Welcome Email",
+      "description": "Provide account setup instructions, login link (app.dataflow.com), and Terms acceptance (terms_of_service.md). Include CSM contact details.",
+      "timeline": "Day 1",
+      "assignee": "CSM",
+      "dependencies": "Step 1 complete",
+      "success_criteria": "Email delivered, 80% open rate (customer_analytics.csv)",
+      "related_document": "product_user_guide.md, Section 2.1; customer_support_procedures.md, Template 1",
+      "use_case": "Customer 1002 (customer_analytics.csv) receives Starter plan welcome email."
+    },
+    {
+      "step": 3,
+      "title": "Schedule Kickoff Call",
+      "description": "Arrange a 30-minute call to review goals, use cases, and platform overview (training_materials.md). Confirm data source requirements.",
+      "timeline": "Day 3–5",
+      "assignee": "CSM",
+      "dependencies": "Step 2 complete",
+      "success_criteria": "Call scheduled, 95% attendance rate",
+      "related_document": "customer_support_procedures.md, Section 2; sales_playbook.json, Demo Scripts",
+      "use_case": "Customer 1003 (customer_analytics.csv) schedules Enterprise kickoff call."
+    },
+    {
+      "step": 4,
+      "title": "Accept Terms of Service",
+      "description": "Customer accepts Terms via settings.dataflow.com to activate account (terms_of_service.md). Ensure compliance with GDPR/CCPA (privacy_policy.txt).",
+      "timeline": "Day 3–5",
+      "assignee": "Customer",
+      "dependencies": "Step 2 complete",
+      "success_criteria": "Terms accepted, account activated",
+      "related_document": "terms_of_service.md, Section 1; compliance_certifications.csv",
+      "use_case": "Customer 1011 (customer_analytics.csv) accepts Terms for Starter plan."
+    },
+    {
+      "step": 5,
+      "title": "Complete Account Setup",
+      "description": "Create account, set up 2FA, and invite team members (product_user_guide.md, Section 2). Verify email and configure preferences.",
+      "timeline": "Day 5–7",
+      "assignee": "Customer, CSM",
+      "dependencies": "Step 4 complete",
+      "success_criteria": "Account created, 2FA enabled, 80% team invites sent",
+      "related_document": "product_user_guide.md, Section 2.2; security_policies.txt, Section 1",
+      "use_case": "Customer 1017 (customer_analytics.csv) sets up 5 users for Starter plan."
+    },
+    {
+      "step": 6,
+      "title": "Select Subscription Plan",
+      "description": "Choose Starter, Professional, or Enterprise plan based on needs (billing_and_pricing.csv). CSM reviews plan limits (e.g., API calls).",
+      "timeline": "Day 5–7",
+      "assignee": "Customer, CSM",
+      "dependencies": "Step 5 complete",
+      "success_criteria": "Plan selected, payment processed",
+      "related_document": "billing_and_pricing.csv; sales_playbook.json, Pricing Guidelines",
+      "use_case": "Customer 1030 (customer_analytics.csv) selects Enterprise plan with custom pricing."
+    },
+    {
+      "step": 7,
+      "title": "Configure Data Source Connection",
+      "description": "Connect at least one data source (e.g., MySQL, Salesforce, integration_partners.csv). Follow setup guides and troubleshoot errors (troubleshooting_guide.txt, DS-1001).",
+      "timeline": "Day 7–10",
+      "assignee": "Customer, CSM",
+      "dependencies": "Step 5 complete",
+      "success_criteria": "1+ data source connected, test query successful",
+      "related_document": "product_user_guide.md, Section 3; api_documentation.json, /datasources",
+      "use_case": "Customer 1001 (customer_analytics.csv) connects Salesforce for sales analytics."
+    },
+    {
+      "step": 8,
+      "title": "Create Initial Dashboard",
+      "description": "Build a dashboard using drag-and-drop tools (product_user_guide.md, Section 4.2). CSM provides templates for common use cases (e.g., retail sales).",
+      "timeline": "Day 10–15",
+      "assignee": "Customer, CSM",
+      "dependencies": "Step 7 complete",
+      "success_criteria": "1+ dashboard created, widgets functional",
+      "related_document": "product_user_guide.md, Section 4; training_materials.md, Building Dashboards",
+      "use_case": "Customer 1023 (customer_analytics.csv) creates a marketing dashboard."
+    },
+    {
+      "step": 9,
+      "title": "Complete Core Training",
+      "description": "Complete recommended tutorials and videos (training_materials.md). Focus on dashboards, data sources, and collaboration (product_user_guide.md, Sections 3–6).",
+      "timeline": "Day 10–20",
+      "assignee": "Customer",
+      "dependencies": "Step 5 complete",
+      "success_criteria": "80% of tutorials completed, quiz score >80%",
+      "related_document": "training_materials.md; product_user_guide.md, Section 8",
+      "use_case": "Customer 1015 (customer_analytics.csv) completes healthcare training."
+    },
+    {
+      "step": 10,
+      "title": "Set Up API Integration (Optional)",
+      "description": "Configure API for custom workflows (e.g., /dashboards, api_documentation.json). CSM assists with key generation and rate limits (billing_and_pricing.csv).",
+      "timeline": "Day 15–20",
+      "assignee": "Customer IT, CSM",
+      "dependencies": "Step 7 complete",
+      "success_criteria": "API key generated, test call successful",
+      "related_document": "api_documentation.json, Authentication; troubleshooting_guide.txt, API-4004",
+      "use_case": "Customer 1006 (customer_analytics.csv) integrates API for Redshift sync."
+    },
+    {
+      "step": 11,
+      "title": "Configure SSO (Enterprise Only)",
+      "description": "Set up SAML 2.0 SSO for secure access (security_policies.txt, Section 3). Requires IT coordination and Okta/Ping integration (integration_partners.csv).",
+      "timeline": "Day 15–20",
+      "assignee": "Customer IT, CSM",
+      "dependencies": "Step 5 complete",
+      "success_criteria": "SSO enabled, 90% user logins via SSO",
+      "related_document": "product_user_guide.md, Section 2.1; compliance_certifications.csv, GDPR",
+      "use_case": "Customer 1033 (customer_analytics.csv) configures Okta SSO."
+    },
+    {
+      "step": 12,
+      "title": "Set Up White-Labeling (Enterprise Only)",
+      "description": "Customize dashboards with branding (e.g., logos, colors, billing_and_pricing.csv). Use /embed/token for embedding (api_documentation.json).",
+      "timeline": "Day 15–20",
+      "assignee": "Customer IT, CSM",
+      "dependencies": "Step 8 complete",
+      "success_criteria": "Branding applied, embedded dashboard live",
+      "related_document": "product_user_guide.md, Section 6.1; sales_playbook.json, Enterprise Demo",
+      "use_case": "Customer 1036 (customer_analytics.csv) embeds dashboards in intranet."
+    },
+    {
+      "step": 13,
+      "title": "Configure Third-Party Integrations",
+      "description": "Set up integrations (e.g., Google Drive, Zendesk, integration_partners.csv). CSM assists with OAuth and troubleshooting (troubleshooting_guide.txt, INT-7002).",
+      "timeline": "Day 15–20",
+      "assignee": "Customer, CSM",
+      "dependencies": "Step 7 complete",
+      "success_criteria": "1+ integration active, data syncing",
+      "related_document": "integration_partners.csv; product_user_guide.md, Section 3.3",
+      "use_case": "Customer 1015 (customer_analytics.csv) integrates Google Drive for CSV uploads."
+    },
+    {
+      "step": 14,
+      "title": "Enable Real-Time Analytics (Professional/Enterprise)",
+      "description": "Configure real-time dashboards and maps (release_notes.json, v2.4.1). Requires streaming data source (e.g., Kafka, system_architecture.md, Section 4).",
+      "timeline": "Day 15–20",
+      "assignee": "Customer, CSM",
+      "dependencies": "Step 8 complete",
+      "success_criteria": "Real-time dashboard active, 5s refresh verified",
+      "related_document": "product_user_guide.md, Section 8.2; troubleshooting_guide.txt, MAP-12001",
+      "use_case": "Customer 1045 (customer_analytics.csv) enables shipment maps."
+    },
+    {
+      "step": 15,
+      "title": "Conduct User Acceptance Testing (UAT)",
+      "description": "Test dashboards, integrations, and features for functionality. CSM reviews results and addresses issues (troubleshooting_guide.txt).",
+      "timeline": "Day 20–25",
+      "assignee": "Customer, CSM",
+      "dependencies": "Steps 8, 10–14 complete",
+      "success_criteria": "90% test cases passed, issues logged",
+      "related_document": "product_user_guide.md, Section 9; customer_support_procedures.md, Section 7",
+      "use_case": "Customer 1003 (customer_analytics.csv) completes UAT for 50 dashboards."
+    },
+    {
+      "step": 16,
+      "title": "Collect Satisfaction Survey",
+      "description": "Send survey to assess onboarding experience (customer_analytics.csv, Satisfaction_Score). Follow up on scores <3/5 (customer_support_procedures.md, Template 5).",
+      "timeline": "Day 30",
+      "assignee": "CSM",
+      "dependencies": "Step 15 complete",
+      "success_criteria": "Survey sent, 30% response rate, 4.5/5 average",
+      "related_document": "customer_support_procedures.md, Section 8; customer_analytics.csv",
+      "use_case": "Customer 1008 (customer_analytics.csv) rates onboarding 2/5, followed up by CSM."
+    },
+    {
+      "step": 17,
+      "title": "Schedule Quarterly Check-In (Professional/Enterprise)",
+      "description": "Plan ongoing support with quarterly reviews to discuss usage and upsell opportunities (sales_playbook.json, Retention Strategies).",
+      "timeline": "Day 30",
+      "assignee": "CSM",
+      "dependencies": "Step 16 complete",
+      "success_criteria": "Check-in scheduled, 90% attendance",
+      "related_document": "customer_support_procedures.md, Section 5; billing_and_pricing.csv",
+      "use_case": "Customer 1030 (customer_analytics.csv) schedules Q3 check-in."
+    },
+    {
+      "step": 18,
+      "title": "Provide Ongoing Training Resources",
+      "description": "Share additional training materials for advanced features (training_materials.md). Offer $100/hour training credits (billing_and_pricing.csv).",
+      "timeline": "Day 30",
+      "assignee": "CSM",
+      "dependencies": "Step 9 complete",
+      "success_criteria": "Resources shared, 50% engagement rate",
+      "related_document": "training_materials.md; product_user_guide.md, Section 8",
+      "use_case": "Customer 1025 (customer_analytics.csv) accesses predictive analytics training."
+    },
+    {
+      "step": 19,
+      "title": "Monitor Usage and Churn Risk",
+      "description": "Track usage metrics (e.g., dashboards, API calls, customer_analytics.csv). Identify churn risk (e.g., <20 hours/month) and escalate to CSM (customer_support_procedures.md).",
+      "timeline": "Day 30+",
+      "assignee": "CSM",
+      "dependencies": "Step 15 complete",
+      "success_criteria": "Usage report generated, <5% high churn risk",
+      "related_document": "customer_analytics.csv; sales_playbook.json, Objection Handling",
+      "use_case": "Customer 1002 (customer_analytics.csv) flagged for low usage, CSM intervenes."
+    },
+    {
+      "step": 20,
+      "title": "Document Onboarding Completion",
+      "description": "Log completion in Zendesk, update customer_analytics.csv (Churn_Risk, Satisfaction_Score). Share success story with customer (training_materials.md, Case Studies).",
+      "timeline": "Day 30",
+      "assignee": "CSM",
+      "dependencies": "Steps 16–19 complete",
+      "success_criteria": "Completion logged, 90% steps achieved",
+      "related_document": "customer_support_procedures.md, Section 9; customer_analytics.csv",
+      "use_case": "Customer 1001 (customer_analytics.csv) completes onboarding, rated 4.8/5."
+    }
+  ],
+  "references": [
+    {
+      "document": "product_user_guide.md",
+      "description": "Setup guides for account, data sources, dashboards."
+    },
+    {
+      "document": "customer_support_procedures.md",
+      "description": "CSM roles, survey templates, escalation."
+    },
+    {
+      "document": "customer_analytics.csv",
+      "description": "Onboarding metrics, satisfaction scores."
+    },
+    {
+      "document": "billing_and_pricing.csv",
+      "description": "Plan selection, feature limits."
+    },
+    {
+      "document": "api_documentation.json",
+      "description": "API setup and rate limits."
+    },
+    {
+      "document": "troubleshooting_guide.txt",
+      "description": "Error resolution (e.g., DS-1001, INT-7002)."
+    },
+    {
+      "document": "security_policies.txt",
+      "description": "SSO and data security compliance."
+    },
+    {
+      "document": "privacy_policy.txt",
+      "description": "Data protection during onboarding."
+    },
+    {
+      "document": "terms_of_service.md",
+      "description": "Agreement acceptance."
+    },
+    {
+      "document": "sales_playbook.json",
+      "description": "Post-sale handoff, retention strategies."
+    },
+    {
+      "document": "system_architecture.md",
+      "description": "Technical requirements for setup."
+    },
+    {
+      "document": "release_notes.json",
+      "description": "New feature onboarding (e.g., v2.4.1 maps)."
+    },
+    {
+      "document": "integration_partners.csv",
+      "description": "Third-party integration setup."
+    },
+    {
+      "document": "employee_handbook.txt",
+      "description": "CSM responsibilities."
+    },
+    {
+      "document": "compliance_certifications.csv",
+      "description": "Compliance requirements (e.g., GDPR, HIPAA)."
+    },
+    {
+      "document": "training_materials.md",
+      "description": "Training resources for onboarding."
+    }
+  ]
+}

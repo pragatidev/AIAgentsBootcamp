@@ -1,0 +1,281 @@
+DataFlow Solutions Privacy Policy
+Last Updated: June 8, 2025
+
+This Privacy Policy outlines how DataFlow Solutions, a SaaS BI and data visualization platform, collects, processes, stores, and shares personal data for our 5,000+ customers across 40+ countries (customer_analytics.csv). We are committed to transparency, security, and compliance with global privacy laws, including GDPR, CCPA, and HIPAA (compliance_certifications.csv). For questions, contact privacy@dataflow.com or +1-800-555-1234. For technical safeguards, see security_policies.txt.
+
+---
+
+1. Introduction
+DataFlow Solutions, founded in 2019, provides cloud-based BI tools to empower businesses with data-driven insights (product_user_guide.md, Section 1). This policy applies to all users of our platform, mobile app, and APIs (api_documentation.json), ensuring protection of personal data as defined by GDPR (personal information) and CCPA (consumer data). We process ~1TB of data daily for dashboards and analytics, prioritizing privacy per compliance_certifications.csv.
+
+Key Definitions:
+- **Personal Data**: Information identifying an individual (e.g., name, email, per GDPR).
+- **Processing**: Any operation on data (e.g., collection, storage, analysis).
+- **Controller**: DataFlow Solutions, determining data use (privacy@dataflow.com).
+- **Processor**: Third-party vendors processing data on our behalf (integration_partners.csv).
+
+For employee data handling, see employee_handbook.txt, Section 2.3.
+
+---
+
+2. Data Collection and Processing Purposes
+We collect and process data to deliver platform services, improve user experience, and comply with legal obligations.
+
+2.1 Data Collected
+- **Account Data**: Name, email, company name, billing details (billing_and_pricing.csv).
+- **Usage Data**: Dashboard configs, data source connections, API calls (customer_analytics.csv, product_user_guide.md, Sections 3–4).
+- **Technical Data**: IP address, browser type, device info (system_architecture.md, Section 5).
+- **Support Data**: Ticket details, error codes (customer_support_procedures.md, troubleshooting_guide.txt).
+- **Marketing Data**: Email preferences, webinar attendance (sales_playbook.json).
+
+2.2 Purposes
+- **Service Delivery**: Enable dashboard creation, data visualization (product_user_guide.md).
+- **Billing**: Process payments, track usage (billing_and_pricing.csv).
+- **Support**: Resolve issues (e.g., DS-1001, troubleshooting_guide.txt).
+- **Analytics**: Improve platform via anonymized data (customer_analytics.csv, Satisfaction_Score).
+- **Compliance**: Meet GDPR/CCPA requirements (compliance_certifications.csv).
+- **Marketing**: Send opt-in newsletters, product updates (sales_playbook.json).
+
+2.3 Legal Basis
+- **Contract**: Deliver services per terms_of_service.md (e.g., account setup).
+- **Consent**: Marketing emails, cookie tracking (Section 4).
+- **Legitimate Interest**: Platform improvements, fraud prevention (security_policies.txt).
+- **Legal Obligation**: GDPR/CCPA compliance (compliance_certifications.csv).
+
+2.4 Metrics
+- Data Collected: ~500GB/month of account/usage data (system_architecture.md).
+- Consent Rate: 80% for marketing emails (customer_analytics.csv).
+- Support Tickets: ~1,000/month with data (customer_support_procedures.md).
+
+Edge Case: Healthcare customers (Customer 1039, customer_analytics.csv) provide health data requiring HIPAA compliance (compliance_certifications.csv).
+Use Case: Customer 1001’s email and dashboard configs (customer_analytics.csv) are collected to deliver sales analytics (product_user_guide.md, Section 4).
+
+---
+
+3. User Rights Under GDPR and CCPA
+We respect user rights under global privacy laws, processed via privacy@dataflow.com.
+
+3.1 GDPR Rights (EU/UK Customers)
+- **Access**: Request a copy of your data (e.g., dashboard configs).
+- **Rectification**: Correct inaccurate data (e.g., email).
+- **Erasure**: Delete data within 30 days (e.g., account closure).
+- **Restriction**: Limit processing (e.g., during disputes).
+- **Portability**: Receive data in CSV format within 7 days (product_user_guide.md, Section 6.1).
+- **Objection**: Opt out of marketing or analytics.
+- **Automated Decisions**: No automated profiling used.
+
+3.2 CCPA Rights (California Customers)
+- **Know**: Access data collected (e.g., usage data, customer_analytics.csv).
+- **Delete**: Request deletion within 45 days.
+- **Opt-Out**: Prevent data sale (not applicable, no data sales).
+- **Non-Discrimination**: Equal service post-opt-out.
+
+3.3 Procedures
+- Submit requests via privacy@dataflow.com or Zendesk (customer_support_procedures.md, P2 ticket).
+- Verify identity within 48 hours (e.g., email, 2FA, security_policies.txt).
+- Process access/portability within 7 days, erasure within 30 days (GDPR) or 45 days (CCPA).
+- Log requests in Zendesk (20/month average).
+
+3.4 Metrics
+- GDPR Requests: ~20/month (10 access, 5 erasure, 5 portability).
+- CCPA Requests: ~10/month (5 know, 5 delete).
+- Compliance Rate: 100% within deadlines (compliance_certifications.csv).
+- Customer Complaints: <5/year (customer_analytics.csv).
+
+Edge Case: Child data (under 16, GDPR) requires parental consent, verified via video call.
+Use Case: Customer 1009 (customer_analytics.csv) requests GDPR erasure, processed in 15 days, removing account data (customer_support_procedures.md).
+
+---
+
+4. Cookie and Tracking Policies
+We use cookies and tracking technologies to enhance platform functionality and analytics.
+
+4.1 Cookie Types
+- **Essential**: Enable login, 2FA (security_policies.txt, Section 1).
+- **Performance**: Track dashboard load times (system_architecture.md, Section 7).
+- **Analytics**: Anonymized usage (e.g., widget clicks, customer_analytics.csv).
+- **Marketing**: Ad personalization (opt-in, sales_playbook.json).
+
+4.2 Management
+- Consent via cookie banner on app.dataflow.com (80% opt-in rate).
+- Update preferences at settings.dataflow.com.
+- Retention: 12 months, cleared post-opt-out.
+
+4.3 Tracking Technologies
+- Google Analytics: Anonymized IP tracking (integration_partners.csv).
+- Mixpanel: User behavior (opt-in, integration_partners.csv).
+- No third-party ad trackers (privacy_policy.txt).
+
+4.4 Metrics
+- Cookie Consent: 80% opt-in (customer_analytics.csv).
+- Tracking Data: 10GB/month anonymized (system_architecture.md).
+- Opt-Out Requests: ~5/month (Zendesk).
+
+Edge Case: EU customers (Customer 1009, customer_analytics.csv) require explicit cookie consent per GDPR (compliance_certifications.csv).
+Use Case: Customer 1011 (customer_analytics.csv) opts into analytics cookies, enabling usage tracking for dashboard improvements (customer_analytics.csv).
+
+---
+
+5. Data Retention and Deletion
+We retain data only as necessary for service delivery and compliance.
+
+5.1 Retention Periods
+- **Account Data**: Until account closure + 90 days (terms_of_service.md).
+- **Usage Data**: 12 months for analytics, anonymized thereafter (customer_analytics.csv).
+- **Support Data**: 24 months for audit (customer_support_procedures.md).
+- **Billing Data**: 7 years per tax laws (billing_and_pricing.csv).
+- **Backups**: 90 days (system_architecture.md, Section 8).
+
+5.2 Deletion Procedures
+- Delete upon request within 30 days (GDPR) or 45 days (CCPA).
+- Remove from PostgreSQL/Redshift, S3 backups (system_architecture.md).
+- Log deletion in Zendesk (customer_support_procedures.md).
+- Retain anonymized data for analytics (customer_analytics.csv).
+
+5.3 Metrics
+- Deletion Requests: ~15/month (Zendesk).
+- Deletion Compliance: 100% within deadlines.
+- Backup Purges: 4/year, 100% success (system_architecture.md).
+
+Edge Case: Healthcare data (Customer 1039, customer_analytics.csv) retains audit logs for 7 years per HIPAA (compliance_certifications.csv).
+Use Case: Customer 1018 (customer_analytics.csv) requests account deletion, completed in 20 days, removing dashboard data (product_user_guide.md, Section 6.2).
+
+---
+
+6. International Data Transfers
+We transfer data across regions to deliver global services, complying with GDPR and CCPA.
+
+6.1 Transfer Mechanisms
+- **EU/UK**: Standard Contractual Clauses (SCCs) for transfers to us-west-2 (system_architecture.md).
+- **Canada**: PIPEDA compliance for Toronto customers (compliance_certifications.csv).
+- **US**: CCPA for California customers (privacy_policy.txt).
+
+6.2 Procedures
+- Store EU/UK data in Frankfurt (eu-central-1, system_architecture.md, Section 8).
+- Encrypt transfers with TLS 1.3 (security_policies.txt, Section 9).
+- Audit transfers annually (compliance_certifications.csv).
+- Notify customers of transfer changes (privacy@dataflow.com).
+
+6.3 Metrics
+- Transfer Volume: 500GB/month cross-region (system_architecture.md).
+- Audit Compliance: 100% (compliance_certifications.csv).
+- Customer Queries: <10/year (Zendesk).
+
+Edge Case: Post-Brexit UK GDPR requires separate SCCs for UK customers (Customer 1009, customer_analytics.csv).
+Use Case: Customer 1033’s data (customer_analytics.csv) is transferred to eu-central-1 for GDPR compliance, encrypted per security_policies.txt.
+
+---
+
+7. Third-Party Data Sharing
+We share data with third-party vendors to provide services, with strict safeguards.
+
+7.1 Vendors
+- **Critical**: AWS (storage), Okta (SSO, integration_partners.csv).
+- **High**: Salesforce (CRM), Zendesk (support, integration_partners.csv).
+- **Low**: Slack (collaboration, integration_partners.csv).
+- All vendors sign DPAs (security_policies.txt, Section 6).
+
+7.2 Sharing Purposes
+- **Service Delivery**: AWS hosts data (system_architecture.md).
+- **Support**: Zendesk processes tickets (customer_support_procedures.md).
+- **Analytics**: Google Analytics tracks usage (anonymized, integration_partners.csv).
+- **No Data Sales**: Per CCPA, no personal data sold (privacy_policy.txt).
+
+7.3 Procedures
+- Share only necessary data (e.g., email for Zendesk tickets).
+- Encrypt shared data (security_policies.txt, Section 9).
+- Audit vendor compliance annually (compliance_certifications.csv).
+- Notify customers of new vendors via privacy@dataflow.com.
+
+7.4 Metrics
+- Vendors: 30 (15 Critical/High, 15 Low, security_policies.txt).
+- Data Shared: 100GB/month (system_architecture.md).
+- Vendor Audits: 100% compliance (compliance_certifications.csv).
+
+Edge Case: Healthcare vendors (e.g., Snowflake for Customer 1039, customer_analytics.csv) require HIPAA BAAs (compliance_certifications.csv).
+Use Case: Customer 1001’s support ticket (customer_analytics.csv) is shared with Zendesk, encrypted per security_policies.txt.
+
+---
+
+8. Data Security Measures
+We implement robust safeguards to protect data, detailed in security_policies.txt.
+
+8.1 Technical Measures
+- **Encryption**: TLS 1.3 in transit, AES-256 at rest (system_architecture.md, security_policies.txt, Section 9).
+- **Access Control**: RBAC, 2FA (security_policies.txt, Section 3).
+- **Monitoring**: Splunk, CloudTrail for anomalies (system_architecture.md, Section 5).
+- **Backups**: Daily to S3, 90-day retention (system_architecture.md, Section 8).
+
+8.2 Organizational Measures
+- Employee training: Annual GDPR/CCPA training (employee_handbook.txt, Section 7).
+- Vendor assessments: SOC 2/ISO 27001 compliance (security_policies.txt, Section 6).
+- Incident response: 4-hour MTTR for breaches (incident_response_playbook.txt).
+
+8.3 Metrics
+- Security Incidents: <2/year (security_policies.txt).
+- Encryption Compliance: 100% (CloudTrail).
+- Training Completion: 100% annually (employee_handbook.txt).
+
+Edge Case: Insider threats trigger immediate account suspension (security_policies.txt, Section 4).
+Use Case: Customer 1042’s API data (customer_analytics.csv) is encrypted via TLS 1.3, monitored by Splunk (system_architecture.md).
+
+---
+
+9. Policy Updates
+We update this policy to reflect legal, technical, or operational changes.
+
+9.1 Process
+- Review annually or upon major changes (e.g., v2.5.0, release_notes.json).
+- Notify customers via email and app.dataflow.com (30-day notice).
+- Log updates in Zendesk (customer_support_procedures.md).
+- Archive prior versions at privacy.dataflow.com.
+
+9.2 Metrics
+- Updates: 2/year (e.g., GDPR, HIPAA, compliance_certifications.csv).
+- Customer Notifications: 100% within 30 days.
+- Queries Post-Update: <10/month (Zendesk).
+
+Edge Case: Emergency updates (e.g., new privacy law) are notified within 7 days.
+Use Case: v2.5.0’s HIPAA update (release_notes.json) was emailed to Customer 1039 (customer_analytics.csv), ensuring compliance.
+
+---
+
+10. Contact Information
+For privacy concerns, contact our Data Protection Officer (DPO).
+
+- **Email**: privacy@dataflow.com
+- **Phone**: +1-800-555-1234 (9 AM–5 PM PST, Enterprise/Professional, billing_and_pricing.csv)
+- **Mail**: DataFlow Solutions, 123 Market St, San Francisco, CA 94105, USA
+- **Support**: Submit tickets via support.dataflow.com (customer_support_procedures.md, P2)
+- **EU Representative**: DataFlow EU Ltd, 456 Oxford St, London, UK (GDPR compliance)
+- **Complaints**: Contact supervisory authority (e.g., ICO for UK, CNIL for France)
+
+Metrics:
+- Privacy Queries: ~30/month (Zendesk).
+- Response Time: 48 hours average (customer_support_procedures.md).
+- Complaint Resolution: 100% within 30 days.
+
+Edge Case: EU customers (Customer 1009, customer_analytics.csv) contact the London representative for GDPR queries.
+Use Case: Customer 1018 (customer_analytics.csv) submits a portability request to privacy@dataflow.com, processed in 5 days (customer_support_procedures.md).
+
+---
+
+References
+- Compliance Certifications: compliance_certifications.csv
+- Security Policies: security_policies.txt
+- Customer Analytics: customer_analytics.csv
+- Customer Support Procedures: customer_support_procedures.md
+- API Documentation: api_documentation.json
+- Product User Guide: product_user_guide.md
+- Billing and Pricing: billing_and_pricing.csv
+- System Architecture: system_architecture.md
+- Sales Playbook: sales_playbook.json
+- Incident Response Playbook: incident_response_playbook.txt
+- Employee Handbook: employee_handbook.txt
+- Integration Partners: integration_partners.csv
+- Release Notes: release_notes.json
+- Terms of Service: terms_of_service.md
+
+Revision History
+- v2.5: June 8, 2025 – Added HIPAA details, updated GDPR transfers.
+- v2.4: January 15, 2025 – Revised CCPA opt-out procedures.

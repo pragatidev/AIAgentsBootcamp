@@ -1,0 +1,64 @@
+Plan_Type,Feature,Starter_Plan,Professional_Plan,Enterprise_Plan,Notes,Overage_Cost,Billing_Frequency
+Users,Number of users,5,25,Unlimited,"Additional users: $10/user/month (Professional). Enterprise includes unlimited users (product_user_guide.md, Section 6.2).",$10/user/month,Monthly/Annual
+Users,User management,Basic,Advanced,Full,"Basic: Invite/remove users. Advanced: Role-based access. Full: SSO integration (security_policies.txt).",,Monthly/Annual
+Data Sources,Number of data sources,10,50,Unlimited,"Includes SQL, APIs, CSV, cloud storage (integration_partners.csv, product_user_guide.md, Section 3).",$5/source/month,Monthly/Annual
+Data Sources,Data source connections,Manual,Manual + Scheduled,Manual + Scheduled + Real-Time,"Real-time requires streaming support (system_architecture.md, release_notes.json, v2.4.1).",,Monthly/Annual
+Dashboards,Number of dashboards,20,100,Unlimited,"See product_user_guide.md, Section 4 for creation. Unlimited for Enterprise with compute scaling.",,Monthly/Annual
+Dashboards,Widgets per dashboard,10,25,Unlimited,"Widgets: Charts, tables, maps (product_user_guide.md, Section 5).",$1/widget/month,Monthly/Annual
+Dashboards,Real-time dashboards,No,Yes,Yes,"Real-time maps added in v2.4.1 (release_notes.json, product_user_guide.md, Section 5.3).",,Monthly/Annual
+API Calls,Monthly API calls,1000,10000,Custom,"See api_documentation.json, Rate Limits. Custom limits for Enterprise via sales@dataflow.com (sales_playbook.json).",$0.01/call,Monthly/Annual
+API Calls,API endpoints,Basic,Full,Full,"Basic: Dashboards, data sources. Full: Reports, users, webhooks (api_documentation.json).",,Monthly/Annual
+Reports,Number of reports,10,50,Unlimited,"Scheduled or ad-hoc reports in PDF/CSV (product_user_guide.md, Section 2.3, api_documentation.json, /reports).",$2/report/month,Monthly/Annual
+Reports,Report formats,CSV,CSV + PDF,CSV + PDF + Custom,"Custom formats for Enterprise (e.g., Excel, JSON; sales_playbook.json).",,Monthly/Annual
+Support,Support level,Email,Email + Phone,24/7 Dedicated,"Email: 24-hour SLA. Phone: 12-hour SLA. Dedicated: 4-hour SLA (customer_support_procedures.md).",,Monthly/Annual
+Support,Live chat,No,Yes,Yes,"Available for Professional/Enterprise via support.dataflow.com (customer_support_procedures.md).",,Monthly/Annual
+Support,Premium support add-on,No,$500/month,$1000/month,"Includes priority escalation, dedicated CSM (customer_support_procedures.md, sales_playbook.json).",$500-$1000/month,Monthly/Annual
+White-Labeling,White-label embedding,No,Yes,Yes,"Embed dashboards in external apps (product_user_guide.md, Section 6.1, api_documentation.json, /embed/token). Enterprise includes custom branding.",,Monthly/Annual
+White-Labeling,Custom branding,No,No,Yes,"Custom logos, colors for Enterprise (sales_playbook.json, product_user_guide.md, Section 6.1).",,Monthly/Annual
+SSO,Single Sign-On (SAML 2.0),No,No,Yes,"Requires Enterprise plan (security_policies.txt, product_user_guide.md, Section 2.1). Setup fee: $2000 one-time.",,Monthly/Annual
+Security,Two-Factor Authentication (2FA),Yes,Yes,Yes,"Mandatory for all plans (security_policies.txt).",,Monthly/Annual
+Security,Audit logs,No,Yes,Yes,"Tracks user actions, API calls (security_policies.txt, compliance_certifications.csv, SOC 2).",,Monthly/Annual
+Security,Data encryption,Yes,Yes,Yes,"In transit and at rest (security_policies.txt, compliance_certifications.csv, GDPR).",,Monthly/Annual
+Collaboration,Sharing permissions,View-Only,View + Edit,View + Edit + Admin,"See product_user_guide.md, Section 6.2. Admin role for Enterprise.",,Monthly/Annual
+Collaboration,Commenting,Yes,Yes,Yes,"Annotations on dashboards (product_user_guide.md, Section 6.3).",,Monthly/Annual
+Mobile App,Mobile access,Yes,Yes,Yes,"View dashboards, apply filters (product_user_guide.md, Section 7). Editing planned for v2.6 (product_roadmap.json).",,Monthly/Annual
+Mobile App,Offline mode,No,Yes,Yes,"Cached dashboards for Professional/Enterprise (product_user_guide.md, Section 7.1).",,Monthly/Annual
+Analytics,Real-time analytics,No,Yes,Yes,"Includes maps, gauges (release_notes.json, v2.4.1, product_user_guide.md, Section 8.2).",,Monthly/Annual
+Analytics,Calculated fields,Yes,Yes,Yes,"Custom metrics (product_user_guide.md, Section 8.1).",,Monthly/Annual
+Analytics,Predictive analytics,No,No,Yes,"Planned for Q3 2025 (product_roadmap.json, customer_analytics.csv, Feature_Usage).",,Monthly/Annual
+Exports,Export limits,500MB,2GB,Unlimited,"CSV/PDF exports (product_user_guide.md, Section 6.1). Unlimited for Enterprise with compute scaling.",$0.05/MB,Monthly/Annual
+Exports,Export formats,CSV,CSV + PDF,CSV + PDF + Custom,"Custom formats for Enterprise (api_documentation.json, /reports).",,Monthly/Annual
+Storage,Data storage,10GB,100GB,Custom,"Stored in AWS S3 (system_architecture.md). Custom for Enterprise via sales@dataflow.com.",$0.10/GB/month,Monthly/Annual
+Storage,Backup retention,30 days,90 days,Custom,"Backups per security_policies.txt. Custom retention for Enterprise (compliance_certifications.csv).",,Monthly/Annual
+Add-Ons,Dedicated compute,No,$1000/month,$2000/month,"Dedicated resources for high-performance dashboards (system_architecture.md, sales_playbook.json).",$1000-$2000/month,Monthly/Annual
+Add-Ons,Training credits,$500/5 hours,$1000/10 hours,$2000/20 hours,"Custom training sessions (training_materials.md, sales_playbook.json).",$100/hour,Monthly/Annual
+Add-Ons,API call boost,500 calls/$50,2000 calls/$150,Custom,"Additional API calls (api_documentation.json, sales_playbook.json).",$0.03-$0.075/call,Monthly/Annual
+Pricing,Base price (USD, monthly),$49/month,$149/month,Custom,"See sales_playbook.json for Enterprise quotes. Contact sales@dataflow.com.",,Monthly/Annual
+Pricing,Base price (USD, annual),$470/year,$1430/year,Custom,"10% discount for annual billing (sales_playbook.json).",,Annual
+Pricing,Base price (EUR, monthly),€45/month,€135/month,Custom,"Includes VAT per terms_of_service.md. Convert at current rates.",,Monthly/Annual
+Pricing,Base price (EUR, annual),€430/year,€1295/year,Custom,"10% annual discount (sales_playbook.json).",,Annual
+Pricing,Base price (GBP, monthly),£40/month,£120/month,Custom,"Includes VAT per terms_of_service.md.",,Monthly/Annual
+Pricing,Base price (GBP, annual),£385/year,£1150/year,Custom,"10% annual discount.",,Annual
+Pricing,Educational discount,20%,20%,20%,"For accredited institutions. Verify via sales@dataflow.com (sales_playbook.json).",,Monthly/Annual
+Pricing,Non-profit discount,25%,25%,25%,"For 501(c)(3) organizations. Verify via sales@dataflow.com (sales_playbook.json).",,Monthly/Annual
+Pricing,Startup discount,15%,15%,No,"For companies <2 years old, <50 employees (sales_playbook.json, customer_analytics.csv).",,Monthly/Annual
+Pricing,Overage billing,Yes,Yes,Yes,"Billed monthly for exceeding limits (terms_of_service.md, customer_support_procedures.md).",,Monthly
+Pricing,Payment methods,Credit Card,Credit Card + Invoice,Credit Card + Invoice + ACH,"Invoice/ACH for Enterprise with credit approval (terms_of_service.md).",,Monthly/Annual
+Pricing,Late payment fee,$25,$50,$100,"Applied after 30 days (terms_of_service.md).",,Monthly/Annual
+Pricing,Refund policy,30-day,30-day,Custom,"30-day money-back guarantee. Custom for Enterprise (terms_of_service.md).",,Monthly/Annual
+Pricing,Price lock,No,1 year,2 years,"Professional: 1-year lock. Enterprise: 2-year lock with contract (sales_playbook.json).",,Monthly/Annual
+Compliance,SOC 2 Type II,Yes,Yes,Yes,"Required for enterprise trust (compliance_certifications.csv, sales_playbook.json).",,Monthly/Annual
+Compliance,ISO 27001,Yes,Yes,Yes,"Ensures data security (compliance_certifications.csv, security_policies.txt).",,Monthly/Annual
+Compliance,GDPR,Yes,Yes,Yes,"Mandatory for EU customers (compliance_certifications.csv, privacy_policy.txt).",,Monthly/Annual
+Compliance,CCPA,Yes,Yes,Yes,"Mandatory for CA customers (compliance_certifications.csv, privacy_policy.txt).",,Monthly/Annual
+Compliance,HIPAA,No,No,Yes,"Enterprise only with BAA (compliance_certifications.csv, sales_playbook.json).",,Monthly/Annual
+Support,Billing support,Email,Email + Phone,24/7 Dedicated,"For disputes, contact billing@dataflow.com (customer_support_procedures.md).",,Monthly/Annual
+Support,Overage notifications,Email,Email + Dashboard,Email + Dashboard + API,"API notifications via webhooks (api_documentation.json, customer_support_procedures.md).",,Monthly/Annual
+Limits,Concurrent sessions,2,5,Unlimited,"Max simultaneous logins per user (security_policies.txt).",$5/session/month,Monthly/Annual
+Limits,Data refresh rate,Hourly,15 minutes,Real-Time,"Real-time for Enterprise (product_user_guide.md, Section 8.2).",$0.50/refresh,Monthly/Annual
+Limits,Team invites,10,50,Unlimited,"Max pending invites (product_user_guide.md, Section 6.2).",$2/invite,Monthly/Annual
+Limits,Webhook events,100/month,1000/month,Custom,"Event triggers for integrations (api_documentation.json, Webhooks).",$0.02/event,Monthly/Annual
+Add-Ons,Custom domain,No,No,$500/month,"Custom URL for white-labeled dashboards (sales_playbook.json).",$500/month,Monthly/Annual
+Add-Ons,Priority data processing,No,$200/month,$500/month,"Faster query execution (system_architecture.md, sales_playbook.json).",$200-$500/month,Monthly/Annual
+Add-Ons,Additional storage,5GB/$25,20GB/$75,Custom,"Extra storage beyond plan limits (system_architecture.md).",$0.15/GB/month,Monthly/Annual
+Add-Ons,Custom report templates,No,$300/month,$600/month,"Branded report formats (api_documentation.json, /reports).",$300-$600/month,Monthly/Annual
