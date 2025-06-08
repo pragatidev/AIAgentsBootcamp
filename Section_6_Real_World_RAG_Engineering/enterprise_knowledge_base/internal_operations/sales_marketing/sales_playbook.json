@@ -1,0 +1,350 @@
+{
+  "sales_playbook": {
+    "version": "2.5",
+    "last_updated": "2025-06-08",
+    "description": "This playbook equips DataFlow Solutions’ sales team to sell our BI platform to mid-market and enterprise clients. It includes strategies for lead qualification, demos, pricing, competitor responses, objection handling, and closing, driving $50M ARR (customer_analytics.csv). Align with employee_handbook.txt, Section 8 for ethics.",
+    "metrics": {
+      "lead_to_opportunity_conversion": "25%",
+      "opportunity_to_close_conversion": "40%",
+      "average_deal_size": "$50,000",
+      "sales_cycle_length": "60 days (SMB), 120 days (Enterprise)",
+      "monthly_quota_per_rep": "$100,000"
+    }
+  },
+  "lead_qualification": {
+    "methodology": "MEDDIC (Metrics, Economic Buyer, Decision Criteria, Decision Process, Identify Pain, Champion)",
+    "criteria": [
+      {
+        "name": "Company Size",
+        "description": ">50 employees for Professional, >500 for Enterprise (customer_analytics.csv).",
+        "weight": "30%"
+      },
+      {
+        "name": "BI Needs",
+        "description": "Requires dashboards, real-time analytics, or API integrations (product_user_guide.md, Section 4).",
+        "weight": "30%"
+      },
+      {
+        "name": "Budget",
+        "description": "$49–$149/month for SMB, custom for Enterprise (billing_and_pricing.csv).",
+        "weight": "20%"
+      },
+      {
+        "name": "Decision Timeline",
+        "description": "<90 days for SMB, <180 days for Enterprise.",
+        "weight": "20%"
+      }
+    ],
+    "process": [
+      {
+        "step": "Discovery Call",
+        "description": "Use SPIN Selling (Situation, Problem, Implication, Need-Payoff) to assess fit. Log in Salesforce CRM (integration_partners.csv).",
+        "duration": "30 minutes"
+      },
+      {
+        "step": "Scoring",
+        "description": "Score leads 1–100 in Salesforce (80+ = qualified).",
+        "tool": "Salesforce Lead Scoring"
+      },
+      {
+        "step": "Handoff",
+        "description": "Assign to Account Executive for qualified leads, notify CSM for onboarding (onboarding_checklist.json)."
+      }
+    ],
+    "use_case": {
+      "customer": "Customer 1001 (customer_analytics.csv)",
+      "scenario": "Retail company with 200 employees qualifies for Professional plan ($149/month, billing_and_pricing.csv) due to dashboard needs.",
+      "outcome": "Converted to opportunity in 10 days."
+    },
+    "edge_case": "For startups (<50 employees), offer 15% discount (billing_and_pricing.csv) if high growth potential."
+  },
+  "demo_scripts": {
+    "segments": [
+      {
+        "segment": "SMB Retail (Starter/Professional)",
+        "description": "Highlight ease of use, dashboards, and mobile app (product_user_guide.md, Sections 4, 7).",
+        "script": {
+          "introduction": "Welcome to DataFlow Solutions, a BI platform designed to simplify your retail analytics. Today, I’ll show how Customer 1002 (customer_analytics.csv) created a sales dashboard in 10 minutes.",
+          "features": [
+            "Drag-and-drop dashboard builder (product_user_guide.md, Section 4.2).",
+            "Mobile access for store managers (product_user_guide.md, Section 7.1).",
+            "CSV uploads for quick setup (product_user_guide.md, Section 3.3)."
+          ],
+          "close": "With the Starter plan ($49/month, billing_and_pricing.csv), you can start today. Shall we schedule an onboarding call (onboarding_checklist.json)?"
+        },
+        "duration": "20 minutes",
+        "tools": "Zoom, DataFlow demo environment"
+      },
+      {
+        "segment": "Enterprise Healthcare",
+        "description": "Focus on SSO, white-labeling, and API integrations (product_user_guide.md, Section 8, api_documentation.json).",
+        "script": {
+          "introduction": "DataFlow empowers enterprises like Customer 1003 (customer_analytics.csv) with secure, scalable BI. Let’s explore a healthcare dashboard for patient analytics.",
+          "features": [
+            "SSO with SAML 2.0 (security_policies.txt, product_user_guide.md, Section 2.1).",
+            "White-labeled dashboards embedded in EHR systems (api_documentation.json, /embed/token).",
+            "Real-time maps for patient distribution (release_notes.json, v2.4.1)."
+          ],
+          "close": "Our Enterprise plan offers custom pricing (billing_and_pricing.csv). Can we connect with your IT team to discuss SSO setup?"
+        },
+        "duration": "45 minutes",
+        "tools": "Zoom, DataFlow sandbox, Salesforce CRM"
+      }
+    ],
+    "edge_case": "For multi-language demos (e.g., French for Customer 1009, customer_analytics.csv), use translated slides and coordinate with support (customer_support_procedures.md, Section 5.4)."
+  },
+  "pricing_guidelines": {
+    "base_pricing": {
+      "starter": "$49/month or $470/year (billing_and_pricing.csv)",
+      "professional": "$149/month or $1430/year (billing_and_pricing.csv)",
+      "enterprise": "Custom, contact sales@dataflow.com (billing_and_pricing.csv)"
+    },
+    "discounts": [
+      {
+        "type": "Annual Billing",
+        "value": "10%",
+        "description": "Applied automatically for annual plans (billing_and_pricing.csv)."
+      },
+      {
+        "type": "Educational",
+        "value": "20%",
+        "description": "For accredited institutions, verify via sales@dataflow.com (billing_and_pricing.csv)."
+      },
+      {
+        "type": "Non-Profit",
+        "value": "25%",
+        "description": "For 501(c)(3) organizations (billing_and_pricing.csv)."
+      },
+      {
+        "type": "Startup",
+        "value": "15%",
+        "description": "For companies <2 years old, <50 employees (customer_analytics.csv)."
+      },
+      {
+        "type": "Volume",
+        "value": "Up to 20%",
+        "description": "For Enterprise deals >$100,000, approve via Sales Director (terms_of_service.md)."
+      }
+    ],
+    "add_ons": [
+      {
+        "name": "Premium Support",
+        "cost": "$500–$1000/month (billing_and_pricing.csv)",
+        "description": "Priority escalation, dedicated CSM (customer_support_procedures.md)."
+      },
+      {
+        "name": "API Call Boost",
+        "cost": "$50–$150 for 500–2000 calls (billing_and_pricing.csv)",
+        "description": "For high-volume integrations (api_documentation.json)."
+      },
+      {
+        "name": "Dedicated Compute",
+        "cost": "$1000–$2000/month (billing_and_pricing.csv)",
+        "description": "For high-performance dashboards (system_architecture.md)."
+      }
+    ],
+    "negotiation_tips": [
+      "Highlight ROI: $149/month Professional plan saves 10 hours/week vs. manual reporting (product_user_guide.md, Section 4).",
+      "Offer trial: 14-day free trial for Starter/Professional (terms_of_service.md).",
+      "Bundle add-ons: Combine premium support and API boost for 10% discount on add-ons."
+    ],
+    "use_case": {
+      "customer": "Customer 1015 (customer_analytics.csv)",
+      "scenario": "Healthcare enterprise negotiates a $250,000 deal with 15% volume discount and dedicated compute.",
+      "outcome": "Closed in 90 days with custom SLA (customer_support_procedures.md)."
+    },
+    "edge_case": "For international deals (e.g., GBP for UK, Customer 1009, customer_analytics.csv), include VAT and convert at current rates (billing_and_pricing.csv)."
+  },
+  "competitor_responses": {
+    "competitors": [
+      {
+        "name": "Tableau (Salesforce)",
+        "market_share": "20% (competitive_analysis.txt)",
+        "strengths": [
+          "Advanced AI-driven insights (Einstein Analytics).",
+          "Strong enterprise adoption (competitive_analysis.txt)."
+        ],
+        "weaknesses": [
+          "High pricing: $70/user/month (competitive_analysis.txt).",
+          "Complex setup for non-technical users."
+        ],
+        "response": {
+          "pricing_objection": "DataFlow’s Professional plan ($149/month for 25 users) is 40% cheaper than Tableau’s $2100/month for 30 users (billing_and_pricing.csv).",
+          "ease_of_use": "Our drag-and-drop builder (product_user_guide.md, Section 4.2) is rated 4.5/5 for usability vs. Tableau’s 4.0 (customer_analytics.csv).",
+          "demo_strategy": "Showcase real-time maps (release_notes.json, v2.4.1) and mobile app (product_user_guide.md, Section 7) to highlight simplicity."
+        },
+        "use_case": {
+          "customer": "Customer 1001 (customer_analytics.csv)",
+          "scenario": "Retail prospect chose DataFlow over Tableau due to lower cost and faster setup."
+        }
+      },
+      {
+        "name": "Power BI (Microsoft)",
+        "market_share": "25% (competitive_analysis.txt)",
+        "strengths": [
+          "Low pricing: $10/user/month (competitive_analysis.txt).",
+          "Microsoft ecosystem integration."
+        ],
+        "weaknesses": [
+          "Limited real-time analytics (competitive_analysis.txt).",
+          "Weak white-labeling (product_user_guide.md, Section 6.1)."
+        ],
+        "response": {
+          "real_time_objection": "DataFlow offers real-time maps and analytics (release_notes.json, v2.4.1) vs. Power BI’s hourly refreshes (competitive_analysis.txt).",
+          "white_labeling": "Our Enterprise plan includes white-labeling (billing_and_pricing.csv), ideal for embedding vs. Power BI’s limited options.",
+          "demo_strategy": "Demonstrate API integrations (api_documentation.json) and SSO (security_policies.txt) for enterprise prospects."
+        },
+        "use_case": {
+          "customer": "Customer 1002 (customer_analytics.csv)",
+          "scenario": "SMB upgraded from Power BI to Starter for real-time dashboards."
+        }
+      },
+      {
+        "name": "Looker (Google)",
+        "market_share": "10% (competitive_analysis.txt)",
+        "strengths": [
+          "Cloud-native deployment (competitive_analysis.txt).",
+          "Strong data governance (compliance_certifications.csv)."
+        ],
+        "weaknesses": [
+          "High cost: $3000/month base (competitive_analysis.txt).",
+          "Limited mobile support (troubleshooting_guide.txt, MOB-6007)."
+        ],
+        "response": {
+          "cost_objection": "DataFlow’s Professional plan ($149/month) is 95% cheaper than Looker’s $3000/month (billing_and_pricing.csv).",
+          "mobile_support": "Our mobile app supports full dashboard access (product_user_guide.md, Section 7) vs. Looker’s limited functionality.",
+          "demo_strategy": "Highlight ease of use (product_user_guide.md, Section 4) and customer success stories (customer_analytics.csv)."
+        },
+        "use_case": {
+          "customer": "Customer 1006 (customer_analytics.csv)",
+          "scenario": "Tech enterprise chose DataFlow over Looker for cost and mobile access."
+        }
+      }
+    ],
+    "edge_case": "For competitive bake-offs (e.g., Customer 1033, customer_analytics.csv), offer a 30-day POC with premium support (billing_and_pricing.csv)."
+  },
+  "objection_handling": {
+    "objections": [
+      {
+        "objection": "Your pricing is too high compared to Power BI.",
+        "response": "While Power BI starts at $10/user/month, DataFlow’s $149/month Professional plan offers real-time analytics, white-labeling, and 12-hour SLAs (billing_and_pricing.csv, customer_support_procedures.md), saving 15 hours/week in reporting (product_user_guide.md, Section 4).",
+        "use_case": "Customer 1017 (customer_analytics.csv) accepted Professional plan after ROI discussion."
+      },
+      {
+        "objection": "Tableau has stronger AI capabilities.",
+        "response": "DataFlow’s predictive analytics (Q3 2025, product_roadmap.json) and real-time maps (release_notes.json, v2.4.1) rival Tableau’s AI, at 40% lower cost (competitive_analysis.txt, billing_and_pricing.csv).",
+        "use_case": "Customer 1023 (customer_analytics.csv) chose DataFlow for cost-effective analytics."
+      },
+      {
+        "objection": "We’re locked into a Looker contract.",
+        "response": "We offer a 25% transition discount for the first year (billing_and_pricing.csv) and seamless data migration (onboarding_checklist.json). Our mobile app outperforms Looker’s (product_user_guide.md, Section 7).",
+        "use_case": "Customer 1039 (customer_analytics.csv) transitioned from Looker with a 20% discount."
+      },
+      {
+        "objection": "Your support is slower than competitors.",
+        "response": "Our Enterprise plan offers 4-hour P1 SLAs, 24/7 dedicated support, and 95% SLA compliance (customer_support_procedures.md, billing_and_pricing.csv), matching or exceeding competitors (competitive_analysis.txt).",
+        "use_case": "Customer 1018 (customer_analytics.csv) valued 4-hour SLA for SSO issue."
+      },
+      {
+        "objection": "We need custom integrations.",
+        "response": "Our API supports 15+ endpoints (api_documentation.json) and integrations with Salesforce, HubSpot (integration_partners.csv). Enterprise plans include custom development support (billing_and_pricing.csv).",
+        "use_case": "Customer 1042 (customer_analytics.csv) integrated with Salesforce via API."
+      }
+    ],
+    "strategy": "Use FAB (Feature, Advantage, Benefit): Highlight features (product_user_guide.md), advantages (competitive_analysis.txt), and benefits (ROI, customer_analytics.csv).",
+    "edge_case": "For budget-constrained SMBs (e.g., Customer 1008, customer_analytics.csv), offer a 14-day trial and 15% startup discount (billing_and_pricing.csv)."
+  },
+  "closing_techniques": {
+    "techniques": [
+      {
+        "name": "Assumptive Close",
+        "description": "Assume the sale is complete and discuss next steps (onboarding_checklist.json).",
+        "script": "Great, I’ll schedule your onboarding call for next week (onboarding_checklist.json). Which day works best?",
+        "use_case": "Customer 1025 (customer_analytics.csv) closed a $10,000 Professional deal with assumptive close."
+      },
+      {
+        "name": "Summary Close",
+        "description": "Recap benefits and confirm agreement.",
+        "script": "To summarize, DataFlow’s $149/month plan gives you 25 users, real-time analytics, and 12-hour SLAs (billing_and_pricing.csv). Ready to move forward?",
+        "use_case": "Customer 1011 (customer_analytics.csv) closed a $5,000 Starter deal."
+      },
+      {
+        "name": "Urgency Close",
+        "description": "Highlight limited offers or deadlines.",
+        "script": "Our 20% educational discount ends this month (billing_and_pricing.csv). Shall we finalize your Enterprise contract today?",
+        "use_case": "Customer 1030 (customer_analytics.csv) closed a $200,000 deal with urgency close."
+      },
+      {
+        "name": "Trial Close",
+        "description": "Offer a trial to reduce risk (terms_of_service.md).",
+        "script": "Let’s start with a 14-day free trial (billing_and_pricing.csv). If satisfied, we can activate your Professional plan. Sound good?",
+        "use_case": "Customer 1045 (customer_analytics.csv) converted after a trial."
+      },
+      {
+        "name": "Collaborative Close",
+        "description": "Involve stakeholders for Enterprise deals.",
+        "script": "Let’s schedule a call with your IT team to finalize SSO setup (security_policies.txt). When are they available?",
+        "use_case": "Customer 1033 (customer_analytics.csv) closed a $300,000 deal with IT collaboration."
+      }
+    ],
+    "edge_case": "For stalled deals (e.g., Customer 1004, customer_analytics.csv), offer a 30-day POC with premium support (billing_and_pricing.csv) to build trust."
+  },
+  "references": [
+    {
+      "document": "billing_and_pricing.csv",
+      "description": "Pricing, discounts, and add-ons."
+    },
+    {
+      "document": "competitive_analysis.txt",
+      "description": "Competitor strengths, weaknesses, and responses."
+    },
+    {
+      "document": "customer_analytics.csv",
+      "description": "Lead data, customer examples, and satisfaction scores."
+    },
+    {
+      "document": "product_user_guide.md",
+      "description": "Feature demos and usage (e.g., Section 4)."
+    },
+    {
+      "document": "api_documentation.json",
+      "description": "API capabilities and limits."
+    },
+    {
+      "document": "troubleshooting_guide.txt",
+      "description": "Common issues and resolutions (e.g., API-4004)."
+    },
+    {
+      "document": "customer_support_procedures.md",
+      "description": "Support SLAs and escalation paths."
+    },
+    {
+      "document": "terms_of_service.md",
+      "description": "Contract terms and trial policies."
+    },
+    {
+      "document": "onboarding_checklist.json",
+      "description": "Post-sale handoff to CSMs."
+    },
+    {
+      "document": "employee_handbook.txt",
+      "description": "Sales ethics and culture (Section 8)."
+    },
+    {
+      "document": "integration_partners.csv",
+      "description": "Supported integrations (e.g., Salesforce)."
+    },
+    {
+      "document": "security_policies.txt",
+      "description": "SSO and data security for enterprise demos."
+    },
+    {
+      "document": "release_notes.json",
+      "description": "New features (e.g., v2.4.1 maps)."
+    },
+    {
+      "document": "system_architecture.md",
+      "description": "Technical infrastructure for enterprise pitches."
+    }
+  ]
+}

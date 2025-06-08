@@ -1,0 +1,318 @@
+DataFlow Solutions Employee Handbook
+Last Updated: June 8, 2025
+
+Welcome to DataFlow Solutions! This handbook outlines our policies, procedures, and culture to help you thrive in your role. It applies to all employees across our offices (San Francisco, Austin, London, Toronto) and remote workers. For questions, contact hr@dataflow.com or refer to customer_support_procedures.md for HR escalation.
+
+---
+
+1. Company Overview
+DataFlow Solutions, founded in 2019, is a mid-size SaaS company specializing in business intelligence (BI) and data visualization. With 250 employees and $50M in ARR, we serve 5,000+ customers across 40+ countries (customer_analytics.csv).
+
+Mission: Empower businesses with intuitive data visualization tools.
+Vision: Become the leading BI platform for mid-market and enterprise clients.
+Values:
+- Customer-Centricity: Prioritize customer success (customer_analytics.csv, Satisfaction_Score).
+- Innovation: Drive cutting-edge analytics (product_roadmap.json).
+- Integrity: Uphold ethical standards (sales_playbook.json, Ethics).
+- Collaboration: Foster teamwork across departments.
+- Excellence: Deliver high-quality solutions (release_notes.json).
+
+For our history and products, see product_user_guide.md, Section 1.
+
+---
+
+2. Employment Policies
+2.1 Equal Opportunity
+DataFlow is an equal opportunity employer, prohibiting discrimination based on race, gender, age, disability, or other protected characteristics. We comply with U.S. EEOC, UK Equality Act, and Canadian Human Rights Act (compliance_certifications.csv, DEI Policies).
+
+2.2 Anti-Harassment
+We maintain a zero-tolerance policy for harassment, including verbal, physical, or sexual misconduct. Report incidents to hr@dataflow.com or anonymously via ethics.dataflow.com. Violations may result in termination (security_policies.txt, Code of Conduct).
+
+2.3 Confidentiality
+Employees must protect customer data, trade secrets, and proprietary information per privacy_policy.txt and compliance_certifications.csv (GDPR, CCPA). Sign the NDA during onboarding.
+
+Use Case: A customer success rep (Customer 1001, customer_analytics.csv) must not share dashboard configs externally, per privacy_policy.txt.
+
+---
+
+3. Remote Work and Flexible Schedules
+DataFlow supports hybrid and remote work for 80% of employees, with flexible schedules to accommodate global teams (London, Toronto).
+
+3.1 Remote Work Policy
+- Work from approved locations (home, co-working spaces).
+- Maintain secure internet (security_policies.txt, Remote Work Security).
+- Attend mandatory in-person events (e.g., annual summit, San Francisco HQ).
+- Use company-provided equipment (Section 10).
+
+3.2 Flexible Schedules
+- Core hours: 10 AM–3 PM local time for meetings.
+- Adjust schedules with manager approval (e.g., 7 AM–3 PM for parents).
+- Log hours in HRIS (Workday).
+
+Edge Case: London employees working with Austin teams may shift to 2 PM–10 PM GMT to overlap core hours.
+
+Use Case: An engineer in Toronto works remotely, using secure VPN (security_policies.txt) to access system_architecture.md resources.
+
+---
+
+4. Performance Review Process
+Performance reviews occur biannually (January, July) to assess contributions and set goals.
+
+4.1 Criteria
+- **Impact**: Deliver results (e.g., engineers deploying v2.4.1, release_notes.json).
+- **Collaboration**: Work effectively with teams (product_user_guide.md, Section 6).
+- **Innovation**: Propose new ideas (product_roadmap.json).
+- **Customer Focus**: Enhance user experience (customer_analytics.csv, Satisfaction_Score).
+
+4.2 Process
+1. Self-assessment: Submit achievements in Workday.
+2. Manager review: Evaluate against KPIs (e.g., support SLAs, customer_support_procedures.md).
+3. 1:1 meeting: Discuss feedback and goals.
+4. Calibration: Ensure fairness across departments.
+5. Outcome: Promotion, bonus, or development plan.
+
+4.3 Edge Cases
+- New hires (<6 months) receive onboarding feedback instead.
+- Underperformance triggers a 90-day PIP (Performance Improvement Plan).
+
+Use Case: A sales rep exceeds Q2 targets (sales_playbook.json), earning a 5% bonus.
+
+---
+
+5. Benefits Overview
+DataFlow offers competitive benefits to support employee well-being.
+
+5.1 Health and Dental
+- U.S.: Comprehensive plans via Aetna (80% premium covered).
+- UK: Private healthcare via Bupa.
+- Canada: Extended health via Sun Life.
+- Dental: 90% coverage for preventive care.
+
+5.2 Retirement
+- U.S.: 401(k) with 4% match via Fidelity.
+- UK: Pension with 5% employer contribution.
+- Canada: RRSP with 3% match.
+
+5.3 Equity
+- Stock options for employees (0.01–0.1% based on role, vesting over 4 years).
+- Annual refresh grants for high performers.
+
+5.4 Wellness
+- $500/year wellness stipend (e.g., gym, therapy).
+- Mental health support via BetterHelp (10 sessions/year).
+
+Edge Case: International employees (e.g., Toronto) receive equivalent benefits adjusted for local regulations.
+
+Use Case: An Austin engineer uses the wellness stipend for a meditation app, boosting productivity.
+
+---
+
+6. Time Off Policies
+6.1 Paid Time Off (PTO)
+- 20 days/year (accrues monthly, rolls over up to 10 days).
+- Request via Workday, approved by manager.
+- Minimum 5 consecutive days annually to promote rest.
+
+6.2 Sick Days
+- 7 days/year, non-accruing.
+- Notify manager within 1 hour of start time.
+
+6.3 Parental Leave
+- 12 weeks paid for primary caregivers (birth, adoption).
+- 6 weeks paid for secondary caregivers.
+- Flexible return-to-work options (e.g., part-time for 1 month).
+
+6.4 Holidays
+- 10 company holidays (e.g., July 4, Christmas).
+- Local holidays for UK/Canada (e.g., Boxing Day, Canada Day).
+
+Edge Case: Employees adopting internationally receive 2 extra weeks for travel.
+
+Use Case: A London employee takes 12 weeks parental leave, transitioning back part-time with manager approval.
+
+---
+
+7. Professional Development
+DataFlow invests in employee growth to drive innovation.
+
+7.1 Education Budget
+- $2,000/year for courses, certifications, or conferences (e.g., AWS Certified Data Analytics, BI conferences).
+- Approve via Workday, reimburse within 30 days.
+
+7.2 Internal Training
+- Access training_materials.md for platform expertise.
+- Monthly tech talks (e.g., system_architecture.md, microservices).
+- Leadership development for managers.
+
+7.3 Mentorship
+- Pair with senior employees for 6-month programs.
+- Cross-departmental shadowing (e.g., sales with engineering).
+
+Edge Case: Remote employees receive $500 extra for virtual conference travel costs.
+
+Use Case: A customer success rep earns a Tableau certification, improving support for Customer 1003 (customer_analytics.csv).
+
+---
+
+8. Code of Conduct and Ethics
+Employees must uphold integrity and professionalism.
+
+8.1 Workplace Behavior
+- Respect colleagues, customers, and partners.
+- Avoid conflicts of interest (e.g., side projects competing with DataFlow).
+
+8.2 Customer Interactions
+- Follow sales_playbook.json ethics (e.g., transparent pricing).
+- Protect customer data per privacy_policy.txt and compliance_certifications.csv (GDPR).
+
+8.3 Reporting Violations
+- Use ethics.dataflow.com for anonymous reports.
+- Non-retaliation guaranteed.
+
+Use Case: A sales rep declines a bribe from a prospect, reporting it per sales_playbook.json, Ethics.
+
+Edge Case: Engineers must not share proprietary code (system_architecture.md) on public platforms like GitHub.
+
+---
+
+9. Diversity, Equity, and Inclusion (DEI)
+DataFlow fosters an inclusive workplace per compliance_certifications.csv, DEI Policies.
+
+9.1 DEI Commitment
+- 40% of leadership roles held by women or underrepresented groups by 2027.
+- Annual DEI training mandatory (security_policies.txt, Training).
+
+9.2 Employee Resource Groups (ERGs)
+- Groups for Women in Tech, LGBTQ+, and BIPOC employees.
+- $5,000/year budget per ERG for events.
+
+9.3 Accommodations
+- Disability accommodations (e.g., ergonomic equipment, flexible hours).
+- Request via hr@dataflow.com.
+
+Edge Case: Employees with religious observances receive flexible schedules (e.g., Ramadan fasting).
+
+Use Case: A San Francisco engineer joins the BIPOC ERG, organizing a tech diversity panel.
+
+---
+
+10. Equipment and Workspace Setup
+DataFlow provides tools for productivity and security.
+
+10.1 Equipment
+- Laptop (MacBook Pro or Dell XPS, $2,500 budget).
+- Monitor, keyboard, mouse ($300 budget).
+- Remote employees receive $500 home office stipend.
+
+10.2 Software
+- Licensed tools: Slack, Zoom, Workday, DataFlow platform (product_user_guide.md).
+- Secure setup per security_policies.txt (e.g., VPN, 2FA).
+
+10.3 Return Policy
+- Return equipment within 30 days of termination.
+- Damaged/lost equipment may incur fees.
+
+Edge Case: International employees (e.g., London) receive region-specific power adapters.
+
+Use Case: A remote Austin support agent uses the stipend for a standing desk, improving ergonomics.
+
+---
+
+11. Emergency Procedures
+11.1 Workplace Safety
+- Office evacuations: Follow posted exit routes (San Francisco, Austin, London, Toronto).
+- Remote employees: Maintain safe home workspaces.
+
+11.2 Cybersecurity Incidents
+- Report breaches (e.g., phishing) to security@dataflow.com within 1 hour (security_policies.txt, Incident Response).
+- Follow incident_response_playbook.txt for platform outages.
+
+11.3 Contacts
+- HR: hr@dataflow.com, +1-800-555-1234.
+- Security: security@dataflow.com.
+- Emergency: 911 (U.S.), 999 (UK), 911 (Canada).
+
+Edge Case: Employees traveling internationally receive local emergency contacts via HR.
+
+Use Case: A Toronto employee reports a phishing email, triggering security_policies.txt procedures.
+
+---
+
+12. Travel and Expense Policy
+12.1 Business Travel
+- Approved for customer meetings, conferences, or summits.
+- Book via Concur; economy class for flights <6 hours.
+- $75/day per diem for meals.
+
+12.2 Expense Reimbursement
+- Submit receipts in Concur within 30 days.
+- Non-reimbursable: Alcohol, personal entertainment.
+
+Edge Case: Sales reps visiting Customer 1009 (customer_analytics.csv) in London receive $100/day per diem due to high costs.
+
+Use Case: An engineer attends AWS re:Invent, reimbursed for a $1,500 certification course (Section 7.1).
+
+---
+
+13. Employee Recognition
+DataFlow celebrates contributions to foster engagement.
+
+13.1 Awards
+- Quarterly “Impact Award”: $1,000 bonus for outstanding work (e.g., v2.4.1 launch, release_notes.json).
+- “Customer Hero”: $500 for exceptional support (customer_analytics.csv, Satisfaction_Score).
+
+13.2 Milestones
+- 1-year anniversary: $250 gift card.
+- 5-year anniversary: $1,000 bonus + extra PTO day.
+
+Use Case: A customer success rep earns the Customer Hero award for resolving Customer 1018’s issue (customer_analytics.csv).
+
+---
+
+14. Termination and Offboarding
+14.1 Voluntary Termination
+- Provide 2 weeks’ notice via Workday.
+- Conduct exit interview with HR.
+
+14.2 Involuntary Termination
+- May occur for policy violations (e.g., ethics breach, sales_playbook.json).
+- Severance: 2 weeks’ pay per year of service (capped at 12 weeks).
+
+14.3 Offboarding
+- Return equipment (Section 10).
+- Revoke access per security_policies.txt.
+- Sign exit NDA.
+
+Edge Case: Remote employees receive prepaid shipping labels for equipment return.
+
+Use Case: A London employee resigns, completing an exit interview to provide product_roadmap.json feedback.
+
+---
+
+15. Contact Information
+- **HR**: hr@dataflow.com, +1-800-555-1234, 9 AM–5 PM local time.
+- **IT Support**: it@dataflow.com, for equipment or software issues (security_policies.txt).
+- **Ethics Hotline**: ethics.dataflow.com, anonymous reporting.
+- **Employee Portal**: portal.dataflow.com (Workday, benefits, training_materials.md).
+
+For emergencies, see Section 11.3. For customer support roles, see customer_support_procedures.md.
+
+---
+
+References
+- Security Policies: security_policies.txt
+- Customer Support Procedures: customer_support_procedures.md
+- Compliance Certifications: compliance_certifications.csv
+- Sales Playbook: sales_playbook.json
+- Privacy Policy: privacy_policy.txt
+- Incident Response Playbook: incident_response_playbook.txt
+- Customer Analytics: customer_analytics.csv
+- Product User Guide: product_user_guide.md
+- Product Roadmap: product_roadmap.json
+- Release Notes: release_notes.json
+- Training Materials: training_materials.md
+- System Architecture: system_architecture.md
+
+Revision History
+- v2.5: June 8, 2025 – Added DEI goals, updated benefits.
+- v2.4: January 15, 2025 – Revised remote work policy.

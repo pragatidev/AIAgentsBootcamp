@@ -1,0 +1,404 @@
+DataFlow Solutions Troubleshooting Guide
+Last Updated: June 8, 2025
+
+This guide helps end users and support agents resolve common issues with the DataFlow Solutions platform, including connection failures, performance problems, API errors, mobile app issues, and permission errors. Each issue includes an error code, possible causes, and step-by-step solutions. For unresolved issues, escalate per customer_support_procedures.md. For platform outages, check incident_response_playbook.txt.
+
+---
+
+1. Unable to Connect to Data Source
+Error Code: DS-1001
+Error Message: "Connection failed: Invalid credentials or host unreachable"
+Description: Occurs when connecting to SQL databases, APIs, or cloud storage (product_user_guide.md, Section 3).
+Possible Causes:
+- Incorrect connection string (e.g., wrong host or port).
+- Database server down or unreachable.
+- Firewall blocking DataFlow’s IP range.
+- Invalid or expired credentials.
+Solutions:
+1. Verify connection string in Data Sources settings (product_user_guide.md, Section 3.1 for SQL, 3.2 for APIs).
+2. Check server status with your IT team or provider (e.g., AWS RDS, Salesforce).
+3. Ensure firewall allows DataFlow’s IP range (security_policies.txt, Network Security).
+4. Re-enter credentials and test connection.
+5. For APIs, refresh keys in the source system (integration_partners.csv, e.g., Salesforce).
+6. If unresolved, escalate to support@dataflow.com (customer_support_procedures.md, P1 ticket).
+Use Case: Customer 1001 (customer_analytics.csv) reported DS-1001 when connecting to MySQL due to an expired password.
+Edge Case: For large databases (>10GB), ensure query timeouts are adjusted (system_architecture.md, Data Pipeline).
+
+---
+
+2. Data Source Connection Timeout
+Error Code: DS-1002
+Error Message: "Connection timed out after 30 seconds"
+Description: Occurs during initial connection or query execution.
+Possible Causes:
+- Slow network or server response.
+- Large dataset causing query delays.
+- Misconfigured timeout settings.
+Solutions:
+1. Test network stability (ping db.example.com).
+2. Optimize queries (e.g., limit rows, index tables; product_user_guide.md, Section 3.1).
+3. Increase timeout in Data Source settings (Enterprise only, billing_and_pricing.csv).
+4. Check server load with your IT team.
+5. Escalate to engineering if persistent (customer_support_procedures.md, P2 ticket).
+Use Case: Customer 1003 (customer_analytics.csv) faced DS-1002 with a 20GB PostgreSQL database, resolved by indexing.
+
+---
+
+3. Dashboard Not Loading
+Error Code: DB-2002
+Error Message: "Error 503: Service Unavailable"
+Description: Dashboard fails to render in the browser (product_user_guide.md, Section 4).
+Possible Causes:
+- Browser cache or compatibility issues.
+- Network connectivity problems.
+- Server-side outage or overload.
+Solutions:
+1. Clear browser cache and cookies (Ctrl+Shift+R; product_user_guide.md, Section 9.2).
+2. Test with Chrome or Firefox (supported browsers, product_user_guide.md, Section 2.2).
+3. Check internet connection stability.
+4. Verify platform status at status.dataflow.com (incident_response_playbook.txt).
+5. If outage confirmed, wait for resolution or contact support@dataflow.com (customer_support_procedures.md, P0 ticket).
+Use Case: Customer 1004 (customer_analytics.csv) reported DB-2002 due to a regional AWS outage, resolved per incident_response_playbook.txt.
+Edge Case: For Safari users, disable cross-site tracking to prevent rendering issues.
+
+---
+
+4. Dashboard Loading Slowly
+Error Code: DB-2003
+Error Message: "Dashboard loading exceeded 10 seconds"
+Description: Dashboard renders but takes too long, impacting user experience.
+Possible Causes:
+- Large dataset (>1M rows).
+- Complex visualizations (e.g., real-time maps, release_notes.json, v2.4.1).
+- Browser memory limitations.
+Solutions:
+1. Enable data sampling in Dashboard settings (product_user_guide.md, Section 4.3).
+2. Simplify visualizations (e.g., reduce widgets, product_user_guide.md, Section 5).
+3. Upgrade browser or increase device memory.
+4. For Enterprise, request compute scaling (billing_and_pricing.csv, Support Level).
+5. Escalate to support for optimization (customer_support_procedures.md, P2 ticket).
+Use Case: Customer 1006 (customer_analytics.csv) reported slow real-time maps, resolved by sampling 10% of data.
+Edge Case: For datasets >5M rows, use pre-aggregated tables (system_architecture.md, Data Pipeline).
+
+---
+
+5. Data Not Refreshing
+Error Code: DR-3003
+Error Message: "Data refresh timed out"
+Description: Scheduled or real-time data refresh fails (product_user_guide.md, Section 8.2).
+Possible Causes:
+- Misconfigured refresh schedule.
+- Expired data source credentials.
+- Large dataset causing timeout.
+- API rate limit exceeded (api_documentation.json).
+Solutions:
+1. Verify refresh settings in Dashboard Configuration (product_user_guide.md, Section 8.2).
+2. Update credentials in Data Sources menu (product_user_guide.md, Section 3).
+3. Reduce dataset size or optimize queries (product_user_guide.md, Section 4.3).
+4. Check API rate limits (api_documentation.json, Rate Limits; billing_and_pricing.csv).
+5. If unresolved, escalate to support (customer_support_procedures.md, P1 ticket).
+Use Case: Customer 1002 (customer_analytics.csv) faced DR-3003 due to expired Salesforce credentials, resolved by refreshing the API key.
+Edge Case: For real-time refreshes, ensure streaming support (system_architecture.md, Apache Kafka).
+
+---
+
+6. API Request Failed (Rate Limit)
+Error Code: API-4004
+Error Message: "429: Too Many Requests"
+Description: API call exceeds plan-specific rate limits (api_documentation.json, Rate Limits).
+Possible Causes:
+- Exceeded monthly API call limit (e.g., 1,000 for Starter).
+- Concurrent requests from multiple integrations.
+Solutions:
+1. Check rate limits for your plan (api_documentation.json, Rate Limits; billing_and_pricing.csv).
+2. Implement exponential backoff in your application (api_documentation.json, Security).
+3. Wait for rate limit reset (monthly for Starter/Professional, custom for Enterprise).
+4. Upgrade plan for higher limits (billing_and_pricing.csv).
+5. Contact support for temporary limit increases (customer_support_procedures.md, P2 ticket).
+Use Case: Customer 1006 (customer_analytics.csv) hit API-4004 with excessive Salesforce syncs, resolved by upgrading to Professional.
+Edge Case: For high-frequency APIs, use webhooks to reduce calls (api_documentation.json, Webhooks).
+
+---
+
+7. API Authentication Failure
+Error Code: API-4001
+Error Message: "401: Unauthorized"
+Description: API request fails due to invalid credentials (api_documentation.json, Authentication).
+Possible Causes:
+- Invalid or expired API key.
+- Incorrect OAuth 2.0 token or scope.
+- Missing X-API-Key header.
+Solutions:
+1. Verify API key in Settings (product_user_guide.md, Section 2.3).
+2. Refresh OAuth token via /auth/token (api_documentation.json, OAuth 2.0).
+3. Ensure correct scopes (e.g., dashboards:write; api_documentation.json).
+4. Check header format (X-API-Key: your_key).
+5. If unresolved, contact support (customer_support_procedures.md, P1 ticket).
+Use Case: Customer 1018 (customer_analytics.csv) reported API-4001 due to an expired OAuth token, resolved by refreshing.
+Edge Case: For SSO users, verify SAML configuration (security_policies.txt).
+
+---
+
+8. Browser Compatibility Issue
+Error Code: BR-5001
+Error Message: "Rendering failed: Unsupported browser"
+Description: Dashboard or interface fails to render correctly.
+Possible Causes:
+- Unsupported browser (e.g., IE11).
+- Outdated browser version.
+- Conflicting extensions.
+Solutions:
+1. Use Chrome, Firefox, or Edge (product_user_guide.md, Section 2.2).
+2. Update browser to the latest version.
+3. Disable extensions (e.g., ad blockers).
+4. Test in incognito mode.
+5. If persistent, report to support (customer_support_procedures.md, P3 ticket).
+Use Case: Customer 1011 (customer_analytics.csv) faced BR-5001 on Safari, resolved by switching to Chrome.
+Edge Case: For Safari, disable cross-site tracking in Privacy settings.
+
+---
+
+9. Permission Error
+Error Code: PERM-5005
+Error Message: "Access denied: Insufficient permissions"
+Description: User cannot view or edit a dashboard (product_user_guide.md, Section 6.2).
+Possible Causes:
+- Incorrect user role (e.g., View-Only vs. Edit).
+- Plan limits on team members (billing_and_pricing.csv).
+- SSO group misconfiguration (Enterprise).
+Solutions:
+1. Verify user role in Settings (product_user_guide.md, Section 6.2).
+2. Check plan limits (e.g., 5 users for Starter; billing_and_pricing.csv).
+3. For SSO, confirm group mappings with IT (security_policies.txt).
+4. Request admin to update permissions.
+5. Escalate to support if needed (customer_support_procedures.md, P2 ticket).
+Use Case: Customer 1009 (customer_analytics.csv) reported PERM-5005 due to a misconfigured SSO group, resolved by IT.
+Edge Case: For large teams, ensure Enterprise plan for unlimited users.
+
+---
+
+10. Mobile App Not Loading
+Error Code: MOB-6006
+Error Message: "App failed to load dashboards"
+Description: Mobile app fails to display dashboards (product_user_guide.md, Section 7).
+Possible Causes:
+- Poor internet connection.
+- Outdated app version.
+- Device memory limitations.
+Solutions:
+1. Verify Wi-Fi or cellular connection.
+2. Update app to v2.5 (App Store/Google Play; release_notes.json, v2.4.1).
+3. Clear app cache in device settings.
+4. Restart device to free memory.
+5. If unresolved, contact support (customer_support_procedures.md, P3 ticket).
+Use Case: Customer 1017 (customer_analytics.csv) faced MOB-6006 on an older iPhone, resolved by updating to iOS 18.
+Edge Case: For offline mode, ensure Professional/Enterprise plan (billing_and_pricing.csv).
+
+---
+
+11. Mobile App Widget Rendering Issue
+Error Code: MOB-6007
+Error Message: "Map widget failed to render"
+Description: Specific widgets (e.g., real-time maps) fail on mobile (product_user_guide.md, Section 7.2).
+Possible Causes:
+- Unsupported widget type (e.g., maps on older devices).
+- Slow device performance.
+- Network latency.
+Solutions:
+1. Verify device compatibility (iOS 16+, Android 10+; product_user_guide.md, Section 7).
+2. Switch to Wi-Fi for faster rendering.
+3. Simplify dashboard (e.g., remove maps; product_user_guide.md, Section 5.3).
+4. Check for app updates (release_notes.json, v2.5 planned fix).
+5. Report to support (customer_support_procedures.md, P3 ticket).
+Use Case: Customer 1023 (customer_analytics.csv) reported MOB-6007 for maps, resolved by using tables instead.
+Edge Case: For large maps, enable low-resolution mode in app settings.
+
+---
+
+12. Integration Failure (Salesforce)
+Error Code: INT-7001
+Error Message: "Salesforce sync failed: Invalid API key"
+Description: Data sync with Salesforce fails (integration_partners.csv).
+Possible Causes:
+- Expired or invalid API key.
+- Salesforce rate limit exceeded.
+- Misconfigured endpoint.
+Solutions:
+1. Refresh API key in Salesforce and update in DataFlow (product_user_guide.md, Section 3.2).
+2. Check Salesforce rate limits (api_documentation.json, Rate Limits).
+3. Verify endpoint URL (e.g., https://api.salesforce.com/v1; integration_partners.csv).
+4. Test connection in Data Sources.
+5. Escalate to support if unresolved (customer_support_procedures.md, P1 ticket).
+Use Case: Customer 1001 (customer_analytics.csv) faced INT-7001, resolved by updating Salesforce credentials.
+Edge Case: For high-volume syncs, use batch processing (api_documentation.json, /datasources/import).
+
+---
+
+13. Integration Failure (Google Drive)
+Error Code: INT-7002
+Error Message: "Google Drive upload failed: Access denied"
+Description: CSV upload from Google Drive fails (integration_partners.csv).
+Possible Causes:
+- Insufficient Google Drive permissions.
+- File size exceeds plan limits.
+- OAuth token expired.
+Solutions:
+1. Grant DataFlow access to Google Drive (product_user_guide.md, Section 3.3).
+2. Check file size limits (500MB for Starter; billing_and_pricing.csv).
+3. Refresh OAuth token in Data Sources (api_documentation.json, OAuth 2.0).
+4. Try a smaller file or use AWS S3 (integration_partners.csv).
+5. Contact support if needed (customer_support_procedures.md, P2 ticket).
+Use Case: Customer 1015 (customer_analytics.csv) reported INT-7002, resolved by granting permissions.
+Edge Case: For large files, use pre-zipped CSVs to reduce size.
+
+---
+
+14. Calculated Field Error
+Error Code: CALC-7007
+Error Message: "Calculation failed: Invalid formula"
+Description: Custom metric calculation fails (product_user_guide.md, Section 8.1).
+Possible Causes:
+- Syntax error in formula.
+- Unsupported data type.
+- Large dataset causing timeout.
+Solutions:
+1. Verify formula syntax (e.g., Profit = Revenue - Cost; product_user_guide.md, Section 8.1).
+2. Ensure data types match (e.g., numeric fields).
+3. Reduce dataset size or sample data (product_user_guide.md, Section 4.3).
+4. Test formula in a smaller dashboard.
+5. Escalate to support (customer_support_procedures.md, P2 ticket).
+Use Case: Customer 1025 (customer_analytics.csv) faced CALC-7007 due to a string in a numeric formula, resolved by correcting the field.
+Edge Case: For complex formulas, pre-calculate in the database (system_architecture.md).
+
+---
+
+15. Report Generation Failure
+Error Code: REP-8001
+Error Message: "Report generation failed: Timeout"
+Description: Scheduled or ad-hoc report fails to generate (product_user_guide.md, Section 2.3).
+Possible Causes:
+- Large dataset or complex dashboard.
+- Rate limit on report generation.
+- Server overload.
+Solutions:
+1. Simplify dashboard for reports (product_user_guide.md, Section 5).
+2. Check report rate limits (api_documentation.json, /reports).
+3. Schedule reports during off-peak hours (e.g., 2 AM).
+4. If persistent, escalate to support (customer_support_procedures.md, P2 ticket).
+Use Case: Customer 1030 (customer_analytics.csv) reported REP-8001, resolved by reducing widget count.
+Edge Case: For PDF reports, ensure font compatibility (system_architecture.md).
+
+---
+
+16. SSO Login Failure
+Error Code: SSO-9001
+Error Message: "SSO login failed: Invalid configuration"
+Description: Enterprise users cannot log in via SSO (product_user_guide.md, Section 2.1).
+Possible Causes:
+- Misconfigured SAML 2.0 settings.
+- Expired identity provider certificate.
+- User not in SSO group.
+Solutions:
+1. Verify SAML settings with IT (security_policies.txt, SSO Configuration).
+2. Renew certificate in identity provider (e.g., Okta).
+3. Confirm user’s SSO group membership (product_user_guide.md, Section 6.2).
+4. Test login with a known user.
+5. Escalate to support (customer_support_procedures.md, P1 ticket).
+Use Case: Customer 1033 (customer_analytics.csv) faced SSO-9001, resolved by updating Okta settings.
+Edge Case: For multi-tenant SSO, ensure tenant ID is included in configuration.
+
+---
+
+17. Export Failure
+Error Code: EXP-10001
+Error Message: "Export failed: File too large"
+Description: Dashboard or report export (CSV, PDF) fails (product_user_guide.md, Section 6.1).
+Possible Causes:
+- File size exceeds plan limits.
+- Network interruption.
+- Unsupported format.
+Solutions:
+1. Check export limits (500MB for Starter; billing_and_pricing.csv).
+2. Ensure stable internet connection.
+3. Use CSV instead of PDF for large datasets.
+4. Split export into smaller chunks.
+5. Contact support if needed (customer_support_procedures.md, P3 ticket).
+Use Case: Customer 1036 (customer_analytics.csv) reported EXP-10001, resolved by exporting as CSV.
+Edge Case: For large exports, use API (api_documentation.json, /reports).
+
+---
+
+18. Collaboration Comment Not Visible
+Error Code: COL-11001
+Error Message: "Comments not loading"
+Description: Comments on dashboards are not visible (product_user_guide.md, Section 6.3).
+Possible Causes:
+- Network latency.
+- Permission restrictions.
+- Browser cache issue.
+Solutions:
+1. Refresh the dashboard (Ctrl+R).
+2. Verify comment permissions (product_user_guide.md, Section 6.2).
+3. Clear browser cache (product_user_guide.md, Section 9.2).
+4. Test in another browser (Chrome/Firefox).
+5. Escalate to support (customer_support_procedures.md, P3 ticket).
+Use Case: Customer 1043 (customer_analytics.csv) reported COL-11001, resolved by clearing cache.
+Edge Case: For large comment threads, enable pagination in Settings.
+
+---
+
+19. Real-Time Map Not Updating
+Error Code: MAP-12001
+Error Message: "Map data not updating in real-time"
+Description: Real-time map visualizations fail to update (product_user_guide.md, Section 5.3).
+Possible Causes:
+- Streaming data source not configured.
+- Rate limit on real-time updates.
+- Device performance issues.
+Solutions:
+1. Verify streaming support (e.g., Kafka; system_architecture.md, Data Pipeline).
+2. Check real-time rate limits (api_documentation.json, Rate Limits).
+3. Use a high-performance device or browser.
+4. Switch to static maps if needed (product_user_guide.md, Section 5.3).
+5. Escalate to support (customer_support_procedures.md, P2 ticket).
+Use Case: Customer 1045 (customer_analytics.csv) faced MAP-12001, resolved by enabling Kafka streaming.
+Edge Case: For high-frequency updates, reduce refresh interval (product_user_guide.md, Section 8.2).
+
+---
+
+20. Webhook Not Triggering
+Error Code: WH-13001
+Error Message: "Webhook failed to trigger"
+Description: Registered webhook does not send notifications (api_documentation.json, Webhooks).
+Possible Causes:
+- Incorrect callback URL.
+- Webhook disabled or deleted.
+- Rate limit on webhook events.
+Solutions:
+1. Verify callback URL in Webhook settings (api_documentation.json, /webhooks).
+2. Check webhook status (GET /webhooks; api_documentation.json).
+3. Ensure event rate limits are not exceeded (api_documentation.json, Rate Limits).
+4. Test webhook with a manual trigger.
+5. Escalate to support (customer_support_procedures.md, P2 ticket).
+Use Case: Customer 1042 (customer_analytics.csv) reported WH-13001, resolved by correcting the URL.
+Edge Case: For high-volume webhooks, implement queuing in your app.
+
+---
+
+When to Contact Support
+- Self-resolve minor issues (P2–P3) using this guide.
+- Escalate critical issues (P0–P1, e.g., outages, SSO failures) to support@dataflow.com within 1 hour (customer_support_procedures.md).
+- Check status.dataflow.com for platform-wide issues (incident_response_playbook.txt).
+- Provide error code, steps to reproduce, and browser/device details when contacting support.
+
+References
+- Product User Guide: product_user_guide.md
+- API Documentation: api_documentation.json
+- Billing and Pricing: billing_and_pricing.csv
+- Customer Support Procedures: customer_support_procedures.md
+- System Architecture: system_architecture.md
+- Release Notes: release_notes.json
+- Security Policies: security_policies.txt
+- Integration Partners: integration_partners.csv
+- Customer Analytics: customer_analytics.csv
+- Incident Response Playbook: incident_response_playbook.txt
