@@ -1,0 +1,61 @@
+Customer_ID,Company_Name,Industry,Country,Plan_Type,Monthly_Revenue,Signup_Date,Last_Login,Usage_Hours_Monthly,Feature_Usage,Satisfaction_Score,Churn_Risk,Last_Support_Ticket,Ticket_Count
+1001,RetailCo,Retail,USA,Professional,149,2023-01-15,2025-06-07,200,"Dashboards, Real-Time Maps, Salesforce",4.8,Low,Ticket_54321 (INT-7001, 2025-05-01),5
+1002,ShopEasy,Retail,USA,Starter,49,2023-03-01,2025-06-06,20,"Dashboards, CSV Upload",3.8,High,Ticket_54322 (DR-3003, 2025-04-15),3
+1003,DataCorp,Technology,USA,Enterprise,5000,2022-06-01,2025-06-08,600,"Dashboards, APIs, SSO, White-Labeling",4.9,Low,Ticket_54323 (DB-2002, 2025-03-01),10
+1004,TrendyTech,Technology,USA,Professional,149,2023-09-01,2025-06-05,150,"Dashboards, Real-Time Analytics, Google Analytics",4.5,Medium,Ticket_54324 (DB-2003, 2025-05-15),4
+1005,HealthPlus,Healthcare,USA,Enterprise,3000,2023-02-01,2025-06-07,400,"Dashboards, Predictive Analytics, HIPAA",4.7,Low,Ticket_54325 (CALC-7007, 2025-04-01),8
+1006,CloudSys,Technology,USA,Enterprise,4000,2022-12-01,2025-06-08,500,"APIs, Redshift, Webhooks",4.8,Low,Ticket_54326 (API-4004, 2025-05-20),7
+1007,FinServ,Finance,USA,Professional,149,2023-05-01,2025-06-06,180,"Dashboards, QuickBooks",4.6,Low,Ticket_54327 (EXP-10001, 2025-04-10),3
+1008,SmallBiz,Retail,USA,Starter,49,2023-11-01,2025-06-04,15,"Dashboards, Mixpanel",3.5,High,Ticket_54328 (MOB-6006, 2025-05-01),2
+1009,EuroTrade,Finance,UK,Enterprise,3500,2022-08-01,2025-06-07,450,"Dashboards, SSO, GDPR",4.9,Low,Ticket_54329 (SSO-9001, 2025-03-15),6
+1010,MediCare,Healthcare,USA,Professional,149,2023-04-01,2025-06-06,220,"Dashboards, Google Drive",4.4,Medium,Ticket_54330 (INT-7002, 2025-04-20),4
+1011,TrendyShop,Retail,USA,Starter,49,2023-07-01,2025-06-05,30,"Dashboards, Shopify",4.0,Medium,Ticket_54331 (COL-11001, 2025-05-10),3
+1012,TechTrend,Technology,USA,Professional,149,2023-10-01,2025-06-07,190,"APIs, BigQuery",4.7,Low,Ticket_54332 (API-4001, 2025-04-05),5
+1013,HealthSys,Healthcare,Canada,Enterprise,4500,2022-11-01,2025-06-08,500,"Dashboards, HIPAA, Snowflake",4.8,Low,Ticket_54333 (MAP-12001, 2025-05-01),9
+1014,BankPro,Finance,USA,Professional,149,2023-06-01,2025-06-06,170,"Dashboards, Xero",4.5,Low,Ticket_54334 (REP-8001, 2025-04-15),4
+1015,MediTrend,Healthcare,USA,Enterprise,3200,2023-01-01,2025-06-07,420,"Predictive Analytics, Google Drive, HIPAA",4.6,Low,Ticket_54335 (INT-7002, 2025-05-05),7
+1016,RetailNow,Retail,USA,Starter,49,2023-12-01,2025-06-04,25,"Dashboards, WooCommerce",3.7,High,Ticket_54336 (DB-2002, 2025-04-01),2
+1017,MarketEasy,Marketing,USA,Starter,49,2023-08-01,2025-06-05,35,"Dashboards, Mailchimp",4.1,Medium,Ticket_54337 (INT-7002, 2025-05-15),3
+1018,CorpSecure,Technology,USA,Enterprise,6000,2022-07-01,2025-06-08,550,"SSO, APIs, Azure AD",4.9,Low,Ticket_54338 (SSO-9001, 2025-04-10),8
+1019,FinEasy,Finance,USA,Professional,149,2023-03-01,2025-06-06,160,"Dashboards, Sage Intacct",4.4,Low,Ticket_54339 (EXP-10001, 2025-05-01),4
+1020,HealthCare,Healthcare,USA,Professional,149,2023-05-01,2025-06-07,200,"Dashboards, MongoDB",4.5,Medium,Ticket_54340 (CALC-7007, 2025-04-20),5
+1021,ShopTrend,Retail,USA,Starter,49,2023-09-01,2025-06-05,40,"Dashboards, Magento",4.0,Medium,Ticket_54341 (DB-2003, 2025-05-10),3
+1022,TechSys,Technology,USA,Enterprise,4000,2022-10-01,2025-06-08,480,"APIs, Datadog, White-Labeling",4.8,Low,Ticket_54342 (API-4004, 2025-05-01),7
+1023,AdAgency,Marketing,USA,Professional,149,2023-04-01,2025-06-06,180,"Dashboards, Adobe Analytics",4.6,Low,Ticket_54343 (MOB-6007, 2025-04-15),4
+1024,BankSys,Finance,USA,Starter,49,2023-11-01,2025-06-04,20,"Dashboards, Stripe",3.6,High,Ticket_54344 (PERM-5005, 2025-05-05),2
+1025,RetailPro,Retail,USA,Professional,149,2023-02-01,2025-06-07,210,"Dashboards, Custom Templates",4.7,Low,Ticket_54345 (CALC-7007, 2025-05-20),6
+1026,HealthNow,Healthcare,USA,Enterprise,3500,2022-09-01,2025-06-08,450,"Predictive Analytics, HIPAA",4.9,Low,Ticket_54346 (MAP-12001, 2025-04-01),8
+1027,TechEasy,Technology,USA,Starter,49,2023-06-01,2025-06-05,30,"Dashboards, New Relic",3.9,Medium,Ticket_54347 (DB-2002, 2025-05-15),3
+1028,MarketPro,Marketing,USA,Professional,149,2023-08-01,2025-06-06,170,"Dashboards, Marketo",4.5,Low,Ticket_54348 (REP-8001, 2025-04-10),4
+1029,FinCorp,Finance,USA,Enterprise,5000,2022-12-01,2025-06-08,600,"Dashboards, SAP, SSO",4.8,Low,Ticket_54349 (SSO-9001, 2025-05-01),9
+1030,EduLearn,Education,USA,Professional,149,2023-07-01,2025-06-07,190,"Dashboards, FERPA, Zendesk",4.6,Low,Ticket_54350 (EXP-10001, 2025-05-05),5
+1031,ShopSys,Retail,USA,Starter,49,2023-10-01,2025-06-05,25,"Dashboards, PayPal",3.8,High,Ticket_54351 (DB-2003, 2025-04-20),2
+1032,HealthEasy,Healthcare,USA,Professional,149,2023-03-01,2025-06-06,200,"Dashboards, Oracle",4.4,Medium,Ticket_54352 (CALC-7007, 2025-05-10),4
+1033,GlobalTech,Technology,USA,Enterprise,7000,2022-06-01,2025-06-08,650,"Dashboards, SSO, White-Labeling, Tableau",4.9,Low,Ticket_54353 (SSO-9001, 2025-04-15),10
+1034,BankTrend,Finance,USA,Starter,49,2023-12-01,2025-06-04,15,"Dashboards, QuickBooks",3.5,High,Ticket_54354 (PERM-5005, 2025-05-01),2
+1035,RetailEasy,Retail,USA,Professional,149,2023-05-01,2025-06-07,220,"Dashboards, Shopify",4.7,Low,Ticket_54355 (COL-11001, 2025-05-20),6
+1036,SecureCorp,Technology,USA,Enterprise,5500,2022-11-01,2025-06-08,600,"Dashboards, Ping Identity, White-Labeling",4.8,Low,Ticket_54356 (DB-2002, 2025-04-01),8
+1037,HealthPro,Healthcare,USA,Starter,49,2023-09-01,2025-06-05,30,"Dashboards, Google Drive",4.0,Medium,Ticket_54357 (INT-7002, 2025-05-15),3
+1038,MarketSys,Marketing,USA,Professional,149,2023-04-01,2025-06-06,180,"Dashboards, HubSpot",4.5,Low,Ticket_54358 (REP-8001, 2025-04-10),4
+1039,MediSys,Healthcare,USA,Enterprise,4000,2022-08-01,2025-06-08,500,"Dashboards, HIPAA, NetSuite",4.9,Low,Ticket_54359 (MAP-12001, 2025-05-01),7
+1040,FinPro,Finance,USA,Starter,49,2023-06-01,2025-06-05,20,"Dashboards, Xero",3.7,High,Ticket_54360 (DB-2003, 2025-04-20),2
+1041,ShopPro,Retail,USA,Professional,149,2023-02-01,2025-06-07,200,"Dashboards, WooCommerce",4.6,Low,Ticket_54361 (COL-11001, 2025-05-05),5
+1042,TechPro,Technology,USA,Enterprise,4500,2022-10-01,2025-06-08,550,"APIs, Epicor, Webhooks",4.8,Low,Ticket_54362 (WH-13001, 2025-05-10),6
+1043,AdPro,Marketing,USA,Starter,49,2023-11-01,2025-06-04,25,"Dashboards, Mailchimp",3.9,Medium,Ticket_54363 (MOB-6006, 2025-04-15),3
+1044,BankEasy,Finance,USA,Professional,149,2023-07-01,2025-06-06,190,"Dashboards, Sage Intacct",4.5,Low,Ticket_54364 (EXP-10001, 2025-05-01),4
+1045,LogisticsCo,Logistics,USA,Enterprise,6000,2022-09-01,2025-06-08,620,"Real-Time Maps, Twilio",4.9,Low,Ticket_54365 (MAP-12001, 2025-05-20),8
+1046,HealthTrend,Healthcare,USA,Starter,49,2023-08-01,2025-06-05,30,"Dashboards, MongoDB",4.0,Medium,Ticket_54366 (CALC-7007, 2025-04-10),3
+1047,RetailSys,Retail,USA,Professional,149,2023-03-01,2025-06-07,210,"Dashboards, Magento",4.6,Low,Ticket_54367 (DB-2002, 2025-05-15),5
+1048,TechCorp,Technology,USA,Enterprise,5000,2022-12-01,2025-06-08,580,"Dashboards, SSO, Datadog",4.8,Low,Ticket_54368 (SSO-9001, 2025-04-01),7
+1049,MarketTrend,Marketing,USA,Starter,49,2023-10-01,2025-06-04,20,"Dashboards, Marketo",3.8,High,Ticket_54369 (REP-8001, 2025-05-05),2
+1050,FinSys,Finance,USA,Professional,149,2023-05-01,2025-06-06,200,"Dashboards, SAP",4.5,Low,Ticket_54370 (EXP-10001, 2025-04-20),4
+1051,ShopNow,Retail,USA,Starter,49,2023-06-01,2025-06-05,25,"Dashboards, PayPal",3.7,High,Ticket_54371 (DB-2003, 2025-05-10),3
+1052,HealthSysPro,Healthcare,USA,Enterprise,4000,2022-07-01,2025-06-08,550,"Predictive Analytics, HIPAA",4.9,Low,Ticket_54372 (MAP-12001, 2025-04-15),6
+1053,TechEasyPro,Technology,USA,Professional,149,2023-09-01,2025-06-06,180,"Dashboards, New Relic",4.4,Medium,Ticket_54373 (API-4004, 2025-05-01),5
+1054,AdSys,Marketing,USA,Starter,49,2023-12-01,2025-06-04,15,"Dashboards, Adobe Analytics",3.5,High,Ticket_54374 (MOB-6007, 2025-04-20),2
+1055,BankProSys,Finance,USA,Professional,149,2023-04-01,2025-06-07,190,"Dashboards, QuickBooks",4.6,Low,Ticket_54375 (CALC-7007, 2025-05-05),4
+1056,RetailTrend,Retail,USA,Enterprise,4500,2022-11-01,2025-06-08,600,"Dashboards, Shopify, White-Labeling",4.8,Low,Ticket_54376 (COL-11001, 2025-05-15),7
+1057,HealthCarePro,Healthcare,USA,Starter,49,2023-02-01,2025-06-05,30,"Dashboards, Google Drive",4.0,Medium,Ticket_54377 (INT-7002, 2025-04-01),3
+1058,MarketEasyPro,Marketing,USA,Professional,149,2023-07-01,2025-06-06,200,"Dashboards, HubSpot",4.5,Low,Ticket_54378 (REP-8001, 2025-05-10),5
+1059,FinTrend,Finance,USA,Enterprise,5500,2022-10-01,2025-06-08,570,"Dashboards, SAP, SSO",4.9,Low,Ticket_54379 (SSO-9001, 2025-04-20),8
+1060,EduSys,Education,USA,Professional,149,2023-08-01,2025-06-07,210,"Dashboards, FERPA, Zendesk",4.7,Low,Ticket_54380 (EXP-10001, 2025-05-01),6

@@ -1,0 +1,750 @@
+{
+  "api_info": {
+    "version": "v2.1",
+    "base_url": "https://api.dataflow.com/v2",
+    "description": "The DataFlow Solutions REST API enables developers to manage dashboards, data sources, reports, and users programmatically. Use this API to automate workflows, integrate with third-party systems (see integration_partners.csv), and embed analytics (product_user_guide.md, Section 8.3).",
+    "last_updated": "2025-06-08",
+    "rate_limits": {
+      "starter": {
+        "calls_per_month": 1000,
+        "details": "See billing_and_pricing.csv for overage costs ($0.01/call)."
+      },
+      "professional": {
+        "calls_per_month": 10000,
+        "details": "See billing_and_pricing.csv for overage costs ($0.005/call)."
+      },
+      "enterprise": {
+        "calls_per_month": "Custom",
+        "details": "Contact sales@dataflow.com (sales_playbook.json, Pricing Guidelines)."
+      }
+    },
+    "authentication": {
+      "api_key": {
+        "description": "Include API key in header: X-API-Key. Generate keys in Settings (product_user_guide.md, Section 2.3).",
+        "security": "Keys are encrypted per security_policies.txt."
+      },
+      "oauth2": {
+        "description": "Use /auth/token endpoint for OAuth 2.0 access. Supports client credentials and authorization code flows (security_policies.txt).",
+        "client_id": "Obtain from developer portal: https://developer.dataflow.com",
+        "scopes": [
+          "dashboards:read",
+          "dashboards:write",
+          "datasources:read",
+          "datasources:write",
+          "reports:read",
+          "reports:write",
+          "users:read"
+        ]
+      }
+    }
+  },
+  "endpoints": [
+    {
+      "name": "Get Dashboards",
+      "method": "GET",
+      "path": "/dashboards",
+      "description": "Retrieve a paginated list of dashboards the user has access to (product_user_guide.md, Section 4).",
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Number of dashboards per page (max 100).",
+          "required": false,
+          "default": 20
+        },
+        {
+          "name": "page",
+          "type": "integer",
+          "description": "Page number.",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter by name or tag (e.g., 'sales').",
+          "required": false
+        }
+      ],
+      "example_request": "GET /dashboards?limit=10&page=2&filter=sales HTTP/1.1\nHost: api.dataflow.com\nX-API-Key: your_api_key",
+      "example_response": {
+        "status": 200,
+        "body": {
+          "dashboards": [
+            {
+              "id": "dash_123",
+              "name": "Q2 Sales Dashboard",
+              "created_at": "2023-01-01T00:00:00Z",
+              "updated_at": "2025-06-01T12:00:00Z",
+              "tags": ["sales", "retail"],
+              "owner_id": "user_456"
+            },
+            {
+              "id": "dash_124",
+              "name": "Customer Retention Dashboard",
+              "created_at": "2023-02-01T00:00:00Z",
+              "updated_at": "2025-05-15T09:00:00Z",
+              "tags": ["sales", "analytics"],
+              "owner_id": "user_789"
+            }
+          ],
+          "total": 50,
+          "page": 2,
+          "limit": 10
+        }
+      },
+      "error_codes": [
+        {
+          "code": 401,
+          "message": "Unauthorized",
+          "description": "Invalid or missing API key/OAuth token (troubleshooting_guide.txt, Error API-4001)."
+        },
+        {
+          "code": 429,
+          "message": "Too Many Requests",
+          "description": "Rate limit exceeded (billing_and_pricing.csv). See troubleshooting_guide.txt, Error API-4004."
+        }
+      ]
+    },
+    {
+      "name": "Create Dashboard",
+      "method": "POST",
+      "path": "/dashboards",
+      "description": "Create a new dashboard with specified widgets and data sources (product_user_guide.md, Section 4.2).",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Dashboard name (max 100 characters).",
+          "required": true
+        },
+        {
+          "name": "data_source_id",
+          "type": "string",
+          "description": "ID of the data source (see /datasources).",
+          "required": true
+        },
+        {
+          "name": "widgets",
+          "type": "array",
+          "description": "List of widgets (e.g., bar chart, table).",
+          "required": false
+        }
+      ],
+      "example_request": "POST /dashboards HTTP/1.1\nHost: api.dataflow.com\nAuthorization: Bearer your_token\nContent-Type: application/json\n\n{\n  \"name\": \"Retail Sales Dashboard\",\n  \"data_source_id\": \"ds_789\",\n  \"widgets\": [\n    {\"type\": \"bar\", \"field\": \"sales_amount\", \"aggregation\": \"sum\"},\n    {\"type\": \"table\", \"fields\": [\"product\", \"revenue\"]}\n  ]\n}",
+      "example_response": {
+        "status": 201,
+        "body": {
+          "id": "dash_125",
+          "name": "Retail Sales Dashboard",
+          "data_source_id": "ds_789",
+          "created_at": "2025-06-08T10:00:00Z",
+          "widgets": [
+            {
+              "id": "widget_001",
+              "type": "bar",
+              "field": "sales_amount",
+              "aggregation": "sum"
+            },
+            {
+              "id": "widget_002",
+              "type": "table",
+              "fields": ["product", "revenue"]
+            }
+          ]
+        }
+      },
+      "error_codes": [
+        {
+          "code": 400,
+          "message": "Bad Request",
+          "description": "Invalid data_source_id or widget configuration."
+        },
+        {
+          "code": 403,
+          "message": "Forbidden",
+          "description": "Insufficient permissions (product_user_guide.md, Section 6.2)."
+        }
+      ]
+    },
+    {
+      "name": "Get Data Sources",
+      "method": "GET",
+      "path": "/datasources",
+      "description": "Retrieve a list of connected data sources (product_user_guide.md, Section 3).",
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by type (e.g., sql, api, csv).",
+          "required": false
+        }
+      ],
+      "example_request": "GET /datasources?type=sql HTTP/1.1\nHost: api.dataflow.com\nX-API-Key: your_api_key",
+      "example_response": {
+        "status": 200,
+        "body": {
+          "datasources": [
+            {
+              "id": "ds_789",
+              "name": "Sales DB",
+              "type": "sql",
+              "connection": {
+                "host": "db.example.com",
+                "port": 3306,
+                "database": "sales"
+              },
+              "last_updated": "2025-06-01T08:00:00Z"
+            }
+          ]
+        }
+      },
+      "error_codes": [
+        {
+          "code": 401,
+          "message": "Unauthorized",
+          "description": "Invalid credentials (troubleshooting_guide.txt, Error DS-1001)."
+        }
+      ]
+    },
+    {
+      "name": "Import Data Source",
+      "method": "POST",
+      "path": "/datasources/import",
+      "description": "Import data from a CSV or API source (product_user_guide.md, Section 3.3).",
+      "parameters": [
+        {
+          "name": "source_type",
+          "type": "string",
+          "description": "Type of source (csv, api).",
+          "required": true
+        },
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL for API or CSV file (e.g., https://s3.amazonaws.com/data.csv).",
+          "required": true
+        },
+        {
+          "name": "auth",
+          "type": "object",
+          "description": "Authentication details (e.g., API key).",
+          "required": false
+        }
+      ],
+      "example_request": "POST /datasources/import HTTP/1.1\nHost: api.dataflow.com\nAuthorization: Bearer your_token\nContent-Type: application/json\n\n{\n  \"source_type\": \"csv\",\n  \"url\": \"https://s3.amazonaws.com/sales_data.csv\",\n  \"auth\": null\n}",
+      "example_response": {
+        "status": 202,
+        "body": {
+          "id": "ds_790",
+          "name": "Sales Data Import",
+          "status": "processing",
+          "estimated_completion": "2025-06-08T10:15:00Z"
+        }
+      },
+      "error_codes": [
+        {
+          "code": 413,
+          "message": "Payload Too Large",
+          "description": "File exceeds plan limits (billing_and_pricing.csv)."
+        },
+        {
+          "code": 429,
+          "message": "Too Many Requests",
+          "description": "Rate limit exceeded (troubleshooting_guide.txt, Error API-4004)."
+        }
+      ]
+    },
+    {
+      "name": "Get Reports",
+      "method": "GET",
+      "path": "/reports",
+      "description": "Retrieve scheduled or ad-hoc reports (product_user_guide.md, Section 2.3).",
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by status (e.g., completed, pending).",
+          "required": false
+        }
+      ],
+      "example_request": "GET /reports?status=completed HTTP/1.1\nHost: api.dataflow.com\nX-API-Key: your_api_key",
+      "example_response": {
+        "status": 200,
+        "body": {
+          "reports": [
+            {
+              "id": "rep_456",
+              "name": "Monthly Sales Report",
+              "status": "completed",
+              "format": "pdf",
+              "download_url": "https://api.dataflow.com/reports/rep_456/download",
+              "generated_at": "2025-06-01T06:00:00Z"
+            }
+          ]
+        }
+      },
+      "error_codes": [
+        {
+          "code": 404,
+          "message": "Not Found",
+          "description": "Report not available."
+        }
+      ]
+    },
+    {
+      "name": "Schedule Report",
+      "method": "POST",
+      "path": "/reports/schedule",
+      "description": "Schedule a recurring report (product_user_guide.md, Section 2.3).",
+      "parameters": [
+        {
+          "name": "dashboard_id",
+          "type": "string",
+          "description": "ID of the dashboard to report on.",
+          "required": true
+        },
+        {
+          "name": "frequency",
+          "type": "string",
+          "description": "Frequency (daily, weekly, monthly).",
+          "required": true
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "description": "Output format (pdf, csv).",
+          "required": true
+        }
+      ],
+      "example_request": "POST /reports/schedule HTTP/1.1\nHost: api.dataflow.com\nAuthorization: Bearer your_token\nContent-Type: application/json\n\n{\n  \"dashboard_id\": \"dash_123\",\n  \"frequency\": \"monthly\",\n  \"format\": \"pdf\"\n}",
+      "example_response": {
+        "status": 201,
+        "body": {
+          "id": "rep_457",
+          "dashboard_id": "dash_123",
+          "frequency": "monthly",
+          "format": "pdf",
+          "next_run": "2025-07-01T00:00:00Z"
+        }
+      },
+      "error_codes": [
+        {
+          "code": 400,
+          "message": "Bad Request",
+          "description": "Invalid dashboard_id or frequency."
+        }
+      ]
+    },
+    {
+      "name": "Get Users",
+      "method": "GET",
+      "path": "/users",
+      "description": "Retrieve a list of users in the organization (product_user_guide.md, Section 6.2). Enterprise only.",
+      "parameters": [
+        {
+          "name": "role",
+          "type": "string",
+          "description": "Filter by role (e.g., admin, editor).",
+          "required": false
+        }
+      ],
+      "example_request": "GET /users?role=admin HTTP/1.1\nHost: api.dataflow.com\nAuthorization: Bearer your_token",
+      "example_response": {
+        "status": 200,
+        "body": {
+          "users": [
+            {
+              "id": "user_456",
+              "email": "admin@company.com",
+              "role": "admin",
+              "created_at": "2023-01-01T00:00:00Z"
+            }
+          ]
+        }
+      },
+      "error_codes": [
+        {
+          "code": 403,
+          "message": "Forbidden",
+          "description": "Requires Enterprise plan (billing_and_pricing.csv)."
+        }
+      ]
+    },
+    {
+      "name": "Create Webhook",
+      "method": "POST",
+      "path": "/webhooks",
+      "description": "Register a webhook for event notifications (e.g., dashboard updates).",
+      "parameters": [
+        {
+          "name": "event",
+          "type": "string",
+          "description": "Event type (e.g., dashboard_updated, data_source_added).",
+          "required": true
+        },
+        {
+          "name": "url",
+          "type": "string",
+          "description": "Callback URL for notifications.",
+          "required": true
+        }
+      ],
+      "example_request": "POST /webhooks HTTP/1.1\nHost: api.dataflow.com\nAuthorization: Bearer your_token\nContent-Type: application/json\n\n{\n  \"event\": \"dashboard_updated\",\n  \"url\": \"https://yourapp.com/webhook\"\n}",
+      "example_response": {
+        "status": 201,
+        "body": {
+          "id": "wh_123",
+          "event": "dashboard_updated",
+          "url": "https://yourapp.com/webhook",
+          "created_at": "2025-06-08T10:00:00Z"
+        }
+      },
+      "error_codes": [
+        {
+          "code": 400,
+          "message": "Bad Request",
+          "description": "Invalid event or URL."
+        }
+      ]
+    },
+    {
+      "name": "Get Webhooks",
+      "method": "GET",
+      "path": "/webhooks",
+      "description": "Retrieve a list of registered webhooks.",
+      "parameters": [],
+      "example_request": "GET /webhooks HTTP/1.1\nHost: api.dataflow.com\nAuthorization: Bearer your_token",
+      "example_response": {
+        "status": 200,
+        "body": {
+          "webhooks": [
+            {
+              "id": "wh_123",
+              "event": "dashboard_updated",
+              "url": "https://yourapp.com/webhook",
+              "created_at": "2025-06-08T10:00:00Z"
+            }
+          ]
+        }
+      },
+      "error_codes": [
+        {
+          "code": 401,
+          "message": "Unauthorized",
+          "description": "Invalid token (troubleshooting_guide.txt, Error API-4001)."
+        }
+      ]
+    },
+    {
+      "name": "Delete Webhook",
+      "method": "DELETE",
+      "path": "/webhooks/{webhook_id}",
+      "description": "Remove a registered webhook.",
+      "parameters": [
+        {
+          "name": "webhook_id",
+          "type": "string",
+          "description": "Webhook ID.",
+          "required": true
+        }
+      ],
+      "example_request": "DELETE /webhooks/wh_123 HTTP/1.1\nHost: api.dataflow.com\nAuthorization: Bearer your_token",
+      "example_response": {
+        "status": 204,
+        "body": {}
+      },
+      "error_codes": [
+        {
+          "code": 404,
+          "message": "Not Found",
+          "description": "Webhook not found."
+        }
+      ]
+    },
+    {
+      "name": "Get Dashboard Details",
+      "method": "GET",
+      "path": "/dashboards/{dashboard_id}",
+      "description": "Retrieve details of a specific dashboard.",
+      "parameters": [
+        {
+          "name": "dashboard_id",
+          "type": "string",
+          "description": "Dashboard ID.",
+          "required": true
+        }
+      ],
+      "example_request": "GET /dashboards/dash_123 HTTP/1.1\nHost: api.dataflow.com\nX-API-Key: your_api_key",
+      "example_response": {
+        "status": 200,
+        "body": {
+          "id": "dash_123",
+          "name": "Q2 Sales Dashboard",
+          "data_source_id": "ds_789",
+          "widgets": [
+            {
+              "id": "widget_001",
+              "type": "bar",
+              "field": "sales_amount"
+            }
+          ],
+          "created_at": "2023-01-01T00:00:00Z"
+        }
+      },
+      "error_codes": [
+        {
+          "code": 404,
+          "message": "Not Found",
+          "description": "Dashboard not found."
+        }
+      ]
+    },
+    {
+      "name": "Update Dashboard",
+      "method": "PUT",
+      "path": "/dashboards/{dashboard_id}",
+      "description": "Update a dashboard’s configuration.",
+      "parameters": [
+        {
+          "name": "dashboard_id",
+          "type": "string",
+          "description": "Dashboard ID.",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Updated name.",
+          "required": false
+        },
+        {
+          "name": "widgets",
+          "type": "array",
+          "description": "Updated widgets.",
+          "required": false
+        }
+      ],
+      "example_request": "PUT /dashboards/dash_123 HTTP/1.1\nHost: api.dataflow.com\nAuthorization: Bearer your_token\nContent-Type: application/json\n\n{\n  \"name\": \"Updated Sales Dashboard\",\n  \"widgets\": [\n    {\"type\": \"line\", \"field\": \"sales_trend\"}\n  ]\n}",
+      "example_response": {
+        "status": 200,
+        "body": {
+          "id": "dash_123",
+          "name": "Updated Sales Dashboard",
+          "widgets": [
+            {
+              "id": "widget_003",
+              "type": "line",
+              "field": "sales_trend"
+            }
+          ]
+        }
+      },
+      "error_codes": [
+        {
+          "code": 400,
+          "message": "Bad Request",
+          "description": "Invalid widget configuration."
+        }
+      ]
+    },
+    {
+      "name": "Delete Dashboard",
+      "method": "DELETE",
+      "path": "/dashboards/{dashboard_id}",
+      "description": "Delete a dashboard (Enterprise only).",
+      "parameters": [
+        {
+          "name": "dashboard_id",
+          "type": "string",
+          "description": "Dashboard ID.",
+          "required": true
+        }
+      ],
+      "example_request": "DELETE /dashboards/dash_123 HTTP/1.1\nHost: api.dataflow.com\nAuthorization: Bearer your_token",
+      "example_response": {
+        "status": 204,
+        "body": {}
+      },
+      "error_codes": [
+        {
+          "code": 403,
+          "message": "Forbidden",
+          "description": "Requires Enterprise plan (billing_and_pricing.csv)."
+        }
+      ]
+    },
+    {
+      "name": "Get Data Source Schema",
+      "method": "GET",
+      "path": "/datasources/{datasource_id}/schema",
+      "description": "Retrieve the schema of a data source (e.g., table columns).",
+      "parameters": [
+        {
+          "name": "datasource_id",
+          "type": "string",
+          "description": "Data source ID.",
+          "required": true
+        }
+      ],
+      "example_request": "GET /datasources/ds_789/schema HTTP/1.1\nHost: api.dataflow.com\nX-API-Key: your_api_key",
+      "example_response": {
+        "status": 200,
+        "body": {
+          "id": "ds_789",
+          "schema": {
+            "tables": [
+              {
+                "name": "sales",
+                "columns": [
+                  {"name": "product", "type": "string"},
+                  {"name": "sales_amount", "type": "float"}
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "error_codes": [
+        {
+          "code": 404,
+          "message": "Not Found",
+          "description": "Data source not found."
+        }
+      ]
+    },
+    {
+      "name": "Generate Embed Token",
+      "method": "POST",
+      "path": "/embed/token",
+      "description": "Generate a token for embedding dashboards in external apps (Enterprise only, product_user_guide.md, Section 6.1).",
+      "parameters": [
+        {
+          "name": "dashboard_id",
+          "type": "string",
+          "description": "Dashboard ID to embed.",
+          "required": true
+        },
+        {
+          "name": "expires_at",
+          "type": "string",
+          "description": "Token expiration (ISO 8601, e.g., 2025-06-09T00:00:00Z).",
+          "required": false
+        }
+      ],
+      "example_request": "POST /embed/token HTTP/1.1\nHost: api.dataflow.com\nAuthorization: Bearer your_token\nContent-Type: application/json\n\n{\n  \"dashboard_id\": \"dash_123\",\n  \"expires_at\": \"2025-06-09T00:00:00Z\"\n}",
+      "example_response": {
+        "status": 201,
+        "body": {
+          "token": "embed_abc123",
+          "dashboard_id": "dash_123",
+          "expires_at": "2025-06-09T00:00:00Z"
+        }
+      },
+      "error_codes": [
+        {
+          "code": 403,
+          "message": "Forbidden",
+          "description": "Requires Enterprise plan (billing_and_pricing.csv)."
+        }
+      ]
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "Dashboard Updated",
+      "description": "Triggered when a dashboard is modified (e.g., widget added). Payload includes dashboard_id and updated_at.",
+      "example_payload": {
+        "event": "dashboard_updated",
+        "dashboard_id": "dash_123",
+        "updated_at": "2025-06-08T10:00:00Z"
+      }
+    },
+    {
+      "name": "Data Source Added",
+      "description": "Triggered when a new data source is connected. Payload includes datasource_id and type.",
+      "example_payload": {
+        "event": "data_source_added",
+        "datasource_id": "ds_790",
+        "type": "sql"
+      }
+    },
+    {
+      "name": "Report Generated",
+      "description": "Triggered when a report is generated. Payload includes report_id and download_url.",
+      "example_payload": {
+        "event": "report_generated",
+        "report_id": "rep_456",
+        "download_url": "https://api.dataflow.com/reports/rep_456/download"
+      }
+    }
+  ],
+  "sdks": [
+    {
+      "language": "Python",
+      "link": "https://github.com/dataflowsolutions/python-sdk",
+      "description": "Python SDK for API interactions. Includes methods for dashboards and data sources."
+    },
+    {
+      "language": "JavaScript",
+      "link": "https://github.com/dataflowsolutions/js-sdk",
+      "description": "JavaScript SDK for client-side integrations (e.g., embedding dashboards)."
+    },
+    {
+      "language": "Java",
+      "link": "https://github.com/dataflowsolutions/java-sdk",
+      "description": "Java SDK for enterprise server-side applications."
+    }
+  ],
+  "security": {
+    "encryption": "All API requests use HTTPS. Data is encrypted in transit and at rest (security_policies.txt).",
+    "compliance": "API complies with GDPR and CCPA (compliance_certifications.csv).",
+    "rate_limit_handling": "429 errors trigger exponential backoff. See troubleshooting_guide.txt, Error API-4004."
+  },
+  "references": [
+    {
+      "document": "product_user_guide.md",
+      "description": "User guide for API-related features (Section 8.3)."
+    },
+    {
+      "document": "billing_and_pricing.csv",
+      "description": "Plan-specific rate limits and overage costs."
+    },
+    {
+      "document": "troubleshooting_guide.txt",
+      "description": "Error codes and resolutions (e.g., API-4004, DS-1001)."
+    },
+    {
+      "document": "integration_partners.csv",
+      "description": "Supported third-party integrations (e.g., Salesforce, Google Drive)."
+    },
+    {
+      "document": "security_policies.txt",
+      "description": "Authentication and data handling policies."
+    },
+    {
+      "document": "release_notes.json",
+      "description": "API updates (e.g., v2.1 added real-time map endpoints)."
+    }
+  ],
+  "use_cases": [
+    {
+      "title": "Automate Retail Sales Reporting",
+      "description": "Use /dashboards and /reports/schedule to create and schedule a retail sales dashboard, syncing data from Salesforce (integration_partners.csv).",
+      "endpoints": ["/dashboards", "/reports/schedule"],
+      "customer_example": "Customer 1001 (customer_analytics.csv) automated Q2 sales reports."
+    },
+    {
+      "title": "Embed Dashboards in CRM",
+      "description": "Use /embed/token to embed dashboards in a CRM like HubSpot (integration_partners.csv) for real-time analytics.",
+      "endpoints": ["/embed/token"],
+      "customer_example": "Customer 1003 (customer_analytics.csv) embedded dashboards in their intranet."
+    },
+    {
+      "title": "Monitor Data Source Updates",
+      "description": "Use webhooks (dashboard_updated, data_source_added) to monitor platform changes in real-time.",
+      "endpoints": ["/webhooks"],
+      "customer_example": "Customer 1006 (customer_analytics.csv) integrated webhooks with their app."
+    }
+  ]
+}
