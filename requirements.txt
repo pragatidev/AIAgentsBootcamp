@@ -16,7 +16,9 @@ ipykernel==6.29.5                # Your existing kernel version
 # =============================================================================
 langchain-core>=0.3.0,<0.4.0     # Compatible with langchain 0.3.10
 langchain-community>=0.3.0,<0.4.0 # Compatible with langchain 0.3.10
-
+sentence-transformers==4.1.0
+huggingface-hub==0.32.4                   # Hugging Face Hub for model sharing
+langchain-huggingface
 # =============================================================================
 # LLM PROVIDER INTEGRATIONS (COMPATIBLE VERSIONS)
 # =============================================================================
