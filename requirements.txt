@@ -18,7 +18,7 @@ langchain-core>=0.3.0,<0.4.0     # Compatible with langchain 0.3.10
 langchain-community>=0.3.0,<0.4.0 # Compatible with langchain 0.3.10
 sentence-transformers==4.1.0
 huggingface-hub==0.32.4                   # Hugging Face Hub for model sharing
-langchain-huggingface
+langchain-huggingface==0.1.2           # Hugging Face integration for LangChain
 # =============================================================================
 # LLM PROVIDER INTEGRATIONS (COMPATIBLE VERSIONS)
 # =============================================================================
