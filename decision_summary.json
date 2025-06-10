@@ -1,0 +1,15 @@
+{
+  "total_candidates": 10,
+  "decision_breakdown": {
+    "MAYBE": 9,
+    "REJECT": 1
+  },
+  "average_score": 5.6,
+  "processing_time": 549.16,
+  "avg_time_per_candidate": 54.92,
+  "efficiency_metrics": {
+    "advance_rate": 0.0,
+    "rejection_rate": 10.0,
+    "manual_review_rate": 90.0
+  }
+}

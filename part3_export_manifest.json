@@ -1,0 +1,15 @@
+{
+  "export_timestamp": "2025-06-09T22:37:12.806812",
+  "total_candidates": 10,
+  "decisions_by_type": {
+    "ADVANCE": 0,
+    "MAYBE": 9,
+    "REJECT": 1
+  },
+  "files_exported": [
+    "candidate_decisions.json",
+    "decision_summary.json"
+  ],
+  "ready_for_part": 4,
+  "next_phase": "Communication Templates"
+}
