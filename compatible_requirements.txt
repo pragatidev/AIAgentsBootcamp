@@ -25,7 +25,6 @@ langchain-community>=0.3.0,<0.4.0 # Compatible with langchain 0.3.10
 langchain-openai>=0.2.0,<0.3.0   # Compatible with langchain 0.3.10
 
 # Anthropic Claude
-langchain-anthropic>=0.2.0,<0.3.0
 anthropic>=0.34.0                 # Core Anthropic SDK
 
 # Google Gemini  
