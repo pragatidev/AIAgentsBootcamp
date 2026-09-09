@@ -1,0 +1,11 @@
+# Optional. S23 (FastAPI and Docker) owns this file.
+# Clone and pytest do not start Docker.
+
+services:
+  northstar:
+    profiles: ["ship"]
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env

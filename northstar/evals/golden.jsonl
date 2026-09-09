@@ -1,0 +1,3 @@
+{"id": "ret-1", "ask": "Can I return order NS-1001?", "expect": "yes", "why": "delivered 12 days ago, inside 30 days"}
+{"id": "ret-2", "ask": "Can I return order NS-1003?", "expect": "escalate", "why": "delivered 90 days ago"}
+{"id": "ret-3", "ask": "Can I return order NS-1002?", "expect": "not_yet", "why": "still in transit"}
