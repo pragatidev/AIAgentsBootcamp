@@ -30,7 +30,7 @@ pip install -r requirements.txt
 pytest -q
 ```
 
-No cloud key is required for pytest. Live model calls wait until a lab asks for one. Local Ollama is the honest default. Copy `.env.sample` to `.env` if you want a key later. Never commit `.env`.
+No cloud key is required for pytest or for the S1-S8 labs, except the hosted ping, which prints SKIPPED. Local Ollama is the honest default. Copy `.env.sample` to `.env` if you want a key later. Never commit `.env`.
 
 Course: https://www.udemy.com/course/ai-agents-bootcamp-build-with-langchain-rag-langflow-gpt/
 
@@ -38,11 +38,13 @@ Course: https://www.udemy.com/course/ai-agents-bootcamp-build-with-langchain-rag
 
 ```
 northstar/     the package you own by the end
-labs/          teaching scripts, filled as lectures ship
+labs/          S1-S8 teaching scripts (Run Cell on # %%)
 config.py      the only place a model id lives
 docs/CURRENCY.md
 tests/         green without a key
 ```
+
+No cloud key is required for pytest or for the S1-S8 labs except the hosted ping, which prints SKIPPED.
 
 2025 notebooks from the live listing sit in `_archive/2025_live/`. They are not the path you follow.
 

@@ -1,10 +1,12 @@
-"""Order lookup. No model. Data is northstar/data/orders.json."""
+"""Order lookup. Typed LangChain tool. No model required to look up a row."""
 
 from __future__ import annotations
 
 import json
 import re
 from pathlib import Path
+
+from langchain.tools import tool
 
 ORDERS_PATH = Path(__file__).resolve().parents[1] / "data" / "orders.json"
 
@@ -14,6 +16,7 @@ def load_orders() -> dict[str, dict]:
 
 
 def lookup_order(ticket: str) -> dict:
+    """Look up by NS-#### inside a ticket string. Used by the fixture loop."""
     orders = load_orders()
     match = re.search(r"NS-\d+", ticket.upper())
     if not match:
@@ -23,3 +26,20 @@ def lookup_order(ticket: str) -> dict:
     if not row:
         return {"found": False, "order_id": order_id, "reason": "unknown order"}
     return {"found": True, "order_id": order_id, **row}
+
+
+def lookup_order_by_id(order_id: str) -> dict:
+    """Look up one id. A miss is a dict, not a crash."""
+    orders = load_orders()
+    key = order_id.strip().upper()
+    row = orders.get(key)
+    if not row:
+        return {"found": False, "order_id": key, "reason": "unknown order"}
+    return {"found": True, "order_id": key, **row}
+
+
+@tool
+def lookup_order_tool(order_id: str) -> str:
+    """Look up a Northstar order by id like NS-1001. Returns JSON."""
+    row = lookup_order_by_id(order_id)
+    return json.dumps(row)

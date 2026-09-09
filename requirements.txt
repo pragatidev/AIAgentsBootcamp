@@ -1,2 +1,5 @@
-# Clone contract. No API key. Labs add LangGraph and friends when those lectures ship.
+# Clone contract. Pytest green with no API key.
 pytest>=8.0
+tiktoken>=0.7
+langchain>=1.0
+langgraph>=1.0

@@ -1,1 +1,3 @@
-"""LangGraph graphs land here from S8 onward. Empty on purpose until that lab."""
+from northstar.graphs.v1_triage import build_v1_triage
+
+__all__ = ["build_v1_triage"]

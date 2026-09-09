@@ -1,7 +1,8 @@
 """The agent loop: a model, tools, and a stop.
 
-This file is a fixture. It does not call a live model. Labs replace
-`decide_tool` with a real model when that lecture ships. Pytest stays green.
+Default path is a fixture. It does not call a live model. Labs replace
+`decide_tool` with a real model when S5 and S7 have a key. Pytest stays green.
+S7.4 promotes the S7.2 script into this class so the rest of the course imports it.
 """
 
 from __future__ import annotations
@@ -45,3 +46,18 @@ def run_loop(
             steps.append({"action": STOP, "result": None})
             break
     return {"ticket": ticket, "steps": steps}
+
+
+class AgentLoop:
+    """Same behavior as labs/07_first_loop.py, importable."""
+
+    def __init__(
+        self,
+        tools: dict[str, Callable[..., Any]],
+        max_steps: int = 4,
+    ) -> None:
+        self.tools = tools
+        self.max_steps = max_steps
+
+    def run(self, ticket: str) -> dict[str, Any]:
+        return run_loop(ticket, self.tools, self.max_steps)

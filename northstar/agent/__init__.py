@@ -1,3 +1,3 @@
-from northstar.agent.loop import run_loop
+from northstar.agent.loop import AgentLoop, run_loop
 
-__all__ = ["run_loop"]
+__all__ = ["AgentLoop", "run_loop"]
