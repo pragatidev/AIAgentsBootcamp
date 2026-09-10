@@ -95,6 +95,43 @@ def get_llm(temperature: float = 0):
     )
 
 
+def get_autogen_config() -> list[dict[str, Any]]:
+    """AutoGen config_list from the same .env as get_llm(). No GPT-4 hardcode."""
+    name = provider_name()
+    if name == "anthropic":
+        return [
+            {
+                "model": _first(
+                    "ANTHROPIC_DEFAULT_MODEL",
+                    "LLM_MODEL",
+                    default="claude-haiku-4-5",
+                ),
+                "api_key": _first("ANTHROPIC_API_KEY", "LLM_API_KEY"),
+                "api_type": "anthropic",
+            }
+        ]
+    if name == "openai":
+        item: dict[str, Any] = {
+            "model": _first("OPENAI_DEFAULT_MODEL", "LLM_MODEL", default="gpt-4o-mini"),
+            "api_key": _first("OPENAI_API_KEY", "LLM_API_KEY"),
+        }
+        base = _first("OPENAI_BASE_URL")
+        if base:
+            item["base_url"] = base
+        return [item]
+    base = _first("OLLAMA_BASE_URL", default="http://localhost:11434")
+    if not base.rstrip("/").endswith("/v1"):
+        base = base.rstrip("/") + "/v1"
+    return [
+        {
+            "model": _first("OLLAMA_CHAT_MODEL", "OLLAMA_DEFAULT_MODEL", default="llama3.2"),
+            "base_url": base,
+            "api_key": "ollama",
+            "price": [0, 0],
+        }
+    ]
+
+
 def get_embeddings():
     """Local embeddings. RAG notebooks do not need an OpenAI embed key."""
     try:
