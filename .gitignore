@@ -35,8 +35,11 @@ index.pkl
 *.userosscache
 *.sln.docstates
 
-# Python environment
+# Secrets. Never commit a real key.
+.env
+**/.env
 *.env
+!.env.sample
 
 # Mac system files
 .DS_Store

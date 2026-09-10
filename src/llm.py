@@ -132,6 +132,55 @@ def get_autogen_config() -> list[dict[str, Any]]:
     ]
 
 
+def get_memory_chat():
+    """Drop-in for the old ConversationChain.run('...')."""
+    from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+
+    history: list = []
+
+    class MemoryChat:
+        def run(self, text: str) -> str:
+            history.append(HumanMessage(content=text))
+            out = get_llm().invoke(
+                [SystemMessage(content="Remember this conversation and answer briefly.")]
+                + history
+            )
+            content = getattr(out, "content", str(out))
+            if isinstance(content, list):
+                content = "".join(
+                    (b.get("text") if isinstance(b, dict) else str(b)) for b in content
+                )
+            history.append(AIMessage(content=str(content)))
+            return str(content)
+
+        invoke = run
+
+    return MemoryChat()
+
+
+def retrieve_and_answer(question: str, retriever: Any) -> str:
+    docs = retriever.invoke(question)
+    blob = "\n".join(getattr(d, "page_content", str(d)) for d in docs)
+    out = get_llm().invoke(
+        "Answer only from these notes. If they do not say, say you do not know.\n\n"
+        + blob
+        + "\n\nQuestion: "
+        + question
+    )
+    content = getattr(out, "content", str(out))
+    if isinstance(content, list):
+        content = "".join(
+            (b.get("text") if isinstance(b, dict) else str(b)) for b in content
+        )
+    return str(content)
+
+
+def get_vectorstore(texts: Sequence[str]):
+    from langchain_community.vectorstores import FAISS
+
+    return FAISS.from_texts(list(texts), get_embeddings())
+
+
 def get_embeddings():
     """Local embeddings. RAG notebooks do not need an OpenAI embed key."""
     try:
