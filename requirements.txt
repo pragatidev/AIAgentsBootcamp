@@ -1,4 +1,5 @@
 # Clone contract. Pytest green with no API key.
+# This is the only install manifest. Do not pip-install files under _archive/.
 pytest>=8.0
 tiktoken>=0.7
 langchain>=1.0
