@@ -34,7 +34,7 @@ Live GitHub notebooks are back at the repo root: `Section_1_Introduction` throug
 
 No cloud key is required for pytest. Hosted pings skip without a key. Local Ollama is the honest default. Copy `.env.sample` to `.env` if you want a key later. Never commit `.env`.
 
-Provider swap is not true for the 2025 notebooks yet. They hardcode OpenAI or Ollama in the cell. `src/foundation_llm_manager.py` is the env-based door. Portfolios must call that before `.env` alone switches Anthropic, OpenAI, or local.
+Notebooks call `get_llm()` from `src/llm.py`. Set `PREFERRED_PROVIDER` in `.env` to `anthropic`, `openai`, or `ollama`. Do not change the notebook to change the model. The first cell finds this repo whether you cloned it as the folder root or opened it from inside another project.
 
 Course: https://www.udemy.com/course/ai-agents-bootcamp-build-with-langchain-rag-langflow-gpt/
 
