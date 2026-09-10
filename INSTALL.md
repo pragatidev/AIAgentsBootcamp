@@ -1,6 +1,6 @@
 # Install
 
-Python 3.11 or 3.12. VS Code. Git. **No API key.**
+Python 3.11 or 3.12. VS Code or Jupyter. Git.
 
 ```
 python -m venv .venv
@@ -11,6 +11,7 @@ Windows:
 ```
 .venv\Scripts\activate
 pip install -r requirements.txt
+copy .env.sample .env
 pytest -q
 ```
 
@@ -19,17 +20,20 @@ macOS / Linux:
 ```
 source .venv/bin/activate
 pip install -r requirements.txt
+cp .env.sample .env
 pytest -q
 ```
 
-Open this folder in VS Code. Clone is done when `pytest -q` exits 0.
+Clone is done when `pytest -q` exits 0 with no cloud key.
 
-Copy `.env.sample` to `.env` and set a key, or use Ollama. Notebooks call `get_llm()`. Change `PREFERRED_PROVIDER` in `.env` to swap Anthropic, OpenAI, or Ollama. Do not edit the notebook to change models.
+Open `.env`. Pick one:
 
-This folder is the repo root if you cloned `AIAgentsBootcamp`. If you opened it from inside another project, the first notebook cell still finds this folder.
+- `PREFERRED_PROVIDER=ollama` — install [Ollama](https://ollama.com), then `ollama pull llama3.2`. No key.
+- `PREFERRED_PROVIDER=anthropic` — set `ANTHROPIC_API_KEY`.
+- `PREFERRED_PROVIDER=openai` — set `OPENAI_API_KEY`.
 
-First labs live in `labs/`. Live portfolios live in `Section_3_LangChain_GPT4` through `Section_9_LangGraph_Reliable_Workflows`. The product package is `northstar/`.
+Notebooks call `get_llm()` in `src/llm.py`. AutoGen calls `get_autogen_config()`. Langflow: use a Language Model block with the same provider. Do not paste keys into cells. Do not commit `.env`.
 
-Optional live calls: copy `.env.sample` to `.env`. Set a key, or point `OLLAMA_BASE_URL` at a local server. Model ids are in `config.py`. Verify them at record time against `docs/CURRENCY.md`. Never commit `.env`.
+This folder is the repo root when you clone `AIAgentsBootcamp`. If you opened it from inside another project, the first notebook cell still finds this folder.
 
-Optional Docker is for S23. Clone and pytest do not start it.
+Live lectures are `Section_1_Introduction` through `Section_12_Bonus_Future_of_AI_Agents`. Portfolios sit in those section folders. `labs/` and `northstar/` are extra 2026 code beside them.
