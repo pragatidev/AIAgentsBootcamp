@@ -30,7 +30,11 @@ pip install -r requirements.txt
 pytest -q
 ```
 
-No cloud key is required for pytest or for the S1-S8 labs, except the hosted ping, which prints SKIPPED. Local Ollama is the honest default. Copy `.env.sample` to `.env` if you want a key later. Never commit `.env`.
+Live GitHub notebooks are back at the repo root: `Section_1_Introduction` through `Section_12_Bonus_Future_of_AI_Agents`, plus TalentFlow resumes and the DataFlow knowledge base. Those are the portfolios. `northstar/` and `labs/` are the 2026 spine growing beside them.
+
+No cloud key is required for pytest. Hosted pings skip without a key. Local Ollama is the honest default. Copy `.env.sample` to `.env` if you want a key later. Never commit `.env`.
+
+Provider swap is not true for the 2025 notebooks yet. They hardcode OpenAI or Ollama in the cell. `src/foundation_llm_manager.py` is the env-based door. Portfolios must call that before `.env` alone switches Anthropic, OpenAI, or local.
 
 Course: https://www.udemy.com/course/ai-agents-bootcamp-build-with-langchain-rag-langflow-gpt/
 
