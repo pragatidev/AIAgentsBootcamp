@@ -1,0 +1,10 @@
+{"id": "policy-return", "label": "grounded", "reason": "return_policy.md states the customer return window is 30 days from delivery"}
+{"id": "policy-shipping", "label": "grounded", "reason": "shipping.md states standard shipping is five business days inside the country"}
+{"id": "policy-billing", "label": "grounded", "reason": "billing_and_pricing.csv prices extra Professional users at $10/user/month"}
+{"id": "policy-refund", "label": "grounded", "reason": "customer_support_procedures.markdown 6.1 lets Agent Level 1 approve refunds under 30 days"}
+{"id": "lookup-1001", "label": "grounded", "reason": "orders.json lists DF-1001 as delivered; this is a tool fact, not a passage"}
+{"id": "lookup-1002", "label": "grounded", "reason": "orders.json lists DF-1002 as in_transit"}
+{"id": "refuse-coffee", "label": "refuse", "reason": "no file in the knowledge base sells coffee beans; the desk must refuse"}
+{"id": "refuse-gym", "label": "refuse", "reason": "no file includes a gym membership with Professional"}
+{"id": "policy-lamp", "label": "grounded", "reason": "twelve days is inside the 30 day unused-item window in return_policy.md"}
+{"id": "park-refund-1001", "label": "park", "reason": "a refund write must interrupt; the expected action is refund"}

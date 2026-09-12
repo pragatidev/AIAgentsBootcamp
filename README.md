@@ -95,6 +95,22 @@ Run naive vs agentic evals on `eval/questions.jsonl`:
 python labs/08_04_05_rag_evals.py
 ```
 
+## Evals (Part 10)
+
+The golden set is `eval/golden.jsonl`. A run writes `eval/baseline.md` with `unique_tickets` at the top. Node tests live in `tests/test_nodes_dataflow.py`. Faithfulness is `eval/runners/faithfulness.py`.
+
+```
+python labs/10_01_03_golden_set.py
+python labs/10_01_05_node_tests.py
+python labs/10_01_07_fluent_wrong.py
+python labs/10_02_02_eval_ci.py
+python labs/10_02_04_regression.py
+python labs/10_02_06_calibration.py
+python scripts/eval_ci.py --fixture
+```
+
+CI: `.github/workflows/eval.yml` runs `scripts/eval_ci.py --fixture` on pull requests. Thresholds live in `eval/thresholds.toml`. Latency is reported, not tracked.
+
 pgvector is optional. `docker compose up -d postgres` starts `pgvector/pgvector:pg16`. Labs skip cleanly when Docker is down.
 
 ## What you open in class

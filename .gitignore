@@ -91,6 +91,9 @@ techcorp/data/audit.jsonl
 dataflow/data/faiss_index/
 dataflow/data/faiss_index_all/
 
+# Lab 10.2 last-run mirror. Not the baseline.
+eval/last_run.md
+
 # Project-specific IDE metadata
 *.iml
 
