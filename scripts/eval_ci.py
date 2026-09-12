@@ -67,6 +67,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--chunker", default="heading")
     parser.add_argument("--chunk-size", type=int, default=None)
+    parser.add_argument("--retrieve-k", type=int, default=None)
     parser.add_argument(
         "--write-run",
         default=None,
@@ -89,6 +90,7 @@ def main(argv: list[str] | None = None) -> int:
         fixture=bool(args.fixture),
         chunker=str(args.chunker),
         chunk_size=args.chunk_size,
+        retrieve_k=args.retrieve_k,
         progress=True,
     )
     write_metrics_file(LAST_RUN, int(report["unique_tickets"]), list(report["scores"]))

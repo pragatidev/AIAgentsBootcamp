@@ -58,6 +58,10 @@ worse = run_ci(
 print(worse.stdout)
 print(worse.stderr)
 print("worse_chunker_exit", worse.returncode)
+print(
+    "note",
+    "a tracked metric must drop: the 300 char cut loses named facts",
+)
 print("wrote", regress_path.as_posix())
 if regress_path.is_file():
     print("intentional_regress")

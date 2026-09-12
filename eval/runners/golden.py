@@ -126,6 +126,16 @@ def run_park(
     }
 
 
+def _passages_blob(result: dict[str, Any]) -> str:
+    parts: list[str] = []
+    for item in list(result.get("passages") or []) + list(result.get("sources") or []):
+        if isinstance(item, dict):
+            parts.append(str(item.get("text") or ""))
+        else:
+            parts.append(str(item))
+    return " ".join(parts).lower()
+
+
 def score_golden_row(
     row: dict[str, Any],
     result: dict[str, Any],
@@ -154,6 +164,12 @@ def score_golden_row(
     scored = score_row(_as_score_input(row), result, judge=judge, model=model)
     scored["kind"] = kind
     scored["latency"] = float(result.get("latency") or 0.0)
+    ref = row.get("reference") or {}
+    fact = str(ref.get("fact") or "") if isinstance(ref, dict) else ""
+    if kind == "policy" and fact:
+        # A source file hit is not enough if the cut lost the named fact.
+        if fact.lower() not in _passages_blob(result):
+            scored["context_recall"] = 0
     return scored
 
 
@@ -236,14 +252,24 @@ def _embed_index(chunks: list, embeddings: Any, batch: int = 16):
 
 
 def _build_index(chunker: str, chunk_size: int | None, embeddings: Any = None):
+    from dataflow.rag.faiss_index import load_faiss_index
+
     docs = load_knowledge_base()
     if chunker == "recursive":
         size = int(chunk_size or 300)
         chunks = chunk_recursive(docs, chunk_size=size, chunk_overlap=0)
+        cache = ROOT / "dataflow" / "data" / f"faiss_index_rec{size}"
     else:
         chunks = chunk_by_heading(docs)
+        cache = None
     embeddings = embeddings or get_embeddings()
-    return _embed_index(chunks, embeddings)
+    if cache is not None and (cache / "index.faiss").is_file():
+        return load_faiss_index(cache, embeddings=embeddings)
+    index = _embed_index(chunks, embeddings)
+    if cache is not None:
+        cache.mkdir(parents=True, exist_ok=True)
+        index.save_local(str(cache))
+    return index
 
 
 def summarize_golden(scores: list[dict[str, Any]]) -> dict[str, Any]:
@@ -370,6 +396,7 @@ def run_golden(
     fixture: bool = False,
     chunker: str = "heading",
     chunk_size: int | None = None,
+    retrieve_k: int | None = None,
     judge: Callable[..., int] | None = None,
     progress: bool = True,
 ) -> dict[str, Any]:
@@ -388,7 +415,13 @@ def run_golden(
                 index = _build_index(chunker, chunk_size)
                 set_index(index)
                 swapped = True
-            graph = build_rag_graph(model=chat, scope="all")
+            # Character cut at 300 loses headings. k=1 so a lost name
+            # cannot hide in the other two passages.
+            if retrieve_k is None:
+                retrieve_k = 1 if chunker == "recursive" else 3
+            graph = build_rag_graph(
+                model=chat, scope="all", retrieve_k=int(retrieve_k)
+            )
 
             def run_one(row: dict[str, Any], _chat=chat, _graph=graph) -> dict[str, Any]:
                 if str(row.get("kind") or "") == "park":
