@@ -28,6 +28,7 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 03_14_just_in_time_read.py       read only on the ticket that needs it
 03_16_subagent_isolation.py      polluted vs isolated scores
 04_03_thread_memory.py           second turn uses the first
+04_03_other_thread_break.py      same graph, other thread id, the desk is a stranger
 04_05_summarizer.py              facts, actions, decisions, open questions
 04_07_store_preference.py        preference across threads, profile, forget
 04_08_similarity_recall.py       hits with scores inside a customer namespace
