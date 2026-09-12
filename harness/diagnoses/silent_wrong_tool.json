@@ -1,0 +1,15 @@
+{
+  "id": "silent_wrong_tool",
+  "ticket": "T-3011",
+  "ticket_text": "Do you ship to apartments that need a signature?",
+  "summary": "The model proposed issue_refund on a shipping question. The tool wrote a row. The ticket never named an order. Nothing in the loop compared the tool name to the ticket before the row landed.",
+  "last_proposal": {
+    "tool": "issue_refund",
+    "order_id": "DF-1002",
+    "amount": 34.0,
+    "reason": "shipping delay"
+  },
+  "what_was_told": "lookup_order is for status. issue_refund is for money back.",
+  "what_was_checked": "nothing after the tool returned",
+  "bucket": "missing_sensor"
+}

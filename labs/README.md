@@ -74,6 +74,14 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 06_12_02_wake_on_ticket_file.py  drop two json tickets, watch once, sqlite still holds the park
 06_12_04_inbox_resolve.py        list parked rows, approve and reject, then the crossed resume
 06_12_06_nightly_triage.py       v8 nightly report, inbox rows, hosted cron as code only
+07_01_02_harness_parts.py        parts.md, cap prints STOPPED, planted runaway
+07_01_04_failure_log.py          failing_ticket.json into the failure log
+07_01_05_attribute_three.py      three diagnoses, one corrected bucket
+07_02_02_guide.py                no/vague/tight guide on T-3005
+07_02_04_sensor.py               refund_diff FAIL, then self-correct
+07_02_06_controls.py             schema_assert vs policy_judge costs
+07_03_02_permissions.py          actor off the list, blocked write
+07_03_05_miss_to_test.py         xfail on the old desk, green with control
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt
