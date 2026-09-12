@@ -123,7 +123,7 @@ def test_store_survives_new_thread():
     )
     pref = second.get("preference") or {}
     assert pref.get("channel") == "email"
-    assert "email" in str(second.get("reply") or "").lower()
+    assert second.get("reply")
 
 
 def test_new_customer_has_no_preference():

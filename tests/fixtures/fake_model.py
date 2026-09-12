@@ -8,8 +8,50 @@ from typing import Any
 from langchain_core.messages import AIMessage
 
 
+def _messages_text(messages: Any) -> str:
+    if isinstance(messages, str):
+        return messages
+    if isinstance(messages, list):
+        parts: list[str] = []
+        for item in messages:
+            if isinstance(item, dict):
+                parts.append(str(item.get("content", "")))
+            else:
+                parts.append(str(getattr(item, "content", item)))
+        return "\n".join(parts)
+    return str(messages)
+
+
+def _last_user_text(messages: Any) -> str:
+    if isinstance(messages, str):
+        return messages
+    if isinstance(messages, list):
+        for item in reversed(messages):
+            if isinstance(item, dict):
+                role = str(item.get("role") or item.get("type") or "").lower()
+                if role in ("user", "human"):
+                    return str(item.get("content", ""))
+            else:
+                role = str(
+                    getattr(item, "type", "") or getattr(item, "role", "")
+                ).lower()
+                if role in ("user", "human"):
+                    return str(getattr(item, "content", "") or "")
+        return _messages_text(messages)
+    return str(messages)
+
+
+def _is_preference_schema(schema: Any) -> bool:
+    name = str(getattr(schema, "__name__", "") or "")
+    if name == "PreferenceDecision":
+        return True
+    fields = getattr(schema, "model_fields", None) or {}
+    return "channel" in fields and "stated" in fields
+
+
 class FakeChatModel:
-    """Duck-typed chat model. with_structured_output returns the fixed route."""
+    """Duck-typed chat model. with_structured_output returns the fixed route
+    or a PreferenceDecision when that schema is requested."""
 
     def __init__(
         self,
@@ -27,7 +69,17 @@ class FakeChatModel:
 
         class _Runner:
             def invoke(self, messages: Any, **kw: Any) -> Any:
-                payload = {"route": route}
+                if _is_preference_schema(schema):
+                    text = _last_user_text(messages).lower()
+                    if "email" in text:
+                        payload: dict[str, Any] = {
+                            "channel": "email",
+                            "stated": True,
+                        }
+                    else:
+                        payload = {"channel": "none", "stated": False}
+                else:
+                    payload = {"route": route}
                 if hasattr(schema, "model_validate"):
                     return schema.model_validate(payload)
                 try:
@@ -36,20 +88,6 @@ class FakeChatModel:
                     return payload
 
         return _Runner()
-
-
-def _messages_text(messages: Any) -> str:
-    if isinstance(messages, str):
-        return messages
-    if isinstance(messages, list):
-        parts: list[str] = []
-        for item in messages:
-            if isinstance(item, dict):
-                parts.append(str(item.get("content", "")))
-            else:
-                parts.append(str(getattr(item, "content", item)))
-        return "\n".join(parts)
-    return str(messages)
 
 
 class FakeToolModel:

@@ -6,7 +6,7 @@ Compile takes a checkpointer. Nodes reach the store through the runtime.
 
 from __future__ import annotations
 
-from typing import Annotated, Any, TypedDict
+from typing import Annotated, Any, Literal, TypedDict
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langgraph.checkpoint.memory import InMemorySaver
@@ -14,6 +14,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.runtime import Runtime
 from langgraph.store.base import BaseStore
+from pydantic import BaseModel, Field
 
 from config import get_chat_model
 from dataflow.graphs.v1_triage import DeskContext, classify
@@ -28,6 +29,7 @@ __all__ = [
     "DeskContext",
     "MemoryState",
     "PREFERENCE_KEY",
+    "PreferenceDecision",
     "build_v3_memory",
     "preference_namespace",
     "read_preference",
@@ -42,6 +44,24 @@ SPEAK_SYSTEM = (
     "When the desk notes include an earlier request, mention it in the reply. "
     "If the desk notes include a contact preference, say it plainly."
 )
+
+PREFERENCE_SYSTEM = (
+    "You extract a contact preference from a DataFlow support ticket. "
+    "channel is email when the customer asks to be emailed, "
+    "call when they ask to be called, "
+    "and none when they do not state a contact channel. "
+    "stated is true only when they clearly name a contact preference. "
+    "Do not infer a preference from an order id, a refund, or a policy question."
+)
+
+
+class PreferenceDecision(BaseModel):
+    channel: Literal["email", "call", "none"] = Field(
+        description="email, call, or none if they did not state a contact channel"
+    )
+    stated: bool = Field(
+        description="True only when the customer clearly names a contact preference"
+    )
 
 
 class MemoryState(TypedDict, total=False):
@@ -117,23 +137,6 @@ def _last_human(messages: list) -> str:
     return ""
 
 
-def _preference_from_text(text: str) -> dict[str, Any] | None:
-    lower = text.lower()
-    if not lower:
-        return None
-    wants_email = (
-        "always email" in lower
-        or "email me" in lower
-        or ("prefer" in lower and "email" in lower)
-    )
-    never_call = "never call" in lower
-    if wants_email or ("email" in lower and never_call):
-        return {"channel": "email", "raw": text.strip()}
-    if "always call" in lower or ("prefer" in lower and "call" in lower):
-        return {"channel": "call", "raw": text.strip()}
-    return None
-
-
 def ingest(state: MemoryState) -> dict[str, Any]:
     """Seed ticket and messages, then count this invoke as one turn."""
     ticket = str(state.get("ticket") or "")
@@ -168,14 +171,37 @@ def read_pref(
 def write_pref(
     state: MemoryState,
     runtime: Runtime[DeskContext] | None = None,
+    *,
+    model: Any = None,
 ) -> dict[str, Any]:
-    """Write a preference when the customer states one."""
+    """Write a preference when the model says the customer stated one."""
     if runtime is None or runtime.store is None:
         return {}
     ticket = str(state.get("ticket") or "")
-    pref = _preference_from_text(ticket)
-    if pref is None:
+    if not ticket.strip():
         return {}
+    chat = _resolve_model(runtime, model)
+    structured = chat.with_structured_output(PreferenceDecision)
+    decision = structured.invoke(
+        [
+            {"role": "system", "content": PREFERENCE_SYSTEM},
+            {"role": "user", "content": ticket},
+        ]
+    )
+    if hasattr(decision, "model_dump"):
+        payload = decision.model_dump()
+    elif hasattr(decision, "channel"):
+        payload = {
+            "channel": decision.channel,
+            "stated": bool(getattr(decision, "stated", False)),
+        }
+    else:
+        payload = dict(decision)
+    channel = payload.get("channel")
+    stated = bool(payload.get("stated"))
+    if not stated or channel not in ("email", "call"):
+        return {}
+    pref = {"channel": str(channel), "stated": True}
     customer_id = _customer_id(runtime)
     runtime.store.put(preference_namespace(customer_id), PREFERENCE_KEY, pref)
     return {"preference": pref}
@@ -193,6 +219,12 @@ def build_v3_memory(checkpointer=None, store=None, model=None):
         runtime: Runtime[DeskContext] | None = None,
     ) -> dict[str, str]:
         return classify(state, runtime=runtime, model=model)
+
+    def write_pref_node(
+        state: MemoryState,
+        runtime: Runtime[DeskContext] | None = None,
+    ) -> dict[str, Any]:
+        return write_pref(state, runtime=runtime, model=model)
 
     def speak(
         state: MemoryState,
@@ -227,8 +259,6 @@ def build_v3_memory(checkpointer=None, store=None, model=None):
             [SystemMessage(content=SPEAK_SYSTEM + extra), *history]
         )
         text = _content_text(result)
-        if channel == "email" and "email" not in text.lower():
-            text = f"{text} We will email you, never call."
         return {"messages": [AIMessage(content=text)], "reply": text}
 
     builder.add_node("ingest", ingest)
@@ -237,7 +267,7 @@ def build_v3_memory(checkpointer=None, store=None, model=None):
     builder.add_node("orders_desk", orders_desk)
     builder.add_node("policy_desk", policy_desk)
     builder.add_node("escalate_desk", escalate_desk)
-    builder.add_node("write_pref", write_pref)
+    builder.add_node("write_pref", write_pref_node)
     builder.add_node("speak", speak)
     builder.add_edge(START, "ingest")
     builder.add_edge("ingest", "read_pref")
