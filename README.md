@@ -49,16 +49,14 @@ Course: https://www.udemy.com/course/ai-agents-bootcamp-build-with-langchain-rag
 ## Layout
 
 ```
-techcorp/      IT desk (Part 5)
-dataflow/      customer desk, graphs, knowledge base, ambient inbox (Parts 6, 8, 12, 17)
-talentflow/    resumes and templates (6.7, capstone 3)
-research_agent/  Deep Agents research and report package (6.11)
-dataflow/ambient/  file watcher and inbox (6.12)
-dataflow/graphs/v8_nightly.py  nightly triage (6.12)
-
 techcorp/      IT desk (Section 6)
-dataflow/      customer desk, graphs, knowledge base, context, memory
-talentflow/    resumes and templates
+dataflow/      customer desk, graphs, knowledge base, context, memory, rag, ambient inbox
+talentflow/    resumes and templates (capstone 3)
+research_agent/  Deep Agents research and report package (Section 17)
+dataflow/ambient/  file watcher and inbox (Section 18)
+dataflow/graphs/v8_nightly.py  nightly triage (Section 18)
+harness/       parts, guides, sensors, permissions (Sections 19 to 21)
+eval/          golden set, runners, judges, thresholds, CI gate (Sections 28 and 29)
 labs/          numbered teaching scripts (Run Cell on # %%) plus .ipynb twins
 config.py      the only place a model id lives
 docs/CURRENCY.md
