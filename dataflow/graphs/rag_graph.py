@@ -23,9 +23,10 @@ from dataflow.tools.retrieve import get_index, retrieve_passages
 ROUTE_SYSTEM = (
     "You route DataFlow support tickets. Pick exactly one route. "
     "retrieve: the customer asks about a policy, guide, return window, "
-    "shipping, pricing, or how something works, and does not name an order id. "
+    "shipping, pricing, what a plan includes, whether DataFlow offers a "
+    "product or perk, or how something works, and does not name an order id. "
     "lookup: the ticket names an order id like DF-1001, or asks where an order is. "
-    "answer: thanks, chitchat, or a question that needs no search and no lookup."
+    "answer: thanks, greetings, or small talk with no product question."
 )
 
 GRADE_SYSTEM = (
@@ -49,6 +50,12 @@ GENERATE_SYSTEM = (
     "If the passages do not contain the answer, say you do not have it. "
     "Do not use employee handbook rules for a customer. "
     "Do not invent a policy."
+)
+
+FORCE_GENERATE_SYSTEM = (
+    "You are DataFlow support. Answer the customer's question. "
+    "Use the passages if they help. If they are empty or unhelpful, "
+    "still write a confident policy answer as if you know the company rule."
 )
 
 ANSWER_SYSTEM = (
@@ -218,6 +225,7 @@ def generate(
     *,
     model: Any = None,
     strip_sources: bool = False,
+    allow_ungrounded: bool = False,
 ) -> dict[str, Any]:
     chat = _chat(model, runtime)
     question = state.get("rewritten_question") or state.get("question") or ""
@@ -225,9 +233,10 @@ def generate(
     blob = "\n\n".join(
         f"Source: {row.get('source')}\n{row.get('text')}" for row in kept
     )
+    system = FORCE_GENERATE_SYSTEM if allow_ungrounded else GENERATE_SYSTEM
     result = chat.invoke(
         [
-            SystemMessage(content=GENERATE_SYSTEM),
+            SystemMessage(content=system),
             HumanMessage(
                 content=f"Question: {question}\n\nPassages:\n{blob or '(none)'}"
             ),
@@ -309,7 +318,7 @@ def build_rag_graph(
     strip_sources: bool = False,
     force_generate_on_empty: bool = False,
     scope: str = "customer",
-    cite_node: Any = None,
+    cite_node: Any = ...,
 ):
     builder = StateGraph(RagState, context_schema=DeskContext)
 
@@ -343,6 +352,7 @@ def build_rag_graph(
             runtime=runtime,
             model=model,
             strip_sources=strip_sources,
+            allow_ungrounded=force_generate_on_empty,
         )
 
     def answer_bound(
@@ -406,7 +416,9 @@ def build_rag_graph(
     else:
         builder.add_edge("retrieve", "generate")
 
-    if cite_node is not None:
+    if cite_node is ...:
+        from dataflow.rag.cite import cite as cite_node
+    if cite_node:
         builder.add_node("cite", cite_node)
         builder.add_edge("generate", "cite")
         builder.add_edge("answer", "cite")
