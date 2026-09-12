@@ -100,6 +100,9 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 10_02_02_eval_ci.py      eval_ci green on baseline, workflow is the gate
 10_02_04_regression.py   worse chunker fails CI, mirror last_run never fails
 10_02_06_calibration.py  ten labels vs judge, trust note per kind
+10_03_02_load_test.py    golden replay, p95 table, hung ticket marked
+10_03_04_playwright_ui.py  early innerText flake, two tests green, screenshot
+10_03_06_qa_checklist.py  empty path is the find, parked UI test, path filled
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt
