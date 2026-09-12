@@ -28,6 +28,10 @@ Curriculum labs are numbered Part.Section.Lecture. Older S1-S16 files stay while
 06_07_02_two_lookups_in_parallel.py  lookup and policy_search in one superstep
 06_07_04_map_reduce_resumes.py   Send one score worker per TalentFlow resume
 06_07_06_billing_subgraph.py     billing box, private keys, interrupt inside
+06_08_02_retry_and_error_handler.py  flaky carrier retries, then a typed miss
+06_08_03_task_survives_crash.py  receipt @task, planted crash, resume
+06_08_04_cache_and_defer.py      policy cache hits, then defer on/off
+06_08_06_cap_a_runaway.py        recursion limit, RemainingSteps, timeout, spend
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt

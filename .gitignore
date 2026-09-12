@@ -54,6 +54,12 @@ dataflow/data/checkpoints.sqlite-shm
 # Lab 6.5 refund ledger. Created at run time, not committed.
 dataflow/data/refunds.jsonl
 
+# Lab 6.8 receipt task and sqlite checkpointer. Created at run time, not committed.
+dataflow/data/receipts.jsonl
+dataflow/data/checkpoints_14.sqlite
+dataflow/data/checkpoints_14.sqlite-wal
+dataflow/data/checkpoints_14.sqlite-shm
+
 # Project-specific IDE metadata
 *.iml
 

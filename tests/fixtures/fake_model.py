@@ -90,10 +90,12 @@ class FakeChatModel:
         route: str = "orders",
         reply: str = "looked up desk lamp",
         structured: dict[str, Any] | None = None,
+        usage_metadata: dict[str, Any] | None = None,
     ) -> None:
         self.route = route
         self.reply = reply
         self.structured = dict(structured or {})
+        self.usage_metadata = usage_metadata
         self.calls = 0
         self.invoke_calls = 0
         self.stream_calls = 0
@@ -101,6 +103,11 @@ class FakeChatModel:
     def invoke(self, messages: Any, **kwargs: Any) -> AIMessage:
         self.calls += 1
         self.invoke_calls += 1
+        if self.usage_metadata is not None:
+            return AIMessage(
+                content=self.reply,
+                usage_metadata=self.usage_metadata,
+            )
         return AIMessage(content=self.reply)
 
     def stream(self, messages: Any, **kwargs: Any):

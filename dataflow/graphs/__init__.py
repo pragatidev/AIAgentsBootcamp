@@ -14,6 +14,14 @@ from dataflow.graphs.billing_subgraph import (
     build_billing_graph,
     build_desk_with_billing,
 )
+from dataflow.graphs.durable import build_durable, build_two_length_fan
+from dataflow.graphs.runaway import (
+    build_graceful,
+    build_runaway,
+    build_spend_capped,
+    build_timeout_demo,
+    run_with_cap,
+)
 
 __all__ = [
     "build_collision",
@@ -32,4 +40,11 @@ __all__ = [
     "billing_graph",
     "build_billing_graph",
     "build_desk_with_billing",
+    "build_durable",
+    "build_two_length_fan",
+    "build_graceful",
+    "build_runaway",
+    "build_spend_capped",
+    "build_timeout_demo",
+    "run_with_cap",
 ]
