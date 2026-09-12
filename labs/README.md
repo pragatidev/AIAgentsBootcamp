@@ -145,6 +145,10 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 17_03_03_cost_report.py        tokens ms model id; fat row hidden then appended
 17_03_05_smoke.py              skip-park would go live, then smoke green
 17_03_06_rollback.py           broken health 500, rollback ok, runbook, docker tag
+18_01_05_stakeholder_demo.py   spec, lookup POST, refuse POST, park POST, cost line
+18_01_07_own_the_harness.py    self-judge plant all green, golden check fails the miss
+18_02_03_portfolio_walkthrough.py  README refuse line, pytest no key, four-clouds break
+18_02_07_saas_replace.py       leftover seat named, no currency, ATS-delete break
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt
