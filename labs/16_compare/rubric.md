@@ -1,0 +1,13 @@
+# Framework pick rubric
+
+Filled from the DataFlow refund ticket runs. Gain, lose, and when not on every row. A path in every row. No empty cells. A loss in every row, including LangGraph.
+
+| product | interrupt | checkpointer | tests | package | human gate | gain | lose | when not | path |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Langflow | no pause on the refund | no restart memory | no node tests on the canvas | export is not the package | no confirm before a write | a picture and a fast start on the ticket | empty tool schema on export so lookup does not run | a desk with writes that a second team must test | labs/16_langflow/runs/export_run.json |
+| n8n | no pause on the refund | no restart memory | no node tests | workflow JSON is not a Python package | no confirm before a write | a webhook with no Python package | one ticket posted twice returns two replies until a ticket id is added | a Python package you must test and pause | labs/16_n8n/runs/n8n_run.json |
+| CrewAI | no pause on the refund | no restart memory | no node tests | importable crew.py | no confirm before a write | a crew metaphor of researcher, policy lookup, and writer | no interrupt, no reducers, no time travel | a refund that must park | labs/16_crewai/runs/crew_run.json |
+| AutoGen | stop is a cap, not an interrupt | no restart memory | no node tests | importable supportflow.py | no confirm before a write | a multi-agent chat hub on the current team API | the chat hits the turn cap with no answer until a writer stop is added | a write that must survive a restart | labs/16_autogen/runs/supportflow_run.json |
+| OpenAI Agents SDK | approval hook can park | no LangGraph checkpointer | no node tests | importable ticket.py | needs_approval parks the refund | Agent, Runner, and a handoff | no checkpointer you already ship, hosted-shaped client | as a second spine beside the graph | labs/16_openai_agents/runs/ticket_run.json |
+| Google ADK | no pause on the refund | in-memory session only | no node tests | importable ticket.py | no confirm before a write | Google Cloud wiring through LiteLlm | the LangGraph checkpointer you already ship | a laptop desk with no Google Cloud | labs/16_adk/runs/ticket_run.json |
+| LangGraph | yes, v4_hitl parks the refund | yes, thread state survives | yes, tests/test_dataflow_hitl.py | yes, the dataflow package | yes, confirm before write | interrupt, checkpointer, node tests, a package, and a human gate on the same ticket | you write every edge, the canvas is a file, a beginner is slower on day one | a one-hour demo with no writes | dataflow/graphs/rag_tool_cycle.py |
