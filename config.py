@@ -22,6 +22,12 @@ NO_TOOLS_MODEL = os.environ.get("OLLAMA_NO_TOOLS_MODEL", "llama3.2:3b")
 OPENAI_CHAT_MODEL = os.environ.get("OPENAI_CHAT_MODEL", "")
 ANTHROPIC_CHAT_MODEL = os.environ.get("ANTHROPIC_CHAT_MODEL", "")
 
+# Embeddings. Local default is nomic-embed-text (768 dimensions on Ollama).
+# faiss_index measures the width at build time; do not copy 768 elsewhere.
+EMBED_MODEL = os.environ.get("OLLAMA_EMBED_MODEL", "nomic-embed-text")
+OPENAI_EMBED_MODEL = os.environ.get("OPENAI_EMBED_MODEL", "")
+EMBED_DIMENSIONS = 768
+
 
 def has_live_key() -> bool:
     """True only when a cloud key is present. Local Ollama does not count as a key."""
@@ -56,3 +62,22 @@ def get_chat_model():
     from langchain_ollama import ChatOllama
 
     return ChatOllama(model=CHAT_MODEL, base_url=_ollama_base(), temperature=0)
+
+
+def get_embeddings():
+    """Return the desk embedder. Same model must build the index and query it.
+
+    Hosted OpenAI when a key and OPENAI_EMBED_MODEL are set.
+    Otherwise OllamaEmbeddings on nomic-embed-text.
+    """
+    openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    openai_embed = os.environ.get("OPENAI_EMBED_MODEL", OPENAI_EMBED_MODEL).strip()
+    if openai_key and openai_embed:
+        from langchain_openai import OpenAIEmbeddings
+
+        return OpenAIEmbeddings(model=openai_embed)
+    from langchain_ollama import OllamaEmbeddings
+
+    model = os.environ.get("OLLAMA_EMBED_MODEL", EMBED_MODEL)
+    return OllamaEmbeddings(model=model, base_url=_ollama_base())
+
