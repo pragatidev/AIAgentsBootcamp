@@ -124,6 +124,8 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 14_01_04_tool_and_park_cards.py  tool card and park card; raw JSON looks like a crash
 14_02_02_approval_screen.py   approve writes, reject misses, edit changes amount
 14_02_04_inbox.py             two parked rows, resolve by name, planted crossed resume
+15_01_02_playwright_status.py  status fixture, outage line, file:// blocked
+15_01_05_malicious_page.py     unguarded follows the page, sandboxed parks or refuses
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt
