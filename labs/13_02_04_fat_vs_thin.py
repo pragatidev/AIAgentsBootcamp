@@ -28,7 +28,16 @@ from dataflow.skills.loader import (
 from dataflow.tools.orders import lookup_order
 
 ASK = "Please refund order DF-1001, the lamp is unused"
-POLICY_LINE = "30 days from delivery"
+
+
+def cites_window(reply: str) -> bool:
+    """The reference's window number, however the model phrases it.
+
+    The reference says 30 days from delivery and 30 days of delivery, and a
+    model that read it may say 30-day. A reply with no 30 in it never read
+    the line.
+    """
+    return "30 days" in reply or "30-day" in reply
 
 
 def last_reply(messages) -> str:
@@ -66,7 +75,7 @@ fat_reply = run_desk(
     model,
 )
 print("fat_reply", fat_reply)
-print("fat_cites_line", POLICY_LINE in fat_reply)
+print("fat_cites_line", cites_window(fat_reply))
 
 print("cell", "thin")
 thin_reply = run_desk(
@@ -79,7 +88,7 @@ print("thin_reply", thin_reply)
 print("cell", "break")
 print("BREAK: thin path with L3 never loaded misses the policy line")
 print("thin_without_l3", thin_reply)
-print("thin_misses_line", POLICY_LINE not in thin_reply)
+print("thin_misses_line", not cites_window(thin_reply))
 
 # %%
 print("cell", "fix")
@@ -92,4 +101,4 @@ fixed_reply = run_desk(
     model,
 )
 print("thin_plus_l3_reply", fixed_reply)
-print("line_comes_back", POLICY_LINE in fixed_reply)
+print("line_comes_back", cites_window(fixed_reply))

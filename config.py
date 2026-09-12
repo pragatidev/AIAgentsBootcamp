@@ -16,6 +16,10 @@ ROOT = Path(__file__).resolve().parent
 # qwen3:8b is the student chat model: tool calling works on a 16 GB laptop.
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 CHAT_MODEL = os.environ.get("OLLAMA_CHAT_MODEL", "qwen3:8b")
+# Cap on tokens one local reply may generate. Ollama serves one request at a
+# time, and a thinking model that loops can hold that slot for twenty minutes.
+# 4096 covers every lab reply in this course with room for the thinking block.
+NUM_PREDICT = int(os.environ.get("OLLAMA_NUM_PREDICT", "4096"))
 NO_TOOLS_MODEL = os.environ.get("OLLAMA_NO_TOOLS_MODEL", "llama3.2:3b")
 
 # Cloud ids stay empty until a live key is set. Verify at record time. Do not guess.
@@ -52,6 +56,7 @@ def get_local_chat_model(**kwargs):
         "model": kwargs.pop("model", CHAT_MODEL),
         "base_url": kwargs.pop("base_url", _ollama_base()),
         "temperature": kwargs.pop("temperature", 0),
+        "num_predict": kwargs.pop("num_predict", NUM_PREDICT),
     }
     params.update(kwargs)
     return ChatOllama(**params)
@@ -75,8 +80,6 @@ def get_chat_model(**kwargs):
         return ChatAnthropic(model=ANTHROPIC_CHAT_MODEL, temperature=0)
     kwargs.pop("force_local", None)
     return get_local_chat_model(**kwargs)
-
-    return ChatOllama(model=CHAT_MODEL, base_url=_ollama_base(), temperature=0)
 
 
 def tracing_callbacks():

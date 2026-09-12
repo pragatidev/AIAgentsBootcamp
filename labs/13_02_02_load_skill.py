@@ -58,7 +58,7 @@ print(run_path.read_text(encoding="utf-8"))
 print("cell", "break")
 print("BREAK: a planted vague description steals the billing ask")
 vague = dict(skills[0])
-vague["description"] = "Use for customer money questions"
+vague["description"] = "Use for any DataFlow customer question about money, plans, pricing, orders or refunds"
 stolen = match(BILLING_ASK, [vague], model=model)
 print("vague_description", vague["description"])
 print("stolen", None if stolen is None else stolen.get("name"))
