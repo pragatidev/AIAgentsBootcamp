@@ -74,11 +74,24 @@ def _is_resume_score_schema(schema: Any) -> bool:
 
 
 def _is_billing_finding_schema(schema: Any) -> bool:
-    name = _schema_name(schema)
-    if name == "BillingFinding":
-        return True
     fields = _schema_fields(schema)
     return "duplicate_charge" in fields and "missing_tax_line" in fields
+
+
+def _is_team_billing_finding_schema(schema: Any) -> bool:
+    name = _schema_name(schema)
+    fields = _schema_fields(schema)
+    if "order_id" in fields and "refund_eligible" in fields:
+        return True
+    return name == "BillingFinding" and "duplicate_charge" not in fields
+
+
+def _is_next_step_schema(schema: Any) -> bool:
+    name = _schema_name(schema)
+    if name == "NextStep":
+        return True
+    fields = _schema_fields(schema)
+    return "step" in fields and "why" in fields
 
 
 class FakeChatModel:
@@ -99,6 +112,7 @@ class FakeChatModel:
         self.calls = 0
         self.invoke_calls = 0
         self.stream_calls = 0
+        self._schema_i: dict[str, int] = {}
 
     def invoke(self, messages: Any, **kwargs: Any) -> AIMessage:
         self.calls += 1
@@ -123,16 +137,53 @@ class FakeChatModel:
         yield ChatGenerationChunk(message=AIMessageChunk(content=first))
         yield ChatGenerationChunk(message=AIMessageChunk(content=second))
 
+    def _take_structured(self, name: str) -> dict[str, Any] | None:
+        if name not in self.structured:
+            return None
+        raw = self.structured[name]
+        if isinstance(raw, list):
+            i = self._schema_i.get(name, 0)
+            self._schema_i[name] = i + 1
+            item = raw[i] if i < len(raw) else raw[-1]
+            return dict(item)
+        return dict(raw)
+
+    def _with_usage(self, parsed: Any) -> Any:
+        if self.usage_metadata is None:
+            return parsed
+        try:
+            object.__setattr__(parsed, "usage_metadata", self.usage_metadata)
+            return parsed
+        except Exception:
+            pass
+
+        class _Box:
+            def __init__(self, inner: Any, usage: dict[str, Any]) -> None:
+                object.__setattr__(self, "_inner", inner)
+                object.__setattr__(self, "usage_metadata", usage)
+
+            def __getattr__(self, name: str) -> Any:
+                return getattr(self._inner, name)
+
+            def __getitem__(self, key: Any) -> Any:
+                inner = self._inner
+                if isinstance(inner, dict):
+                    return inner[key]
+                return getattr(inner, key)
+
+        return _Box(parsed, self.usage_metadata)
+
     def with_structured_output(self, schema: Any, **kwargs: Any) -> Any:
-        route = self.route
-        structured = self.structured
+        parent = self
         name = _schema_name(schema)
+        include_raw = bool(kwargs.get("include_raw"))
 
         class _Runner:
             def invoke(self, messages: Any, **kw: Any) -> Any:
-                if name in structured:
-                    payload: dict[str, Any] = dict(structured[name])
-                elif _is_preference_schema(schema):
+                parent.calls += 1
+                parent.invoke_calls += 1
+                payload = parent._take_structured(name)
+                if payload is None and _is_preference_schema(schema):
                     text = _last_user_text(messages).lower()
                     if "email" in text:
                         payload = {
@@ -141,32 +192,51 @@ class FakeChatModel:
                         }
                     else:
                         payload = {"channel": "none", "stated": False}
-                elif _is_resume_score_schema(schema):
-                    payload = dict(
-                        structured.get("ResumeScore")
-                        or {
-                            "score": 80,
-                            "fit": "strong",
-                            "reason": "fixture score",
-                        }
-                    )
-                elif _is_billing_finding_schema(schema):
-                    payload = dict(
-                        structured.get("BillingFinding")
-                        or {
-                            "duplicate_charge": False,
-                            "missing_tax_line": False,
-                            "disputed_fee": False,
-                        }
-                    )
-                else:
-                    payload = {"route": route}
+                elif payload is None and _is_resume_score_schema(schema):
+                    payload = {
+                        "score": 80,
+                        "fit": "strong",
+                        "reason": "fixture score",
+                    }
+                elif payload is None and _is_billing_finding_schema(schema):
+                    payload = {
+                        "duplicate_charge": False,
+                        "missing_tax_line": False,
+                        "disputed_fee": False,
+                    }
+                elif payload is None and _is_team_billing_finding_schema(schema):
+                    payload = {
+                        "order_id": "DF-1010",
+                        "amount": 22.0,
+                        "refund_eligible": True,
+                        "reason": "fixture billed twice",
+                    }
+                elif payload is None and _is_next_step_schema(schema):
+                    step = parent.route
+                    if step not in {"billing", "policy", "writer", "escalate"}:
+                        step = "billing"
+                    payload = {"step": step, "why": "fixture"}
+                elif payload is None:
+                    payload = {"route": parent.route}
                 if hasattr(schema, "model_validate"):
-                    return schema.model_validate(payload)
-                try:
-                    return schema(**payload)
-                except Exception:
-                    return payload
+                    parsed = schema.model_validate(payload)
+                else:
+                    try:
+                        parsed = schema(**payload)
+                    except Exception:
+                        parsed = payload
+                parsed = parent._with_usage(parsed)
+                if include_raw:
+                    raw = AIMessage(
+                        content=str(payload),
+                        usage_metadata=parent.usage_metadata,
+                    )
+                    return {
+                        "raw": raw,
+                        "parsed": parsed,
+                        "parsing_error": None,
+                    }
+                return parsed
 
         return _Runner()
 

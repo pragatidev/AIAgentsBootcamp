@@ -22,6 +22,7 @@ from dataflow.graphs.runaway import (
     build_timeout_demo,
     run_with_cap,
 )
+from dataflow.graphs.v7_supervisor import build_v7_supervisor
 
 __all__ = [
     "build_collision",
@@ -47,4 +48,5 @@ __all__ = [
     "build_spend_capped",
     "build_timeout_demo",
     "run_with_cap",
+    "build_v7_supervisor",
 ]

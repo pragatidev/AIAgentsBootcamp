@@ -32,6 +32,10 @@ Curriculum labs are numbered Part.Section.Lecture. Older S1-S16 files stay while
 06_08_03_task_survives_crash.py  receipt @task, planted crash, resume
 06_08_04_cache_and_defer.py      policy cache hits, then defer on/off
 06_08_06_cap_a_runaway.py        recursion limit, RemainingSteps, timeout, spend
+06_09_02_build_a_supervisor.py   supervisor, two specialists, writer parks
+06_09_03_debug_a_failed_handoff.py  planted bad return, then the good path
+06_09_05_handoffs_with_command.py  history on one thread, then parallel collision
+06_09_06_overspawn_and_the_cap.py  planted loop, token climb, then the cap
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt
