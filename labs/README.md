@@ -117,6 +117,9 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 13_01_04_mcp_client.py      stdio client, HTTP miss, restore client.json
 13_01_06_mcpadapter.py      MCPAdapter bind, retired import, DF-1002
 13_01_07_gated_mcp_refund.py  park, deny A, approve B, no-checkpointer resume
+13_02_02_load_skill.py        refund loads, billing skips, vague description steals
+13_02_04_fat_vs_thin.py       fat vs thin tokens, L3 pointer brings the policy line
+13_02_06_three_doors.py       python, MCP, Skill traces; Skill path cannot write
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt
