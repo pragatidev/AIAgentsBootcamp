@@ -1,11 +1,27 @@
-# Optional. S23 (FastAPI and Docker) owns this file.
-# Clone and pytest do not start Docker.
+# Postgres with pgvector for Section 23. The dataflow service is the
+# Section 43 ship stub. Clone and pytest do not start Docker.
 
 services:
-  northstar:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: dataflow
+      POSTGRES_PASSWORD: dataflow
+      POSTGRES_DB: dataflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgvector_data:/var/lib/postgresql/data
+
+  dataflow:
     profiles: ["ship"]
     build: .
     ports:
       - "8000:8000"
     env_file:
       - .env
+    depends_on:
+      - postgres
+
+volumes:
+  pgvector_data:

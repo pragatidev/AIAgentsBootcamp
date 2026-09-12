@@ -252,10 +252,12 @@ class FakeChatModel:
         yield ChatGenerationChunk(message=AIMessageChunk(content=first))
         yield ChatGenerationChunk(message=AIMessageChunk(content=second))
 
-    def _take_structured(self, name: str) -> dict[str, Any] | None:
+    def _take_structured(self, name: str, messages: Any = None) -> dict[str, Any] | None:
         if name not in self.structured:
             return None
         raw = self.structured[name]
+        if callable(raw):
+            return dict(raw(messages))
         if isinstance(raw, list):
             i = self._schema_i.get(name, 0)
             self._schema_i[name] = i + 1
@@ -297,7 +299,7 @@ class FakeChatModel:
             def invoke(self, messages: Any, **kw: Any) -> Any:
                 parent.calls += 1
                 parent.invoke_calls += 1
-                payload = parent._take_structured(name)
+                payload = parent._take_structured(name, messages)
                 if payload is None and _is_preference_schema(schema):
                     text = _last_user_text(messages).lower()
                     if "email" in text:
@@ -331,6 +333,8 @@ class FakeChatModel:
                     if step not in {"billing", "policy", "writer", "escalate"}:
                         step = "billing"
                     payload = {"step": step, "why": "fixture"}
+                elif payload is None and name == "Grade":
+                    payload = {"label": "keep", "reason": "fixture keep"}
                 elif payload is None and _is_ticket_schema(schema):
                     payload = _ticket_payload(messages)
                 elif payload is None and _is_desk_action_schema(schema):

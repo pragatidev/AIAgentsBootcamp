@@ -22,9 +22,12 @@ NO_TOOLS_MODEL = os.environ.get("OLLAMA_NO_TOOLS_MODEL", "llama3.2:3b")
 OPENAI_CHAT_MODEL = os.environ.get("OPENAI_CHAT_MODEL", "")
 ANTHROPIC_CHAT_MODEL = os.environ.get("ANTHROPIC_CHAT_MODEL", "")
 
-# Local embedder for similarity recall. 768 dims. Verify the tag at record time.
+# Embeddings. Local default is nomic-embed-text (768 dimensions on Ollama).
+# faiss_index measures the width at build time; do not copy 768 elsewhere.
 EMBED_MODEL = os.environ.get("OLLAMA_EMBED_MODEL", "nomic-embed-text")
-EMBED_DIMS = 768
+OPENAI_EMBED_MODEL = os.environ.get("OPENAI_EMBED_MODEL", "")
+EMBED_DIMENSIONS = 768
+EMBED_DIMS = EMBED_DIMENSIONS  # older name kept for Part 4 labs
 
 
 def has_live_key() -> bool:
@@ -84,7 +87,19 @@ def tracing_callbacks():
 
 
 def get_embeddings():
-    """Local Ollama embeddings. nomic-embed-text is 768 dimensions."""
+    """Return the desk embedder. Same model must build the index and query it.
+
+    Hosted OpenAI when a key and OPENAI_EMBED_MODEL are set.
+    Otherwise OllamaEmbeddings on nomic-embed-text.
+    """
+    openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    openai_embed = os.environ.get("OPENAI_EMBED_MODEL", OPENAI_EMBED_MODEL).strip()
+    if openai_key and openai_embed:
+        from langchain_openai import OpenAIEmbeddings
+
+        return OpenAIEmbeddings(model=openai_embed)
     from langchain_ollama import OllamaEmbeddings
 
-    return OllamaEmbeddings(model=EMBED_MODEL, base_url=_ollama_base())
+    model = os.environ.get("OLLAMA_EMBED_MODEL", EMBED_MODEL)
+    return OllamaEmbeddings(model=model, base_url=_ollama_base())
+

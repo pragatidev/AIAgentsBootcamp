@@ -17,6 +17,7 @@ from dataflow.graphs.v3_memory import (
     remember_preference,
 )
 from dataflow.graphs.v4_hitl import build_v4_hitl
+from dataflow.graphs.rag_tool_cycle import DESK_TOOLS as RAG_DESK_TOOLS
 from dataflow.tools.retrieve import retrieve
 from dataflow.tools.structured import parse_tool_json
 
@@ -107,12 +108,35 @@ def test_lookup_does_not_park_refund_does(tmp_path, monkeypatch):
     assert done["decision"] == "approve"
 
 
-def test_retrieve_hit_and_refuse():
-    hit = retrieve("Can I return an unused item after delivery?")
-    assert hit["found"] is True
-    assert hit["hits"][0]["path"] == "return_policy.md"
-    miss = retrieve("What is the weather on Mars?")
-    assert miss["refuse"] is True
+def test_rag_desk_tools_are_lookup_and_retrieve():
+    names = [tool.name for tool in RAG_DESK_TOOLS]
+    assert names == ["lookup_order", "retrieve"]
+    assert "search_policy" not in names
+
+
+def test_retrieve_hit_and_refuse(tmp_path):
+    from dataflow.rag.faiss_index import build_faiss_index
+    from dataflow.rag.load import WIKI_DIR, load_knowledge_base
+    from dataflow.tools.retrieve import reset_index, set_index
+    from tests.fixtures.hashing_embeddings import HashingEmbeddings
+
+    docs = load_knowledge_base(roots=(WIKI_DIR,))
+    index = build_faiss_index(
+        docs=docs,
+        chunker="heading",
+        index_dir=tmp_path,
+        embeddings=HashingEmbeddings(),
+    )
+    set_index(index)
+    try:
+        hit = retrieve.invoke(
+            {"question": "Can I return an unused item after delivery?", "k": 3}
+        )
+        assert hit
+        sources = " ".join(str(row.get("source") or "") for row in hit)
+        assert "return_policy.md" in sources.replace("\\", "/")
+    finally:
+        reset_index()
 
 
 def test_parse_fail_closed():

@@ -25,6 +25,10 @@ from dataflow.graphs.runaway import (
 from dataflow.graphs.v7_supervisor import build_v7_supervisor
 from dataflow.graphs.v8_nightly import build_v8_nightly, run_nightly
 
+from dataflow.graphs.crag import build_crag
+from dataflow.graphs.rag_graph import build_rag_graph
+from dataflow.graphs.rag_tool_cycle import build_rag_tool_cycle
+
 __all__ = [
     "build_collision",
     "build_collision_fixed",
@@ -52,4 +56,8 @@ __all__ = [
     "build_v7_supervisor",
     "build_v8_nightly",
     "run_nightly",
+
+    "build_rag_tool_cycle",
+    "build_rag_graph",
+    "build_crag",
 ]

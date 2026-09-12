@@ -73,6 +73,30 @@ Foundation labs (Udemy Sections 1 to 5) are numbered `00_` through `04_` as thos
 
 `initialize_agent` does not ship. `create_react_agent` does not ship.
 
+## RAG (Part 8)
+
+Local default embedder is `nomic-embed-text` on Ollama. Chat is `qwen3:8b`.
+
+Build the FAISS index (writes `dataflow/data/faiss_index`, gitignored):
+
+```
+python -m dataflow.rag.faiss_index
+```
+
+Run the knowledge desk on three tickets (policy with a citation, unknown that refuses, order id that does not retrieve):
+
+```
+python labs/08_04_06_portfolio_knowledge_desk.py
+```
+
+Run naive vs agentic evals on `eval/questions.jsonl`:
+
+```
+python labs/08_04_05_rag_evals.py
+```
+
+pgvector is optional. `docker compose up -d postgres` starts `pgvector/pgvector:pg16`. Labs skip cleanly when Docker is down.
+
 ## What you open in class
 
 - `labs/` as the lectures tell you

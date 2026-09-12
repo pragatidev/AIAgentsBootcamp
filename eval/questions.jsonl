@@ -1,0 +1,12 @@
+{"id": "policy-return", "kind": "policy", "question": "What is the customer return window?", "expected_source": "dataflow/wiki/return_policy.md"}
+{"id": "policy-shipping", "kind": "policy", "question": "How many business days is standard shipping inside the country?", "expected_source": "dataflow/wiki/shipping.md"}
+{"id": "policy-billing", "kind": "policy", "question": "How much does an extra user cost on the Professional plan?", "expected_source": "dataflow/knowledge_base/business_data/billing_and_pricing.csv"}
+{"id": "policy-refund", "kind": "policy", "question": "Who can approve a refund under 30 days?", "expected_source": "dataflow/knowledge_base/internal_operations/support_operations/customer_support_procedures.markdown"}
+{"id": "lookup-1001", "kind": "lookup", "question": "Where is order DF-1001?", "expected_order_id": "DF-1001", "expected_status": "delivered"}
+{"id": "lookup-1002", "kind": "lookup", "question": "Where is order DF-1002?", "expected_order_id": "DF-1002", "expected_status": "in_transit"}
+{"id": "refuse-student", "kind": "refuse", "question": "Do you offer a lifetime warranty on every desk lamp?"}
+{"id": "refuse-coffee", "kind": "refuse", "question": "Do you sell coffee beans in the DataFlow shop?"}
+{"id": "refuse-gym", "kind": "refuse", "question": "Does DataFlow include a gym membership with the Professional plan?"}
+{"id": "paraphrase-lamp", "kind": "paraphrase", "question": "Can I send back an unused lamp after twelve days?", "expected_source": "dataflow/wiki/return_policy.md"}
+{"id": "paraphrase-p0", "kind": "paraphrase", "question": "How fast must a P0 ticket get a first response for an Enterprise customer?", "expected_source": "dataflow/knowledge_base/internal_operations/support_operations/customer_support_procedures.markdown"}
+{"id": "paraphrase-ship", "kind": "paraphrase", "question": "How long will a package take if it stays inside the country?", "expected_source": "dataflow/wiki/shipping.md"}

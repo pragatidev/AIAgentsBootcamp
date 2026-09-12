@@ -82,6 +82,18 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 07_02_06_controls.py             schema_assert vs policy_judge costs
 07_03_02_permissions.py          actor off the list, blocked write
 07_03_05_miss_to_test.py         xfail on the old desk, green with control
+
+08_01_03_load_knowledge_base.py  twenty files, csv row, json ImportError
+08_01_05_compare_two_chunkers.py  recursive vs heading, orphan counts, winner
+08_02_02_index_faiss.py          FAISS retrieve billing row, wrong embedder
+08_02_04_pgvector.py             refund row from Postgres, or BLOCKED ON DOCKER
+08_02_06_bind_retrieve_tool.py   retrieve tool call, lookup, chitchat, empty description
+08_03_03_agentic_rag_graph.py    paraphrase, grades, skip grade cites the handbook
+08_03_05_corrective_rag.py       GRADE=wrong, REWRITE, REFUSE, GraphRecursionError
+08_04_02_print_citations.py      reply names customer_support_procedures.markdown
+08_04_04_refuse_on_empty.py      REFUSE vs FABRICATED
+08_04_05_rag_evals.py            naive vs agentic table, fluent miss marked
+08_04_06_portfolio_knowledge_desk.py  three tickets plus pytest test_rag_*.py
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt
