@@ -46,6 +46,11 @@ index.pkl
 *.db-shm
 *.db-wal
 
+# Lab 6.4.3 SQLite checkpointer. Created at run time, not committed.
+dataflow/data/checkpoints.sqlite
+dataflow/data/checkpoints.sqlite-wal
+dataflow/data/checkpoints.sqlite-shm
+
 # Project-specific IDE metadata
 *.iml
 

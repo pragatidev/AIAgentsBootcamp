@@ -14,6 +14,9 @@ Curriculum labs are numbered Part.Section.Lecture. Older S1-S16 files stay while
 06_03_03_add_messages_on_the_thread.py  two turns, count grows per node
 06_03_04_plant_a_collision.py    InvalidUpdateError, then both log lines
 06_03_05_trim_and_summarize.py   token count before and after, plus summary
+06_04_02_resume_thread.py        same thread_id, turn two continues turn one
+06_04_03_sqlite_kill_and_resume.py  --start then --resume on checkpoints.sqlite
+06_04_05_store_facts.py          preference written on A, read on B, miss on C
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt

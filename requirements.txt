@@ -4,6 +4,7 @@ pytest>=8.0
 tiktoken>=0.7
 langchain>=1.0
 langgraph>=1.0
+langgraph-checkpoint-sqlite>=2.0
 langchain-anthropic>=0.3
 langchain-openai>=0.3
 langchain-ollama>=0.3

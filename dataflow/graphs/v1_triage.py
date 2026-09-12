@@ -47,6 +47,7 @@ class RouteDecision(BaseModel):
 @dataclass
 class DeskContext:
     model: Any = None
+    customer_id: str = "anon"
 
 
 def classify(

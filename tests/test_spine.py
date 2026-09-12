@@ -66,7 +66,7 @@ def test_trim_keeps_last_four():
 
 
 def test_checkpoint_accrues_turns():
-    graph = build_v3_memory()
+    graph = build_v3_memory(model=FakeChatModel())
     cfg = {"configurable": {"thread_id": "t1"}}
     graph.invoke({"ticket": "one"}, cfg)
     second = graph.invoke({"ticket": "two"}, cfg)

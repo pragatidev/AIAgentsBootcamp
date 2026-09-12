@@ -6,7 +6,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.store.memory import InMemoryStore
 
 from dataflow.graphs.v3_memory import (
@@ -14,10 +14,11 @@ from dataflow.graphs.v3_memory import (
     read_preference,
     remember_preference,
 )
+from tests.fixtures.fake_model import FakeChatModel
 
 # %%
-saver = MemorySaver()
-graph = build_v3_memory(saver)
+saver = InMemorySaver()
+graph = build_v3_memory(saver, model=FakeChatModel())
 config = {"configurable": {"thread_id": "df-desk-1"}}
 first = graph.invoke({"ticket": "DF-1001"}, config)
 second = graph.invoke({"ticket": "DF-1002"}, config)
