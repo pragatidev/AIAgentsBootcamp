@@ -1,57 +1,250 @@
-"""S12: interrupt before a refund. Lookup is free. Checkpointer required."""
+"""DataFlow v4: park a refund, let a person answer, then write.
+
+Lookup and policy are free reads. Refund calls interrupt before any
+side effect. Classify calls the model from config. No keyword stand-in.
+"""
 
 from __future__ import annotations
 
 from typing import Any, Literal, TypedDict
 
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import END, START, StateGraph
-from langgraph.types import interrupt
+from langgraph.runtime import Runtime
+from langgraph.types import Command, interrupt
+from pydantic import BaseModel, Field
 
+from config import get_chat_model
+from dataflow.graphs.v1_triage import DeskContext
 from dataflow.tools.orders import lookup_order_from_ticket
+from dataflow.tools.policy import search_policy
+from dataflow.tools.refund import decline_refund, issue_refund
+
+__all__ = [
+    "DeskContext",
+    "HitlDecision",
+    "HitlState",
+    "build_v4_hitl",
+    "classify",
+    "lookup_node",
+    "pick_route",
+    "policy_node",
+    "refund_node",
+    "resume_with",
+]
+
+CLASSIFY_SYSTEM = (
+    "You route DataFlow support tickets. "
+    "Pick exactly one route. "
+    "refund: the customer wants money back, a return refund, or a charge reversed. "
+    "lookup: the customer asks where an order is, its status, or tracking, "
+    "and is not asking to move money. "
+    "policy: general rules with no named refund, such as the return window "
+    "or shipping SLA."
+)
 
 
 class HitlState(TypedDict, total=False):
     ticket: str
     route: str
     order: dict[str, Any]
-    decision: str
+    policy: dict[str, Any]
+    decision: Any
     reply: str
+    refund: dict[str, Any]
 
 
-def classify(state: HitlState) -> dict[str, str]:
-    text = state.get("ticket", "").lower()
-    if "refund" in text:
-        return {"route": "refund"}
-    return {"route": "lookup"}
+class HitlDecision(BaseModel):
+    route: Literal["lookup", "refund", "policy"] = Field(
+        description="lookup and policy are free reads; refund parks for a person"
+    )
 
 
-def pick(state: HitlState) -> Literal["lookup", "refund"]:
-    return "refund" if state.get("route") == "refund" else "lookup"
+def classify(
+    state: HitlState,
+    runtime: Runtime[DeskContext] | None = None,
+    *,
+    model: Any = None,
+) -> dict[str, str]:
+    """Call the chat model. No keyword stand-in."""
+    chat = model
+    if chat is None and runtime is not None:
+        ctx = getattr(runtime, "context", None)
+        chat = getattr(ctx, "model", None) if ctx is not None else None
+    if chat is None:
+        chat = get_chat_model()
+    structured = chat.with_structured_output(HitlDecision)
+    ticket = state.get("ticket", "")
+    decision = structured.invoke(
+        [
+            {"role": "system", "content": CLASSIFY_SYSTEM},
+            {"role": "user", "content": ticket},
+        ]
+    )
+    if hasattr(decision, "route"):
+        route = decision.route
+    else:
+        route = decision["route"]
+    return {"route": str(route)}
+
+
+def pick_route(state: HitlState) -> Literal["lookup", "refund", "policy"]:
+    route = str(state.get("route") or "")
+    if route in {"lookup", "refund", "policy"}:
+        return route  # type: ignore[return-value]
+    return "lookup"
 
 
 def lookup_node(state: HitlState) -> dict[str, Any]:
-    order = lookup_order_from_ticket(state.get("ticket", ""))
-    return {"order": order, "reply": f"looked up {order.get('order_id', 'none')}"}
+    """A read. Free. Never parks."""
+    ticket = state.get("ticket", "")
+    order = lookup_order_from_ticket(ticket)
+    if order.get("found"):
+        reply = (
+            f"looked up {order['order_id']}. "
+            f"Order {order['order_id']} is {order['status']}. "
+            f"Item: {order['item']}."
+        )
+    else:
+        reason = order.get("reason", "no order")
+        reply = f"looked up none. I could not find that order ({reason})."
+    return {"order": order, "reply": reply}
+
+
+def policy_node(state: HitlState) -> dict[str, Any]:
+    """A read. Free. Never parks."""
+    ticket = state.get("ticket", "")
+    hit = search_policy.invoke({"question": ticket})
+    if hit.get("found"):
+        reply = f"From {hit['path']}: {hit['paragraph']}"
+    else:
+        reason = hit.get("reason", "no customer policy matched")
+        reply = f"I could not find a customer policy ({reason})."
+    return {"policy": hit, "reply": reply}
+
+
+def _parse_decision(decision: Any, default_amount: float) -> tuple[str, float]:
+    """Map the reviewer's answer to an action and an amount."""
+    if isinstance(decision, dict):
+        raw_action = decision.get("action") or decision.get("decision") or "approve"
+        action = str(raw_action).strip().lower()
+        if "amount" in decision and decision["amount"] is not None:
+            amount = float(decision["amount"])
+        else:
+            amount = default_amount
+        if action in {"reject", "deny", "no"}:
+            return "reject", amount
+        return "approve", amount
+    text = str(decision).strip().lower()
+    if text in {"reject", "deny", "no"}:
+        return "reject", default_amount
+    return "approve", default_amount
 
 
 def refund_node(state: HitlState) -> dict[str, Any]:
+    """Park before any write. The write sits after interrupt."""
+    ticket = state.get("ticket", "")
+    order = lookup_order_from_ticket(ticket)
+    hit = search_policy.invoke({"question": ticket})
+    if hit.get("found"):
+        policy_line = str(hit.get("paragraph") or "")
+    else:
+        policy_line = str(hit.get("reason") or "no customer policy matched")
+    amount = float(order.get("amount") or 0)
+    order_id = str(order.get("order_id") or "")
     payload = {
         "action": "refund",
-        "ticket": state.get("ticket", ""),
-        "question": "Approve this refund?",
+        "ticket": ticket,
+        "order_id": order_id,
+        "amount": amount,
+        "policy": policy_line,
+        "question": (
+            "Approve this refund of "
+            + str(amount)
+            + " on order "
+            + order_id
+            + "?"
+        ),
     }
     decision = interrupt(payload)
-    return {"decision": str(decision), "reply": f"refund {decision}"}
+    # The write is after interrupt. The node re-runs from its start on resume,
+    # so a write before this line would issue the refund before anyone approved,
+    # then issue it again when the reviewer answers.
+    action, paid = _parse_decision(decision, amount)
+    if action == "reject":
+        record = decline_refund.invoke(
+            {
+                "order_id": order_id,
+                "reason": "reviewer rejected the refund",
+            }
+        )
+        reply = (
+            "Refund declined for order "
+            + order_id
+            + ". Reason: "
+            + str(record.get("reason"))
+        )
+        return {
+            "order": order,
+            "decision": decision,
+            "refund": record,
+            "reply": reply,
+        }
+    record = issue_refund.invoke(
+        {
+            "order_id": order_id,
+            "amount": paid,
+            "reason": "reviewer approved",
+        }
+    )
+    reply = (
+        "Refund issued for order "
+        + order_id
+        + ". Amount: "
+        + str(record.get("amount"))
+        + "."
+    )
+    return {
+        "order": order,
+        "decision": decision,
+        "refund": record,
+        "reply": reply,
+    }
 
 
-def build_v4_hitl(checkpointer=None):
-    graph = StateGraph(HitlState)
-    graph.add_node("classify", classify)
-    graph.add_node("lookup", lookup_node)
-    graph.add_node("refund", refund_node)
-    graph.add_edge(START, "classify")
-    graph.add_conditional_edges("classify", pick, {"lookup": "lookup", "refund": "refund"})
-    graph.add_edge("lookup", END)
-    graph.add_edge("refund", END)
-    return graph.compile(checkpointer=checkpointer or MemorySaver())
+def resume_with(graph: Any, config: dict[str, Any], decision: Any) -> Any:
+    """Resume a parked thread with the reviewer's answer."""
+    return graph.invoke(Command(resume=decision), config)
+
+
+def build_v4_hitl(checkpointer=None, model=None):
+    """Compile the desk. Defaults to InMemorySaver when checkpointer is None."""
+    if checkpointer is None:
+        checkpointer = InMemorySaver()
+
+    builder = StateGraph(HitlState, context_schema=DeskContext)
+
+    def classify_node(
+        state: HitlState,
+        runtime: Runtime[DeskContext] | None = None,
+    ) -> dict[str, str]:
+        return classify(state, runtime=runtime, model=model)
+
+    builder.add_node("classify", classify_node)
+    builder.add_node("lookup", lookup_node)
+    builder.add_node("policy", policy_node)
+    builder.add_node("refund", refund_node)
+    builder.add_edge(START, "classify")
+    builder.add_conditional_edges(
+        "classify",
+        pick_route,
+        {
+            "lookup": "lookup",
+            "refund": "refund",
+            "policy": "policy",
+        },
+    )
+    builder.add_edge("lookup", END)
+    builder.add_edge("policy", END)
+    builder.add_edge("refund", END)
+    return builder.compile(checkpointer=checkpointer)

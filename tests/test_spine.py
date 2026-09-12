@@ -81,21 +81,29 @@ def test_store_is_cross_thread():
     assert read_preference(store, "cust-2", "channel") is None
 
 
-def test_lookup_does_not_park_refund_does():
-    graph = build_v4_hitl()
-    look = graph.invoke(
+def test_lookup_does_not_park_refund_does(tmp_path, monkeypatch):
+    from dataflow.tools import refund as refund_mod
+
+    monkeypatch.setattr(refund_mod, "REFUNDS_PATH", tmp_path / "refunds.jsonl")
+    monkeypatch.delenv("DATAFLOW_REFUNDS_PATH", raising=False)
+    look_graph = build_v4_hitl(model=FakeChatModel(route="lookup"))
+    look_cfg = {"configurable": {"thread_id": "l1"}}
+    look = look_graph.invoke(
         {"ticket": "Status of order DF-1001?"},
-        {"configurable": {"thread_id": "l1"}},
+        look_cfg,
     )
     assert "looked up" in look.get("reply", "")
-    parked = graph.invoke(
+    assert not look_graph.get_state(look_cfg).interrupts
+    refund_graph = build_v4_hitl(model=FakeChatModel(route="refund"))
+    refund_cfg = {"configurable": {"thread_id": "r1"}}
+    refund_graph.invoke(
         {"ticket": "Please refund order DF-1001"},
-        {"configurable": {"thread_id": "r1"}},
+        refund_cfg,
     )
-    state = graph.get_state({"configurable": {"thread_id": "r1"}})
+    state = refund_graph.get_state(refund_cfg)
     assert state.interrupts
     assert state.interrupts[0].value["action"] == "refund"
-    done = graph.invoke(Command(resume="approve"), {"configurable": {"thread_id": "r1"}})
+    done = refund_graph.invoke(Command(resume="approve"), refund_cfg)
     assert done["decision"] == "approve"
 
 
