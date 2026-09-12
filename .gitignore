@@ -87,6 +87,16 @@ dataflow/context/_last_rot.json
 # TechCorp password-reset audit. Created at run time, not committed.
 techcorp/data/audit.jsonl
 
+# Part 16 framework caches. Created at run time, not committed.
+.n8n/
+.crewai/
+.adk/
+.langflow/
+labs/16_n8n/.n8n/
+labs/16_crewai/.crewai/
+chroma/
+chromadb/
+
 # Section 23 FAISS index. Built at run time, not committed.
 dataflow/data/faiss_index/
 dataflow/data/faiss_index_all/

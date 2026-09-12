@@ -1,0 +1,11 @@
+{
+  "model": "qwen3:8b",
+  "base_url": "http://localhost:11434",
+  "blocked": true,
+  "blocked_on": "N8N",
+  "error": "login failed: HTTP Error 401: Unauthorized",
+  "n8n_started": true,
+  "healthz": "ok",
+  "owner_setup": true,
+  "n8n_execute_help": "n8n execute --id"
+}

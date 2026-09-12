@@ -1,0 +1,108 @@
+{
+  "name": "DataFlow ticket",
+  "description": "Langflow canvas for the DataFlow refund ticket. The lookup tool schema is empty as first exported.",
+  "data": {
+    "nodes": [
+      {
+        "id": "ChatInput-1",
+        "type": "genericNode",
+        "position": {"x": 80, "y": 160},
+        "data": {
+          "type": "ChatInput",
+          "id": "ChatInput-1",
+          "node": {
+            "display_name": "Chat Input",
+            "description": "The DataFlow refund ticket.",
+            "template": {
+              "input_value": {
+                "type": "str",
+                "value": "Hi, I want to return order DF-1001. The desk lamp is unused. Can I get a refund?"
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "OllamaModel-1",
+        "type": "genericNode",
+        "position": {"x": 380, "y": 160},
+        "data": {
+          "type": "OllamaModel",
+          "id": "OllamaModel-1",
+          "node": {
+            "display_name": "Ollama Chat",
+            "description": "Student chat model from config.py.",
+            "template": {
+              "base_url": {
+                "type": "str",
+                "value": "http://localhost:11434"
+              },
+              "model_name": {
+                "type": "str",
+                "value": "qwen3:8b"
+              },
+              "temperature": {
+                "type": "float",
+                "value": 0
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "Tool-lookup",
+        "type": "genericNode",
+        "position": {"x": 380, "y": 380},
+        "data": {
+          "type": "PythonFunction",
+          "id": "Tool-lookup",
+          "node": {
+            "display_name": "lookup_order",
+            "description": "Order lookup. Schema empty as first exported.",
+            "template": {
+              "name": {
+                "type": "str",
+                "value": "lookup_order"
+              },
+              "tool_schema": {
+                "type": "dict",
+                "value": {}
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "ChatOutput-1",
+        "type": "genericNode",
+        "position": {"x": 680, "y": 160},
+        "data": {
+          "type": "ChatOutput",
+          "id": "ChatOutput-1",
+          "node": {
+            "display_name": "Chat Output",
+            "description": "Customer reply.",
+            "template": {}
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "ChatInput-1",
+        "target": "OllamaModel-1",
+        "id": "e-input-model"
+      },
+      {
+        "source": "Tool-lookup",
+        "target": "OllamaModel-1",
+        "id": "e-tool-model"
+      },
+      {
+        "source": "OllamaModel-1",
+        "target": "ChatOutput-1",
+        "id": "e-model-output"
+      }
+    ]
+  }
+}
