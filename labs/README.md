@@ -135,6 +135,9 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 16_02_02_openai_agents.py      refund writes, then approval parks
 16_02_03_adk.py                missing job loops, then DataFlow job stops
 16_02_04_rubric.py             planted empty LangGraph loss fails, table passes
+17_01_03_serve.py              health, 422 on free text, ticket prints thread_id
+17_01_05_postgres_resume.py    kill and resume parked refund; sqlite if no Postgres
+17_01_06_secrets.py            .dockerignore excludes .env; config still finds the model
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt

@@ -3,7 +3,9 @@
 from dataflow.ops.tracer import (
     LocalTraceHandler,
     build_failing_carrier_graph,
+    current_request_id,
     render_waterfall,
+    set_request_id,
     trace,
     traced_invoke,
 )
@@ -11,7 +13,9 @@ from dataflow.ops.tracer import (
 __all__ = [
     "LocalTraceHandler",
     "build_failing_carrier_graph",
+    "current_request_id",
     "render_waterfall",
+    "set_request_id",
     "trace",
     "traced_invoke",
 ]

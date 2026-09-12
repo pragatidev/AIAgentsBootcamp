@@ -130,3 +130,14 @@ pytest_cache/
 .pytest_cache/
 .env
 !.env.sample
+
+# Section 43-45 runtime. Labs write these; they are not the source.
+deploy/runs/*.json
+deploy/runs/*.BLOCKED.md
+ops/tracing/runs/*.jsonl
+ops/cost_report.md
+dataflow/data/serve_checkpoints.sqlite
+dataflow/data/serve_checkpoints.sqlite-wal
+dataflow/data/serve_checkpoints.sqlite-shm
+dataflow/data/serve_checkpoints.sqlite.meta.json
+
