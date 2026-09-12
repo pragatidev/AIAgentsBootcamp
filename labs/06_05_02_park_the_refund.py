@@ -71,5 +71,6 @@ if state.interrupts:
 rows = read_refunds()
 print("refunds_exists", refunds_path.exists())
 print("refunds_rows", len(rows))
-print("refunds_written", False)
+refunds_written = refunds_path.exists() and len(rows) > 0
+print("refunds_written", refunds_written)
 print("parked", bool(state.interrupts))

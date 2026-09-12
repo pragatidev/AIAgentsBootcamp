@@ -86,4 +86,5 @@ print("decision_reject", rejected.get("decision"))
 rows_after_reject = read_refunds()
 print("rows_after_reject", len(rows_after_reject))
 print("row_added_on_reject", len(rows_after_reject) > count_before_reject)
-print("refunds_written_on_reject", False)
+refunds_written_on_reject = len(rows_after_reject) > count_before_reject
+print("refunds_written_on_reject", refunds_written_on_reject)

@@ -72,6 +72,23 @@ def test_resume_reject(tmp_path, monkeypatch):
     assert not path.exists()
 
 
+def test_unclear_answer_does_not_write(tmp_path, monkeypatch):
+    path = _patch_refunds(tmp_path, monkeypatch)
+    graph = build_v4_hitl(model=FakeChatModel(route="refund"))
+    cfg = {"configurable": {"thread_id": "test-11-unclear"}}
+    graph.invoke({"ticket": REFUND_TICKET}, cfg)
+    done = resume_with(graph, cfg, "banana")
+    assert "not understood" in (done.get("reply") or "")
+    assert done.get("decision") == "banana"
+    refund = done.get("refund") or {}
+    assert refund.get("refunded") is False
+    assert refund.get("unclear") is True
+    assert refund.get("order_id") == "DF-1001"
+    assert refund.get("answer") == "banana"
+    assert refund_mod.read_refunds() == []
+    assert not path.exists()
+
+
 def test_edit_before_resume(tmp_path, monkeypatch):
     _patch_refunds(tmp_path, monkeypatch)
     graph = build_v4_hitl(model=FakeChatModel(route="refund"))
@@ -79,12 +96,54 @@ def test_edit_before_resume(tmp_path, monkeypatch):
     graph.invoke({"ticket": REFUND_TICKET}, cfg)
     payload = graph.get_state(cfg).interrupts[0].value
     assert payload["amount"] == 49.0
-    done = resume_with(graph, cfg, {"amount": 20.0})
+    assert payload.get("amount_source") == "order"
+    graph.update_state(cfg, {"refund_amount": 20.0})
+    assert graph.get_state(cfg).values.get("refund_amount") == 20.0
+    done = resume_with(graph, cfg, "approve")
     rows = refund_mod.read_refunds()
     assert len(rows) == 1
     assert rows[0]["amount"] == 20.0
     assert rows[0]["order_id"] == "DF-1001"
     assert "20.0" in str(done.get("reply"))
+    second = graph.get_state(cfg).values
+    # Resume consumed the dynamic interrupt. The row amount is the state
+    # value, which is what the second payload carried (amount_source state).
+    assert second.get("refund_amount") == 20.0
+    refund = done.get("refund") or {}
+    assert refund.get("amount") == 20.0
+
+
+def test_edit_in_answer(tmp_path, monkeypatch):
+    _patch_refunds(tmp_path, monkeypatch)
+    graph = build_v4_hitl(model=FakeChatModel(route="refund"))
+    cfg = {"configurable": {"thread_id": "test-11-edit-answer"}}
+    graph.invoke({"ticket": REFUND_TICKET}, cfg)
+    payload = graph.get_state(cfg).interrupts[0].value
+    assert payload["amount"] == 49.0
+    done = resume_with(graph, cfg, {"action": "approve", "amount": 20.0})
+    rows = refund_mod.read_refunds()
+    assert len(rows) == 1
+    assert rows[0]["amount"] == 20.0
+    assert rows[0]["order_id"] == "DF-1001"
+    assert "20.0" in str(done.get("reply"))
+
+
+def test_static_interrupt_before_refund(tmp_path, monkeypatch):
+    path = _patch_refunds(tmp_path, monkeypatch)
+    graph = build_v4_hitl(
+        model=FakeChatModel(route="refund"),
+        interrupt_before=["refund"],
+    )
+    cfg = {"configurable": {"thread_id": "test-11-static"}}
+    graph.invoke({"ticket": REFUND_TICKET}, cfg)
+    state = graph.get_state(cfg)
+    assert state.next == ("refund",)
+    assert not state.interrupts
+    graph.invoke(None, cfg)
+    state = graph.get_state(cfg)
+    assert state.interrupts
+    assert not path.exists()
+    assert refund_mod.read_refunds() == []
 
 
 def test_write_is_after_interrupt(tmp_path, monkeypatch):

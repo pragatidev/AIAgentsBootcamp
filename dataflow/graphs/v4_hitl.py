@@ -52,6 +52,7 @@ class HitlState(TypedDict, total=False):
     decision: Any
     reply: str
     refund: dict[str, Any]
+    refund_amount: float | None
 
 
 class HitlDecision(BaseModel):
@@ -124,21 +125,31 @@ def policy_node(state: HitlState) -> dict[str, Any]:
 
 
 def _parse_decision(decision: Any, default_amount: float) -> tuple[str, float]:
-    """Map the reviewer's answer to an action and an amount."""
+    """Map the reviewer's answer to an action and an amount.
+
+    Approve only on an explicit approve. Reject on reject/deny/no.
+    Any other answer is unclear: no write, no decline.
+    """
     if isinstance(decision, dict):
-        raw_action = decision.get("action") or decision.get("decision") or "approve"
-        action = str(raw_action).strip().lower()
+        raw_action = decision.get("action")
+        if raw_action is None:
+            raw_action = decision.get("decision")
+        action = str(raw_action).strip().lower() if raw_action is not None else ""
         if "amount" in decision and decision["amount"] is not None:
             amount = float(decision["amount"])
         else:
             amount = default_amount
+        if action == "approve":
+            return "approve", amount
         if action in {"reject", "deny", "no"}:
             return "reject", amount
-        return "approve", amount
+        return "unclear", amount
     text = str(decision).strip().lower()
+    if text == "approve":
+        return "approve", default_amount
     if text in {"reject", "deny", "no"}:
         return "reject", default_amount
-    return "approve", default_amount
+    return "unclear", default_amount
 
 
 def refund_node(state: HitlState) -> dict[str, Any]:
@@ -150,13 +161,14 @@ def refund_node(state: HitlState) -> dict[str, Any]:
         policy_line = str(hit.get("paragraph") or "")
     else:
         policy_line = str(hit.get("reason") or "no customer policy matched")
-    amount = float(order.get("amount") or 0)
+    amount = float(state.get("refund_amount") or order.get("amount") or 0)
     order_id = str(order.get("order_id") or "")
     payload = {
         "action": "refund",
         "ticket": ticket,
         "order_id": order_id,
         "amount": amount,
+        "amount_source": "state" if state.get("refund_amount") else "order",
         "policy": policy_line,
         "question": (
             "Approve this refund of "
@@ -171,6 +183,26 @@ def refund_node(state: HitlState) -> dict[str, Any]:
     # so a write before this line would issue the refund before anyone approved,
     # then issue it again when the reviewer answers.
     action, paid = _parse_decision(decision, amount)
+    if action == "unclear":
+        record = {
+            "refunded": False,
+            "unclear": True,
+            "order_id": order_id,
+            "answer": decision,
+        }
+        reply = (
+            "Refund not issued for order "
+            + order_id
+            + ": reviewer answer not understood ("
+            + str(decision)
+            + ")"
+        )
+        return {
+            "order": order,
+            "decision": decision,
+            "refund": record,
+            "reply": reply,
+        }
     if action == "reject":
         record = decline_refund.invoke(
             {
@@ -217,7 +249,7 @@ def resume_with(graph: Any, config: dict[str, Any], decision: Any) -> Any:
     return graph.invoke(Command(resume=decision), config)
 
 
-def build_v4_hitl(checkpointer=None, model=None):
+def build_v4_hitl(checkpointer=None, model=None, interrupt_before=None):
     """Compile the desk. Defaults to InMemorySaver when checkpointer is None."""
     if checkpointer is None:
         checkpointer = InMemorySaver()
@@ -247,4 +279,7 @@ def build_v4_hitl(checkpointer=None, model=None):
     builder.add_edge("lookup", END)
     builder.add_edge("policy", END)
     builder.add_edge("refund", END)
-    return builder.compile(checkpointer=checkpointer)
+    return builder.compile(
+        checkpointer=checkpointer,
+        interrupt_before=interrupt_before or [],
+    )

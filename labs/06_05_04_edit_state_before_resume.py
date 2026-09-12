@@ -1,8 +1,9 @@
 # %% [markdown]
-# Edit the amount before you resume.
+# Edit the state before you resume.
 #
-# Park a refund, print the payload amount, then resume with a dict
-# that lowers the amount. The written row shows the edited figure.
+# Park a refund, print the payload amount from the order, then
+# update_state with a lower refund_amount and resume with approve.
+# The written row shows the edited figure.
 
 # %%
 from pathlib import Path
@@ -66,11 +67,11 @@ print("interrupts", state.interrupts)
 payload = state.interrupts[0].value
 print("payload", payload)
 print("payload_amount", payload["amount"])
-edited_amount = 20.0
-print("edited_amount", edited_amount)
-edited = {"amount": edited_amount}
-print("decision", edited)
-out = resume_with(graph, thread, edited)
+# The node re-runs from its top on resume, which is why the edited state
+# is read before the new payload is built.
+graph.update_state(thread, {"refund_amount": 20.0})
+print("refund_amount", graph.get_state(thread).values.get("refund_amount"))
+out = resume_with(graph, thread, "approve")
 print("reply", out.get("reply"))
 print("decision_out", out.get("decision"))
 rows = read_refunds()
