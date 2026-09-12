@@ -23,6 +23,7 @@ from dataflow.graphs.runaway import (
     run_with_cap,
 )
 from dataflow.graphs.v7_supervisor import build_v7_supervisor
+from dataflow.graphs.plan_execute import build_plan_execute
 from dataflow.graphs.v8_nightly import build_v8_nightly, run_nightly
 
 from dataflow.graphs.crag import build_crag
@@ -54,6 +55,7 @@ __all__ = [
     "build_timeout_demo",
     "run_with_cap",
     "build_v7_supervisor",
+    "build_plan_execute",
     "build_v8_nightly",
     "run_nightly",
 

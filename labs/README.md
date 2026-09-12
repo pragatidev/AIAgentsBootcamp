@@ -110,6 +110,9 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 11_02_04_actor_id.py  actor=reviewer-1 on the trace, admin fallback is the miss
 11_02_06_pii.py  email redacted, key leaks, then SecretFilterMiddleware
 11_02_07_red_team.py  three blocks, eval_ci green, skip-red-team is FAIL
+12_01_04_plan_execute.py  plan then act, unplanned lookup is a miss
+12_01_06_critic.py         writer, miss list, revision; planted empty critic
+12_02_02_eval_optimize.py  rubric, scores per attempt, bar or cap
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt
