@@ -8,12 +8,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from dataflow.agent.loop import run_loop
 from dataflow.tools.escalate import escalate_to_human
-from dataflow.tools.orders import lookup_order
+from dataflow.tools.orders import lookup_order_from_ticket
 from dataflow.tools.policy import read_policy
 
 # %%
 tools = {
-    "orders": lookup_order,
+    "orders": lookup_order_from_ticket,
     "policy": read_policy,
     "escalate": escalate_to_human,
 }

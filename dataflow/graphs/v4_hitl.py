@@ -8,7 +8,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
 
-from dataflow.tools.orders import lookup_order
+from dataflow.tools.orders import lookup_order_from_ticket
 
 
 class HitlState(TypedDict, total=False):
@@ -31,7 +31,7 @@ def pick(state: HitlState) -> Literal["lookup", "refund"]:
 
 
 def lookup_node(state: HitlState) -> dict[str, Any]:
-    order = lookup_order(state.get("ticket", ""))
+    order = lookup_order_from_ticket(state.get("ticket", ""))
     return {"order": order, "reply": f"looked up {order.get('order_id', 'none')}"}
 
 

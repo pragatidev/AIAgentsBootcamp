@@ -15,31 +15,38 @@ def load_orders() -> dict[str, dict]:
     return json.loads(ORDERS_PATH.read_text(encoding="utf-8"))
 
 
-def lookup_order(ticket: str) -> dict:
-    """Look up by DF-#### inside a ticket string. Used by the fixture loop."""
-    orders = load_orders()
-    match = re.search(r"DF-\d+", ticket.upper())
-    if not match:
-        return {"found": False, "reason": "no order id in the ticket"}
-    order_id = match.group(0)
-    row = orders.get(order_id)
-    if not row:
-        return {"found": False, "order_id": order_id, "reason": "unknown order"}
-    return {"found": True, "order_id": order_id, **row}
-
-
 def lookup_order_by_id(order_id: str) -> dict:
-    """Look up one id. A miss is a dict, not a crash."""
+    """Look up one id. A miss is a dict, not a crash.
+
+    Accepts a bare id like DF-1001, or a longer string that contains one.
+    """
     orders = load_orders()
-    key = order_id.strip().upper()
+    raw = (order_id or "").strip()
+    match = re.search(r"DF-\d+", raw.upper())
+    key = match.group(0) if match else raw.upper()
+    if not key:
+        return {"found": False, "reason": "no order id in the ticket"}
     row = orders.get(key)
     if not row:
         return {"found": False, "order_id": key, "reason": "unknown order"}
     return {"found": True, "order_id": key, **row}
 
 
+def lookup_order_from_ticket(ticket: str) -> dict:
+    """Look up by DF-#### inside a ticket string. Used by the fixture loop."""
+    match = re.search(r"DF-\d+", (ticket or "").upper())
+    if not match:
+        return {"found": False, "reason": "no order id in the ticket"}
+    return lookup_order_by_id(match.group(0))
+
+
+@tool
+def lookup_order(order_id: str) -> dict:
+    """Look up a DataFlow order by id like DF-1001. Returns the row or a typed miss."""
+    return lookup_order_by_id(order_id)
+
+
 @tool
 def lookup_order_tool(order_id: str) -> str:
     """Look up a DataFlow order by id like DF-1001. Returns JSON."""
-    row = lookup_order_by_id(order_id)
-    return json.dumps(row)
+    return json.dumps(lookup_order_by_id(order_id))

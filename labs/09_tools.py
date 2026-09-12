@@ -1,5 +1,5 @@
 # %%
-"""S9.4 Agent, ToolNode, back. One ticket. No model."""
+"""S9.4 Agent, ToolNode, back. One ticket. Fixture model."""
 
 from pathlib import Path
 import json
@@ -10,9 +10,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from langchain_core.messages import HumanMessage, ToolMessage
 
 from dataflow.graphs.v2_tools import build_v2_tools
+from tests.fixtures.fake_model import FakeToolModel
 
 # %%
-graph = build_v2_tools()
+graph = build_v2_tools(model=FakeToolModel())
 out = graph.invoke(
     {"messages": [HumanMessage(content="Can I return order DF-1001?")]}
 )

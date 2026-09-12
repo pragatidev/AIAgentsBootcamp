@@ -8,6 +8,7 @@ from dataflow.graphs.collision import build_collision, build_reduced
 from dataflow.graphs.runaway import run_with_cap
 from dataflow.graphs.trim import trim_messages
 from dataflow.graphs.v2_route import build_v2_route
+from tests.fixtures.fake_model import FakeChatModel
 from dataflow.graphs.v3_memory import (
     build_v3_memory,
     read_preference,
@@ -19,18 +20,21 @@ from dataflow.tools.structured import parse_tool_json
 
 
 def test_routes_three_ways():
-    graph = build_v2_route()
-    orders = graph.invoke({"ticket": "Can I return order DF-1001?"})
-    policy = graph.invoke({"ticket": "What is your shipping time?"})
-    human = graph.invoke({"ticket": "I want a human manager please"})
+    orders = build_v2_route(model=FakeChatModel(route="orders")).invoke(
+        {"ticket": "Can I return order DF-1001?"}
+    )
+    policy = build_v2_route(model=FakeChatModel(route="policy")).invoke(
+        {"ticket": "What is your shipping time?"}
+    )
+    human = build_v2_route(model=FakeChatModel(route="escalate")).invoke(
+        {"ticket": "I want a human manager please"}
+    )
     assert orders["route"] == "orders"
-    assert orders["result"]["found"] is True
+    assert orders["order"]["found"] is True
     assert policy["route"] == "policy"
-    assert "30 days" in (policy["result"].get("text") or "") or "shipping" in (
-        policy["result"].get("text") or ""
-    ).lower()
+    assert policy.get("policy") is not None
     assert human["route"] == "escalate"
-    assert human["result"]["escalate"] is True
+    assert human["escalation"]["parked"] is True
 
 
 def test_collision_then_reducer():

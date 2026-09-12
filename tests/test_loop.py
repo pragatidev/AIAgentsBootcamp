@@ -2,11 +2,11 @@
 
 from dataflow.agent.loop import AgentLoop, run_loop
 from dataflow.tools.escalate import escalate_to_human
-from dataflow.tools.orders import lookup_order
+from dataflow.tools.orders import lookup_order_from_ticket
 from dataflow.tools.policy import read_policy
 
 TOOLS = {
-    "orders": lookup_order,
+    "orders": lookup_order_from_ticket,
     "policy": read_policy,
     "escalate": escalate_to_human,
 }

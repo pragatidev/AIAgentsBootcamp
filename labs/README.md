@@ -7,6 +7,10 @@ Curriculum labs are numbered Part.Section.Lecture. Older S1-S16 files stay while
 ```
 06_01_03_build_triage_graph.py   three-node DataFlow graph, mermaid, compile
 06_01_04_invoke_and_test.py      invoke a real ticket, classify alone, pytest
+06_02_02_route_three_ways.py     three tickets, three labeled routes, mermaid
+06_02_04_tool_cycle.py           ToolNode cycle: call, result, final answer
+06_02_05_test_routes.py          pytest tests/test_dataflow_routes.py
+06_02_06_command_vs_edge.py      Command versus a conditional edge, both mermaids
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt

@@ -6,7 +6,7 @@ import config
 from dataflow.agent.loop import run_loop
 from dataflow.serve.app import health
 from dataflow.tools.escalate import escalate_to_human
-from dataflow.tools.orders import lookup_order
+from dataflow.tools.orders import lookup_order_from_ticket
 from dataflow.tools.policy import read_policy
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,14 +26,14 @@ def test_config_has_local_default_and_import_does_not_need_a_key():
 
 
 def test_lookup_known_order():
-    row = lookup_order("Can I return order DF-1001?")
+    row = lookup_order_from_ticket("Can I return order DF-1001?")
     assert row["found"] is True
     assert row["item"] == "desk lamp"
     assert row["days_since_delivery"] == 12
 
 
 def test_lookup_unknown_order():
-    row = lookup_order("Can I return order DF-9999?")
+    row = lookup_order_from_ticket("Can I return order DF-9999?")
     assert row["found"] is False
 
 
@@ -50,7 +50,7 @@ def test_escalate_sets_the_gate():
 
 def test_fixture_loop_stops():
     tools = {
-        "orders": lookup_order,
+        "orders": lookup_order_from_ticket,
         "policy": read_policy,
         "escalate": escalate_to_human,
     }
