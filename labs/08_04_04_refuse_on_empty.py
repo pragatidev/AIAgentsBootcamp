@@ -18,7 +18,7 @@ from dataflow.tools.retrieve import get_index
 
 print("model", CHAT_MODEL)
 print("building_index")
-get_index()
+get_index(scope="all")
 print("index_ready")
 
 uncovered = "Do you sell coffee beans in the DataFlow shop?"

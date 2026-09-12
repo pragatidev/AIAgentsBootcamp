@@ -148,7 +148,7 @@ def retrieve_node(
 ) -> dict[str, Any]:
     question = state.get("rewritten_question") or state.get("question") or ""
     if scope == "all":
-        hits = search(get_index(), question, k=3, folder=None)
+        hits = search(get_index(scope="all"), question, k=3, folder=None)
     else:
         hits = retrieve_passages(question, k=3, folder=None)
     return {"passages": hits}

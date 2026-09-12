@@ -19,7 +19,7 @@ from dataflow.tools.retrieve import get_index
 
 print("model", CHAT_MODEL)
 print("building_index")
-get_index()
+get_index(scope="all")
 print("index_ready")
 
 question = "Who can approve a refund under 30 days?"

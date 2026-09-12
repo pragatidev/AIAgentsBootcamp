@@ -25,23 +25,47 @@ RETRIEVE_DESCRIPTION = (
 
 CUSTOMER_FOLDERS = frozenset({"wiki", "customer_facing"})
 
+# Two indexes, two folders. The customer index is the one lab 23.2 builds
+# (customer facing, business data, wiki) and the retrieve tool searches.
+# The "all" index holds every knowledge base folder, internal ones
+# included, for the graphs built with scope="all". They never share a
+# folder, so the order you run the labs in cannot change what a scope sees.
+INDEX_ALL_DIR = INDEX_DIR.parent / "faiss_index_all"
+
 _INDEX: Any = None
+_INDEX_ALL: Any = None
 
 
 def set_index(index: Any) -> None:
-    """Tests inject a hashing index so pytest stays off Ollama."""
-    global _INDEX
+    """Tests inject a hashing index so pytest stays off Ollama. Both scopes."""
+    global _INDEX, _INDEX_ALL
     _INDEX = index
+    _INDEX_ALL = index
 
 
 def reset_index() -> None:
-    global _INDEX
+    global _INDEX, _INDEX_ALL
     _INDEX = None
+    _INDEX_ALL = None
 
 
-def get_index(embeddings: Any = None):
-    """Load the FAISS index, building it on first use."""
-    global _INDEX
+def get_index(embeddings: Any = None, scope: str = "customer"):
+    """Load the FAISS index for a scope, building it on first use.
+
+    scope="customer" is the index under INDEX_DIR. scope="all" is the
+    full knowledge base under INDEX_ALL_DIR, built from every folder.
+    """
+    global _INDEX, _INDEX_ALL
+    if scope == "all":
+        if _INDEX_ALL is not None:
+            return _INDEX_ALL
+        if (INDEX_ALL_DIR / "index.faiss").is_file():
+            _INDEX_ALL = load_faiss_index(INDEX_ALL_DIR, embeddings=embeddings)
+        else:
+            _INDEX_ALL = build_faiss_index(
+                embeddings=embeddings, index_dir=INDEX_ALL_DIR
+            )
+        return _INDEX_ALL
     if _INDEX is not None:
         return _INDEX
     faiss_file = INDEX_DIR / "index.faiss"

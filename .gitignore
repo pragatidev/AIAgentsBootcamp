@@ -56,6 +56,7 @@ dataflow/data/refunds.jsonl
 
 # Section 23 FAISS index. Built at run time, not committed.
 dataflow/data/faiss_index/
+dataflow/data/faiss_index_all/
 
 # Project-specific IDE metadata
 *.iml
