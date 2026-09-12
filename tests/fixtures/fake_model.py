@@ -56,17 +56,44 @@ def _split_reply(text: str) -> tuple[str, str]:
     return body[:mid], body[mid:]
 
 
+def _schema_name(schema: Any) -> str:
+    return str(getattr(schema, "__name__", "") or "")
+
+
+def _schema_fields(schema: Any) -> set[str]:
+    fields = getattr(schema, "model_fields", None) or {}
+    return set(fields)
+
+
+def _is_resume_score_schema(schema: Any) -> bool:
+    name = _schema_name(schema)
+    if name == "ResumeScore":
+        return True
+    fields = _schema_fields(schema)
+    return "score" in fields and "fit" in fields and "reason" in fields
+
+
+def _is_billing_finding_schema(schema: Any) -> bool:
+    name = _schema_name(schema)
+    if name == "BillingFinding":
+        return True
+    fields = _schema_fields(schema)
+    return "duplicate_charge" in fields and "missing_tax_line" in fields
+
+
 class FakeChatModel:
     """Duck-typed chat model. with_structured_output returns the fixed route
-    or a PreferenceDecision when that schema is requested."""
+    or a payload from `structured` keyed by schema name."""
 
     def __init__(
         self,
         route: str = "orders",
         reply: str = "looked up desk lamp",
+        structured: dict[str, Any] | None = None,
     ) -> None:
         self.route = route
         self.reply = reply
+        self.structured = dict(structured or {})
         self.calls = 0
         self.invoke_calls = 0
         self.stream_calls = 0
@@ -91,18 +118,40 @@ class FakeChatModel:
 
     def with_structured_output(self, schema: Any, **kwargs: Any) -> Any:
         route = self.route
+        structured = self.structured
+        name = _schema_name(schema)
 
         class _Runner:
             def invoke(self, messages: Any, **kw: Any) -> Any:
-                if _is_preference_schema(schema):
+                if name in structured:
+                    payload: dict[str, Any] = dict(structured[name])
+                elif _is_preference_schema(schema):
                     text = _last_user_text(messages).lower()
                     if "email" in text:
-                        payload: dict[str, Any] = {
+                        payload = {
                             "channel": "email",
                             "stated": True,
                         }
                     else:
                         payload = {"channel": "none", "stated": False}
+                elif _is_resume_score_schema(schema):
+                    payload = dict(
+                        structured.get("ResumeScore")
+                        or {
+                            "score": 80,
+                            "fit": "strong",
+                            "reason": "fixture score",
+                        }
+                    )
+                elif _is_billing_finding_schema(schema):
+                    payload = dict(
+                        structured.get("BillingFinding")
+                        or {
+                            "duplicate_charge": False,
+                            "missing_tax_line": False,
+                            "disputed_fee": False,
+                        }
+                    )
                 else:
                     payload = {"route": route}
                 if hasattr(schema, "model_validate"):

@@ -25,6 +25,9 @@ Curriculum labs are numbered Part.Section.Lecture. Older S1-S16 files stay while
 06_06_03_stream_events.py        stream_events v3 interrupt projections, then approve
 06_06_05_fork.py                 fork before speak, original trail intact
 06_06_06_full_run.py             lookup through, refund parks, approve, pytest
+06_07_02_two_lookups_in_parallel.py  lookup and policy_search in one superstep
+06_07_04_map_reduce_resumes.py   Send one score worker per TalentFlow resume
+06_07_06_billing_subgraph.py     billing box, private keys, interrupt inside
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt
