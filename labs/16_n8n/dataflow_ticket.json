@@ -1,0 +1,92 @@
+{
+  "id": "16-n8n-dataflow",
+  "name": "DataFlow ticket",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dataflow-ticket",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-1",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "dataflow-ticket"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst orders = JSON.parse(fs.readFileSync('__ORDERS_PATH__', 'utf8'));\nconst item = $input.first().json;\nconst body = item.body || item;\nconst text = String(body.ticket || body.text || JSON.stringify(body));\nconst match = text.toUpperCase().match(/DF-\\d+/);\nconst id = match ? match[0] : '';\nconst row = orders[id];\nconst order = row ? Object.assign({ found: true, order_id: id }, row) : { found: false, order_id: id, reason: 'unknown order' };\nreturn [{ json: { ticket: text, ticket_id: body.ticket_id || '', order: order } }];"
+      },
+      "id": "lookup-1",
+      "name": "Lookup order",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "__OLLAMA_URL__/api/chat",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: '__CHAT_MODEL__', stream: false, options: { temperature: 0 }, messages: [{ role: 'system', content: 'You are the DataFlow desk. Use the order JSON. Quote this policy line: Returns are allowed within 30 days of delivery when the item is unused.' }, { role: 'user', content: JSON.stringify($json) }] }) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "ollama-1",
+      "name": "Ollama Chat",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json;\nconst msg = (raw.message && raw.message.content) || raw.response || JSON.stringify(raw);\nconst lookup = $('Lookup order').first().json;\nreturn [{ json: { skipped: false, ticket_id: lookup.ticket_id || '', order: lookup.order, reply: String(msg) } }];"
+      },
+      "id": "format-1",
+      "name": "Format reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [720, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "respond-1",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [960, 0]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Lookup order", "type": "main", "index": 0 }]]
+    },
+    "Lookup order": {
+      "main": [[{ "node": "Ollama Chat", "type": "main", "index": 0 }]]
+    },
+    "Ollama Chat": {
+      "main": [[{ "node": "Format reply", "type": "main", "index": 0 }]]
+    },
+    "Format reply": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dataflow-local"
+  },
+  "pinData": {},
+  "versionId": "16-1-4-plant"
+}

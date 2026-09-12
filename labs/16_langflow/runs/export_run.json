@@ -1,0 +1,35 @@
+{
+  "model": "qwen3:8b",
+  "base_url": "http://localhost:11434",
+  "interpreter": "D:\\project\\viralLoom\\.venv_langflow\\Scripts\\python.exe",
+  "plant": {
+    "fill_schema": false,
+    "model": "qwen3:8b",
+    "base_url": "http://localhost:11434",
+    "tool_schema": {},
+    "proposed_tools": ["lookup_order"],
+    "schema_has_order_id": false,
+    "lookup_called": false,
+    "order_row": null,
+    "policy_line": null,
+    "reply": ""
+  },
+  "fix": {
+    "fill_schema": true,
+    "model": "qwen3:8b",
+    "base_url": "http://localhost:11434",
+    "schema_has_order_id": true,
+    "lookup_called": true,
+    "order_row": {
+      "found": true,
+      "order_id": "DF-1001",
+      "item": "desk lamp",
+      "status": "delivered",
+      "days_since_delivery": 12,
+      "amount": 49.0,
+      "customer_id": "C-2001",
+      "region": "NA"
+    },
+    "policy_line": "The customer return window is 30 days from delivery. Returns are allowed within 30 days of delivery when the item is unused."
+  }
+}

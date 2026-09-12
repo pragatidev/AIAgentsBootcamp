@@ -1,0 +1,28 @@
+{
+  "model": "qwen3:8b",
+  "base_url": "http://localhost:11434",
+  "plant": {
+    "instruction_empty": true,
+    "event_count": 4,
+    "hit_cap": true,
+    "has_policy_line": false,
+    "fixture": false
+  },
+  "fix": {
+    "instruction_empty": false,
+    "event_count": 3,
+    "has_policy_line": false,
+    "fixture": false,
+    "order_row": {
+      "found": true,
+      "order_id": "DF-1001",
+      "item": "desk lamp",
+      "status": "delivered",
+      "days_since_delivery": 12,
+      "amount": 49.0,
+      "customer_id": "C-2001",
+      "region": "NA"
+    },
+    "policy_line": "The customer return window is 30 days from delivery. Returns are allowed within 30 days of delivery when the item is unused."
+  }
+}

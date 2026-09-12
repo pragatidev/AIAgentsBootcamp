@@ -128,6 +128,13 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 15_01_05_malicious_page.py     unguarded follows the page, sandboxed parks or refuses
 15_02_02_read_harness.py       AGENTS.md, allowed edit, denied shell miss
 15_02_04_sandboxed_loop.py     fixture fix, extra-root write blocked
+16_01_03_langflow.py           empty tool schema, then lookup plus policy line
+16_01_04_n8n.py                webhook twice, then ticket id plus dedupe
+16_01_05_crewai.py             two replies, then writer-only, rubric row
+16_02_01_autogen.py            turn cap, then writer stop, policy line
+16_02_02_openai_agents.py      refund writes, then approval parks
+16_02_03_adk.py                missing job loops, then DataFlow job stops
+16_02_04_rubric.py             planted empty LangGraph loss fails, table passes
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt
