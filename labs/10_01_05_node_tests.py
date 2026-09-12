@@ -44,8 +44,11 @@ print("cell", "planted_trap")
 source = inspect.getsource(test_refuse_on_empty_retrieve)
 print("refuse_test_source")
 print(source)
+# The def line carries the word retrieve in the test's own name, so the
+# check reads the body only.
+body = source.split("\n", 1)[1]
 calls_retrieve = any(
-    token in source
+    token in body
     for token in ("retrieve(", "retrieve_node", "get_index", "retrieve_passages")
 )
 print("refuse_test_calls_retrieve", calls_retrieve)

@@ -4,14 +4,14 @@ commit: a9903ab
 
 overall
 faithfulness 0.800
-context_recall 1.000
+context_recall 0.900
 refused_correctly 1.000
 fluent_misses 0
-latency_s 11.15
+latency_s 7.98
 
 per_kind
 policy faithfulness 1.000 n=10
-policy context_recall 1.000
+policy context_recall 0.800
 policy refused_correctly 0.000
 policy fluent_misses 0
 lookup faithfulness 0.000 n=4
@@ -38,7 +38,7 @@ refuse-student kind=refuse faith=1 recall=1 refuse=1 route=retrieve
 refuse-coffee kind=refuse faith=1 recall=1 refuse=1 route=retrieve
 refuse-gym kind=refuse faith=1 recall=1 refuse=1 route=retrieve
 policy-lamp kind=policy faith=1 recall=1 refuse=0 route=retrieve
-policy-p0 kind=policy faith=1 recall=1 refuse=0 route=retrieve
+policy-p0 kind=policy faith=1 recall=0 refuse=0 route=retrieve
 policy-ship-in-country kind=policy faith=1 recall=1 refuse=0 route=retrieve
 lookup-1003 kind=lookup faith=0 recall=1 refuse=0 route=lookup
 lookup-1006 kind=lookup faith=0 recall=1 refuse=0 route=lookup
@@ -47,4 +47,4 @@ park-refund-1001 kind=park faith=1 recall=1 refuse=0 route=refund
 park-refund-1005 kind=park faith=1 recall=1 refuse=0 route=refund
 policy-live-chat kind=policy faith=1 recall=1 refuse=0 route=retrieve
 policy-sso kind=policy faith=1 recall=1 refuse=0 route=retrieve
-policy-2fa kind=policy faith=1 recall=1 refuse=0 route=retrieve
+policy-2fa kind=policy faith=1 recall=0 refuse=0 route=retrieve
