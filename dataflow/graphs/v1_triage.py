@@ -49,6 +49,7 @@ class DeskContext:
     model: Any = None
     customer_id: str = "anon"
     actor_id: str = "anon"
+    user_id: str = ""
 
 
 def classify(

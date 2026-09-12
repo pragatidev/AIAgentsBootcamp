@@ -106,6 +106,10 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 11_01_03_unguarded_comply.py  escalate.md through the unguarded desk
 11_01_05_wiki_injection.py  raw chunk, boxed data, unboxed vs boxed desk
 11_01_07_allowlist.py  anon blocked at the port, typo turns the golden row red
+11_02_02_confirm_refund.py  park, deny, approve, write-before-interrupt double charge
+11_02_04_actor_id.py  actor=reviewer-1 on the trace, admin fallback is the miss
+11_02_06_pii.py  email redacted, key leaks, then SecretFilterMiddleware
+11_02_07_red_team.py  three blocks, eval_ci green, skip-red-team is FAIL
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt
