@@ -1,0 +1,16 @@
+{
+  "asks": [
+    {
+      "ticket": "Please refund order DF-1001, the lamp is unused",
+      "decision": "load",
+      "skill": "refund-policy",
+      "description": "Use when a DataFlow ticket asks for a refund, a return or money back on an order; not for billing questions or order status"
+    },
+    {
+      "ticket": "How much is an extra user on Professional?",
+      "decision": "skip",
+      "skill": "none",
+      "description": "Use when a DataFlow ticket asks for a refund, a return or money back on an order; not for billing questions or order status"
+    }
+  ]
+}

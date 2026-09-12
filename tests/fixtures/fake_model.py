@@ -186,6 +186,18 @@ def _is_desk_action_schema(schema: Any) -> bool:
     return "tool" in fields and "order_id" in fields and "amount" in fields
 
 
+def _is_skill_pick_schema(schema: Any) -> bool:
+    return _schema_name(schema) == "SkillPick"
+
+
+def _ticket_after_marker(messages: Any) -> str:
+    text = _last_user_text(messages)
+    marker = "Ticket:"
+    if marker in text:
+        return text.split(marker, 1)[1].strip().lower()
+    return text.lower()
+
+
 class FakeChatModel:
     """Duck-typed chat model. with_structured_output returns the fixed route
     or a payload from `structured` keyed by schema name.
@@ -375,6 +387,15 @@ class FakeChatModel:
                         "amount": 0.0,
                         "reason": "fixture stop",
                     }
+                elif payload is None and _is_skill_pick_schema(schema):
+                    ticket = _ticket_after_marker(messages)
+                    if any(
+                        word in ticket
+                        for word in ("refund", "return", "money back")
+                    ):
+                        payload = {"name": "refund-policy"}
+                    else:
+                        payload = {"name": "none"}
                 elif payload is None:
                     payload = {"route": parent.route}
                 if hasattr(schema, "model_validate"):
