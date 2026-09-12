@@ -1,0 +1,8 @@
+{"id": "policy-return", "kind": "policy", "input": "What is the customer return window?", "reference": {"source": "dataflow/wiki/return_policy.md", "fact": "30 days from delivery"}, "tags": ["retrieve", "policy"]}
+{"id": "policy-shipping", "kind": "policy", "input": "How many business days is standard shipping inside the country?", "reference": {"source": "dataflow/wiki/shipping.md", "fact": "five business days"}, "tags": ["retrieve", "policy"]}
+{"id": "policy-billing", "kind": "policy", "input": "How much does an extra user cost on the Professional plan?", "reference": {"source": "dataflow/knowledge_base/business_data/billing_and_pricing.csv", "fact": "$10/user/month"}, "tags": ["retrieve", "policy"]}
+{"id": "policy-refund", "kind": "policy", "input": "Who can approve a refund under 30 days?", "reference": {"source": "dataflow/knowledge_base/internal_operations/support_operations/customer_support_procedures.markdown", "fact": "Agent (Level 1)"}, "tags": ["retrieve", "policy"]}
+{"id": "lookup-1001", "kind": "lookup", "input": "Where is order DF-1001?", "reference": {"order_id": "DF-1001", "status": "delivered"}, "tags": ["lookup"]}
+{"id": "lookup-1002", "kind": "lookup", "input": "Where is order DF-1002?", "reference": {"order_id": "DF-1002", "status": "in_transit"}, "tags": ["lookup"]}
+{"id": "refuse-student", "kind": "refuse", "input": "Do you offer a lifetime warranty on every desk lamp?", "reference": null, "tags": ["refuse"]}
+{"id": "refuse-coffee", "kind": "refuse", "input": "Do you sell coffee beans in the DataFlow shop?", "reference": null, "tags": ["refuse"]}
