@@ -28,6 +28,7 @@ Verify these the week you record the matching lab:
 
 - LangGraph 1.2: StateGraph, context_schema, Runtime, interrupt, checkpointer, store
 - LangChain 1.4: create_agent, bind_tools, with_structured_output. Never create_react_agent, initialize_agent, or AgentExecutor
+- deepagents 0.7.13: create_deep_agent, StateBackend, FilesystemBackend, TodoListMiddleware, isolated subagents
 - MCP SDK and transports
 - LangSmith vs a local tracer
 - Docker base image for later deploy labs

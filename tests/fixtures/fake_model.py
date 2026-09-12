@@ -5,8 +5,9 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AIMessage, AIMessageChunk
-from langchain_core.outputs import ChatGenerationChunk
+from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
 
 
 def _messages_text(messages: Any) -> str:
@@ -94,9 +95,75 @@ def _is_next_step_schema(schema: Any) -> bool:
     return "step" in fields and "why" in fields
 
 
+class ScriptedToolChatModel(BaseChatModel):
+    """BaseChatModel that plays a list of AIMessage tool calls for create_agent."""
+
+    script: list[Any]
+    i: int = 0
+    calls: int = 0
+
+    @property
+    def _llm_type(self) -> str:
+        return "scripted-tool-chat-model"
+
+    def bind_tools(self, tools: Any, **kwargs: Any) -> ScriptedToolChatModel:
+        return self
+
+    def _generate(
+        self,
+        messages: list[Any],
+        stop: list[str] | None = None,
+        run_manager: Any = None,
+        **kwargs: Any,
+    ) -> ChatResult:
+        self.calls = int(self.calls) + 1
+        if not self.script:
+            message: Any = AIMessage(content="done")
+        elif self.i < len(self.script):
+            message = self.script[self.i]
+            self.i = int(self.i) + 1
+        else:
+            last = self.script[-1]
+            if getattr(last, "tool_calls", None):
+                message = AIMessage(content="done")
+            else:
+                message = last
+        if not isinstance(message, AIMessage):
+            message = AIMessage(content=str(message))
+        return ChatResult(generations=[ChatGeneration(message=message)])
+
+    def _stream(
+        self,
+        messages: list[Any],
+        stop: list[str] | None = None,
+        run_manager: Any = None,
+        **kwargs: Any,
+    ):
+        result = self._generate(
+            messages, stop=stop, run_manager=run_manager, **kwargs
+        )
+        message = result.generations[0].message
+        yield ChatGenerationChunk(
+            message=AIMessageChunk(
+                content=getattr(message, "content", "") or "",
+                tool_calls=list(getattr(message, "tool_calls", None) or []),
+            )
+        )
+
+
 class FakeChatModel:
     """Duck-typed chat model. with_structured_output returns the fixed route
-    or a payload from `structured` keyed by schema name."""
+    or a payload from `structured` keyed by schema name.
+
+    Scripted-tool-calls mode: FakeChatModel(tool_script=[AIMessage(...), ...])
+    returns a ScriptedToolChatModel that create_deep_agent will accept.
+    """
+
+    def __new__(cls, *args: Any, **kwargs: Any) -> Any:
+        script = kwargs.get("tool_script")
+        if script is not None:
+            return ScriptedToolChatModel(script=list(script))
+        return object.__new__(cls)
 
     def __init__(
         self,
@@ -104,15 +171,22 @@ class FakeChatModel:
         reply: str = "looked up desk lamp",
         structured: dict[str, Any] | None = None,
         usage_metadata: dict[str, Any] | None = None,
+        tool_script: list[Any] | None = None,
     ) -> None:
         self.route = route
         self.reply = reply
         self.structured = dict(structured or {})
         self.usage_metadata = usage_metadata
+        self.tool_script = tool_script
         self.calls = 0
         self.invoke_calls = 0
         self.stream_calls = 0
         self._schema_i: dict[str, int] = {}
+        self._tools: Any = None
+
+    def bind_tools(self, tools: Any, **kwargs: Any) -> FakeChatModel:
+        self._tools = tools
+        return self
 
     def invoke(self, messages: Any, **kwargs: Any) -> AIMessage:
         self.calls += 1

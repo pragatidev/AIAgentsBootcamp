@@ -8,6 +8,8 @@ Three portfolio worlds, one package each:
 - **DataFlow** (`dataflow/`) is the customer knowledge desk. LangGraph and RAG. Orders, tickets, a 20-file knowledge base.
 - **TalentFlow** (`talentflow/`) is resumes, a job description, and email templates. Parallel and map-reduce.
 
+The Deep Agents research and report agent lives in `research_agent/`. It imports the DataFlow knowledge base and stands on its own.
+
 Models live in `config.py`, never in a lecture title. The student default is `qwen3:8b` on Ollama.
 
 ## Quickstart
@@ -46,6 +48,7 @@ Course: https://www.udemy.com/course/ai-agents-bootcamp-build-with-langchain-rag
 techcorp/      IT desk (Part 5)
 dataflow/      customer desk, graphs, knowledge base (Parts 6, 8, 12, 17)
 talentflow/    resumes and templates (6.7, capstone 3)
+research_agent/  Deep Agents research and report package (6.11)
 labs/          numbered teaching scripts (Run Cell on # %%) plus .ipynb twins
 config.py      the only place a model id lives
 docs/CURRENCY.md

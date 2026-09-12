@@ -66,6 +66,11 @@ dataflow/data/traces/
 # langgraph dev local runtime. Created at run time, not committed.
 .langgraph_api/
 
+# Lab 6.11 research agent runtime reports. Keep the sample and .gitkeep.
+research_agent/reports/*
+!research_agent/reports/.gitkeep
+!research_agent/reports/sample_return_complaints.md
+
 # Project-specific IDE metadata
 *.iml
 

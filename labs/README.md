@@ -39,6 +39,9 @@ Curriculum labs are numbered Part.Section.Lecture. Older S1-S16 files stay while
 06_10_02_studio.py               langgraph.json, langgraph dev, two graphs
 06_10_03_read_a_failed_run.py    waterfall FAIL plus checkpoint rail
 06_10_05_wire_the_tracer.py      tracing_callbacks, traced_invoke, pytest
+06_11_02_create_deep_agent.py    virtual filesystem, stream events, todos
+06_11_03_filesystem_and_todo.py  real folder backend, todo changes on disk
+06_11_05_portfolio_research_agent.py  python -m research_agent, then pytest
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt
