@@ -1,0 +1,16 @@
+.env
+.venv
+venv
+__pycache__
+*.pyc
+.git
+.pytest_cache
+.mypy_cache
+renders
+dataflow/data/faiss_index
+dataflow/data/faiss_index_all
+dataflow/data/traces
+dataflow/data/*.sqlite
+*.db
+ops/tracing/runs/*.jsonl
+deploy/runs/*.json

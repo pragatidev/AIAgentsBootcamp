@@ -12,9 +12,21 @@ import os
 import re
 import time
 from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Any, Iterator, TypedDict
 from uuid import UUID, uuid4
+
+_request_id: ContextVar[str] = ContextVar("dataflow_request_id", default="")
+
+
+def set_request_id(value: str | None) -> None:
+    """Join HTTP request_id onto every span this task writes."""
+    _request_id.set(str(value or ""))
+
+
+def current_request_id() -> str:
+    return _request_id.get() or ""
 
 from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.outputs import LLMResult
@@ -28,8 +40,10 @@ __all__ = [
     "LocalTraceHandler",
     "TRACES_DIR",
     "build_failing_carrier_graph",
+    "current_request_id",
     "last_trace_path",
     "render_waterfall",
+    "set_request_id",
     "trace",
     "traced_invoke",
 ]
@@ -60,6 +74,9 @@ def log_actor(user_id: str, step: str, run_id: str | None = None) -> str:
             "step": str(step),
             "run": str(rid),
         }
+        req = current_request_id()
+        if req:
+            span["request_id"] = req
         with Path(handler_path).open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(span, ensure_ascii=True) + "\n")
     return line
@@ -253,6 +270,9 @@ class LocalTraceHandler(BaseCallbackHandler):
         self._write(span)
 
     def _write(self, span: dict[str, Any]) -> None:
+        req = current_request_id()
+        if req and "request_id" not in span:
+            span["request_id"] = req
         line = json.dumps(span, ensure_ascii=True, default=str)
         with self.path.open("a", encoding="utf-8") as handle:
             handle.write(line + "\n")
