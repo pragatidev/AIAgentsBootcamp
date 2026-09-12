@@ -11,6 +11,9 @@ Curriculum labs are numbered Part.Section.Lecture. Older S1-S16 files stay while
 06_02_04_tool_cycle.py           ToolNode cycle: call, result, final answer
 06_02_05_test_routes.py          pytest tests/test_dataflow_routes.py
 06_02_06_command_vs_edge.py      Command versus a conditional edge, both mermaids
+06_03_03_add_messages_on_the_thread.py  two turns, count grows per node
+06_03_04_plant_a_collision.py    InvalidUpdateError, then both log lines
+06_03_05_trim_and_summarize.py   token count before and after, plus summary
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt

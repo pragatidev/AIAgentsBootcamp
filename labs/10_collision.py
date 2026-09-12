@@ -8,7 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from langgraph.errors import InvalidUpdateError
 
-from dataflow.graphs.collision import build_collision, build_reduced
+from dataflow.graphs.collision import build_collision, build_collision_fixed
 
 # %%
 try:
@@ -19,5 +19,5 @@ except InvalidUpdateError as exc:
     print("detail", str(exc).split("\n")[0])
 
 # %%
-out = build_reduced().invoke({"ticket": "DF-1001", "log": []})
+out = build_collision_fixed().invoke({"ticket": "DF-1001", "log": []})
 print("reduced_log", out.get("log"))

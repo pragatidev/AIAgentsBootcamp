@@ -1,4 +1,4 @@
-"""S10: two writes in one step. Without a reducer this raises InvalidUpdateError."""
+"""Two writes in one step. Without a reducer this raises InvalidUpdateError."""
 
 from __future__ import annotations
 
@@ -6,6 +6,9 @@ import operator
 from typing import Annotated, TypedDict
 
 from langgraph.graph import END, START, StateGraph
+
+from dataflow.tools.orders import lookup_order_by_id
+from dataflow.tools.policy import read_policy
 
 
 class CollidingState(TypedDict):
@@ -19,18 +22,22 @@ class ReducedState(TypedDict):
 
 
 def write_a(state: dict) -> dict:
+    lookup_order_by_id("DF-1001")
     return {"log": "orders looked up"}
 
 
 def write_b(state: dict) -> dict:
+    read_policy("return")
     return {"log": "policy read"}
 
 
 def write_a_list(state: dict) -> dict:
+    lookup_order_by_id("DF-1001")
     return {"log": ["orders looked up"]}
 
 
 def write_b_list(state: dict) -> dict:
+    read_policy("return")
     return {"log": ["policy read"]}
 
 
@@ -45,7 +52,7 @@ def build_collision():
     return graph.compile()
 
 
-def build_reduced():
+def build_collision_fixed():
     graph = StateGraph(ReducedState)
     graph.add_node("write_a", write_a_list)
     graph.add_node("write_b", write_b_list)

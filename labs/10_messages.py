@@ -6,10 +6,15 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from dataflow.graphs.messages import build_chat
+from langchain_core.messages import HumanMessage
+
+from dataflow.graphs.messages import build_messages_graph
+from tests.fixtures.fake_model import FakeChatModel
 
 # %%
-out = build_chat().invoke({"messages": []})
+out = build_messages_graph(model=FakeChatModel()).invoke(
+    {"messages": [HumanMessage(content="Can I return order DF-1001?")]}
+)
 kinds = [m.type for m in out["messages"]]
 texts = [str(m.content) for m in out["messages"]]
 print("kept", len(out["messages"]))

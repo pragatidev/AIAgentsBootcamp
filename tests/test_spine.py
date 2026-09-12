@@ -4,9 +4,11 @@ from langgraph.errors import InvalidUpdateError
 from langgraph.store.memory import InMemoryStore
 from langgraph.types import Command
 
-from dataflow.graphs.collision import build_collision, build_reduced
+from langchain_core.messages import AIMessage, HumanMessage
+
+from dataflow.graphs.collision import build_collision, build_collision_fixed
 from dataflow.graphs.runaway import run_with_cap
-from dataflow.graphs.trim import trim_messages
+from dataflow.graphs.trim import build_trim_graph, count_message_tokens
 from dataflow.graphs.v2_route import build_v2_route
 from tests.fixtures.fake_model import FakeChatModel
 from dataflow.graphs.v3_memory import (
@@ -43,12 +45,24 @@ def test_collision_then_reducer():
         raise AssertionError("collision should raise")
     except InvalidUpdateError:
         pass
-    out = build_reduced().invoke({"ticket": "DF-1001", "log": []})
+    out = build_collision_fixed().invoke({"ticket": "DF-1001", "log": []})
     assert sorted(out["log"]) == ["orders looked up", "policy read"]
 
 
 def test_trim_keeps_last_four():
-    assert trim_messages(["a", "b", "c", "d", "e"], keep=4) == ["b", "c", "d", "e"]
+    model = FakeChatModel(reply="Short summary of the DataFlow thread.")
+    messages = []
+    for i in range(12):
+        messages.append(
+            HumanMessage(content=("Where is order DF-1001? " * 8) + str(i))
+        )
+        messages.append(
+            AIMessage(content=("Still looking on the desk. " * 8) + str(i))
+        )
+    before = count_message_tokens(messages)
+    out = build_trim_graph(model=model).invoke({"messages": messages})
+    after = count_message_tokens(out["messages"])
+    assert after < before
 
 
 def test_checkpoint_accrues_turns():

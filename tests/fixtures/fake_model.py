@@ -11,8 +11,16 @@ from langchain_core.messages import AIMessage
 class FakeChatModel:
     """Duck-typed chat model. with_structured_output returns the fixed route."""
 
-    def __init__(self, route: str = "orders") -> None:
+    def __init__(
+        self,
+        route: str = "orders",
+        reply: str = "looked up desk lamp",
+    ) -> None:
         self.route = route
+        self.reply = reply
+
+    def invoke(self, messages: Any, **kwargs: Any) -> AIMessage:
+        return AIMessage(content=self.reply)
 
     def with_structured_output(self, schema: Any, **kwargs: Any) -> Any:
         route = self.route
