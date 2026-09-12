@@ -42,6 +42,9 @@ Curriculum labs are numbered Part.Section.Lecture. Older S1-S16 files stay while
 07_01_02_harness_parts.py        parts.md, cap prints STOPPED, planted runaway
 07_01_04_failure_log.py          failing_ticket.json into the failure log
 07_01_05_attribute_three.py      three diagnoses, one corrected bucket
+07_02_02_guide.py                no/vague/tight guide on T-3005
+07_02_04_sensor.py               refund_diff FAIL, then self-correct
+07_02_06_controls.py             schema_assert vs policy_judge costs
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt

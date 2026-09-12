@@ -18,4 +18,4 @@ If the ticket is not a DataFlow order or policy question, decline and stop.
 
 ## Guides
 
-none yet, Section 20
+no_repeat_refund.md | when the ticket asks for a refund
