@@ -22,6 +22,10 @@ NO_TOOLS_MODEL = os.environ.get("OLLAMA_NO_TOOLS_MODEL", "llama3.2:3b")
 OPENAI_CHAT_MODEL = os.environ.get("OPENAI_CHAT_MODEL", "")
 ANTHROPIC_CHAT_MODEL = os.environ.get("ANTHROPIC_CHAT_MODEL", "")
 
+# Local embedder for similarity recall. 768 dims. Verify the tag at record time.
+EMBED_MODEL = os.environ.get("OLLAMA_EMBED_MODEL", "nomic-embed-text")
+EMBED_DIMS = 768
+
 
 def has_live_key() -> bool:
     """True only when a cloud key is present. Local Ollama does not count as a key."""
@@ -68,3 +72,10 @@ def get_chat_model(**kwargs):
         return ChatAnthropic(model=ANTHROPIC_CHAT_MODEL, temperature=0)
     kwargs.pop("force_local", None)
     return get_local_chat_model(**kwargs)
+
+
+def get_embeddings():
+    """Local Ollama embeddings. nomic-embed-text is 768 dimensions."""
+    from langchain_ollama import OllamaEmbeddings
+
+    return OllamaEmbeddings(model=EMBED_MODEL, base_url=_ollama_base())

@@ -46,7 +46,7 @@ Course: https://www.udemy.com/course/ai-agents-bootcamp-build-with-langchain-rag
 
 ```
 techcorp/      IT desk (Section 6)
-dataflow/      customer desk, graphs, knowledge base (Sections 7 to 12, 22)
+dataflow/      customer desk, graphs, knowledge base, context, memory
 talentflow/    resumes and templates
 labs/          numbered teaching scripts (Run Cell on # %%) plus .ipynb twins
 config.py      the only place a model id lives

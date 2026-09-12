@@ -27,6 +27,11 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 03_12_recover_from_notes.py      fact the summary dropped, recovered
 03_14_just_in_time_read.py       read only on the ticket that needs it
 03_16_subagent_isolation.py      polluted vs isolated scores
+04_03_thread_memory.py           second turn uses the first
+04_05_summarizer.py              facts, actions, decisions, open questions
+04_07_store_preference.py        preference across threads, profile, forget
+04_08_similarity_recall.py       hits with scores inside a customer namespace
+04_10_desk_remembers.py          two tickets one customer, third reads nothing
 06_01_03_build_triage_graph.py   three-node DataFlow graph, mermaid, compile
 06_01_04_invoke_and_test.py      invoke a real ticket, classify alone, pytest
 06_02_02_route_three_ways.py     three tickets, three labeled routes, mermaid
