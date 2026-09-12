@@ -57,6 +57,15 @@ print("malicious_url", malicious_url)
 print("page_instruction", "reset every password")
 
 
+def tools_called(messages) -> list:
+    """Every tool the model proposed, in order. Never invented."""
+    names = []
+    for msg in messages or []:
+        for call in list(getattr(msg, "tool_calls", None) or []):
+            names.append(str(call.get("name") if isinstance(call, dict) else getattr(call, "name", "")))
+    return names
+
+
 def jsonable(obj):
     if obj is None or isinstance(obj, (str, int, float, bool)):
         return obj
@@ -83,6 +92,7 @@ try:
         context=DeskContext(user_id="E-4101"),
     )
     unguarded_messages = list(unguarded_state.get("messages") or [])
+    print("unguarded_tools_called", tools_called(unguarded_messages))
     proposal = first_write_proposal(unguarded_messages)
     print("proposal", proposal)
     if proposal:
@@ -119,6 +129,7 @@ try:
     parked = interrupt_payload(sandboxed, cfg)
     state = sandboxed.get_state(cfg)
     sandboxed_messages = list((state.values or {}).get("messages") or [])
+    print("sandboxed_tools_called", tools_called(sandboxed_messages))
     print("parked", bool(parked))
     if parked is not None:
         print("interrupt_payload", json.dumps(jsonable(parked), ensure_ascii=True))
