@@ -1,0 +1,16 @@
+# Tracked metrics fail a merge. Editing a floor is a commit with a reason.
+
+[tracked]
+faithfulness = 0.60
+context_recall = 0.60
+refused_correctly = 0.50
+
+[tracked.max_drop]
+faithfulness = 0.04
+context_recall = 0.04
+refused_correctly = 0.15
+
+[reported]
+# latency is measured but not gated: a cold laptop or a shared CI runner
+# is not a regression.
+latency = true

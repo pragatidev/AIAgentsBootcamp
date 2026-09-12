@@ -145,12 +145,13 @@ def retrieve_node(
     state: RagState,
     *,
     scope: str = "customer",
+    k: int = 3,
 ) -> dict[str, Any]:
     question = state.get("rewritten_question") or state.get("question") or ""
     if scope == "all":
-        hits = search(get_index(scope="all"), question, k=3, folder=None)
+        hits = search(get_index(scope="all"), question, k=k, folder=None)
     else:
-        hits = retrieve_passages(question, k=3, folder=None)
+        hits = retrieve_passages(question, k=k, folder=None)
     return {"passages": hits}
 
 
@@ -318,6 +319,7 @@ def build_rag_graph(
     strip_sources: bool = False,
     force_generate_on_empty: bool = False,
     scope: str = "customer",
+    retrieve_k: int = 3,
     cite_node: Any = ...,
 ):
     builder = StateGraph(RagState, context_schema=DeskContext)
@@ -329,7 +331,7 @@ def build_rag_graph(
         return route(state, runtime=runtime, model=model)
 
     def retrieve_bound(state: RagState) -> dict[str, Any]:
-        return retrieve_node(state, scope=scope)
+        return retrieve_node(state, scope=scope, k=retrieve_k)
 
     def grade_node(
         state: RagState,
