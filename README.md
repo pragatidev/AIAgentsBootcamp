@@ -4,7 +4,7 @@ Companion repo for the Udemy course AI Agents Bootcamp (listing 6521157).
 
 Three portfolio worlds, one package each:
 
-- TechCorp (`techcorp/`) is the IT desk. LangChain. Password reset, VPN, software install. The Playwright status tool and the malicious-page sandbox live in `techcorp/browser/` (Section 39).
+- TechCorp (`techcorp/`) is the IT desk. LangChain. Password reset, VPN, software install. The Playwright status tool and the malicious-page sandbox live in `techcorp/browser/` (Section 39). The coding-agent harness and sandbox live in `techcorp/harness/` (Section 40).
 - DataFlow (`dataflow/`) is the customer knowledge desk. LangGraph and RAG. Orders, tickets, a 20-file knowledge base.
 - TalentFlow (`talentflow/`) is resumes, a job description, and email templates. Parallel and map-reduce.
 
@@ -51,6 +51,7 @@ Course: https://www.udemy.com/course/ai-agents-bootcamp-build-with-langchain-rag
 ```
 techcorp/      IT desk (Section 6)
 techcorp/browser/  Playwright status tool, allowlist, malicious page sandbox (Section 39)
+techcorp/harness/  coding-agent AGENTS.md, permissions, sandboxed loop (Section 40)
 dataflow/      customer desk, graphs, knowledge base, context, memory, rag, ambient inbox
 talentflow/    resumes and templates (capstone 3)
 research_agent/  Deep Agents research and report package (Section 17)

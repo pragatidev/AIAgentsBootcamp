@@ -126,6 +126,8 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 14_02_04_inbox.py             two parked rows, resolve by name, planted crossed resume
 15_01_02_playwright_status.py  status fixture, outage line, file:// blocked
 15_01_05_malicious_page.py     unguarded follows the page, sandboxed parks or refuses
+15_02_02_read_harness.py       AGENTS.md, allowed edit, denied shell miss
+15_02_04_sandboxed_loop.py     fixture fix, extra-root write blocked
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt
