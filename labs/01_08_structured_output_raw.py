@@ -35,6 +35,21 @@ class ImpossibleTicket(BaseModel):
     planet: Literal["must_be_pluto_office_wing"]
 
 
+def _looks_like_json(raw: str) -> bool:
+    """True when the outermost braces hold JSON that json.loads accepts."""
+    import json as _json
+
+    text = (raw or "").strip().strip("`")
+    start, end = text.find("{"), text.rfind("}")
+    if start < 0 or end <= start:
+        return False
+    try:
+        _json.loads(text[start : end + 1])
+        return True
+    except ValueError:
+        return False
+
+
 def parse_ticket(raw: str, schema: type[BaseModel] = TicketClass) -> BaseModel:
     """Parse a model reply into a Pydantic object. Strips fences if present."""
     text = (raw or "").strip()
@@ -81,8 +96,10 @@ ok_resp = client.chat.completions.create(
 )
 ok_text = ok_resp.choices[0].message.content or ""
 print("raw_json", ok_text)
-if not ok_text.strip():
-    print("raw_json_empty", True)
+if not ok_text.strip() or not _looks_like_json(ok_text):
+    # A raw completion can come back empty or cut mid-string on some runs.
+    # Ask again in JSON mode rather than crash on the parse.
+    print("raw_json_empty" if not ok_text.strip() else "raw_json_invalid", True)
     chat = config.get_local_chat_model(
         reasoning=False, num_predict=256, format="json"
     )
