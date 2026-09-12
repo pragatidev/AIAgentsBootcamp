@@ -31,6 +31,7 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 04_03_other_thread_break.py      same graph, other thread id, the desk is a stranger
 04_05_summarizer.py              facts, actions, decisions, open questions
 04_07_store_preference.py        preference across threads, profile, forget
+04_07_forget_break.py            forget the profile, read on a new thread
 04_08_similarity_recall.py       hits with scores inside a customer namespace
 04_10_desk_remembers.py          two tickets one customer, third reads nothing
 06_01_03_build_triage_graph.py   three-node DataFlow graph, mermaid, compile
