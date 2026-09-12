@@ -64,9 +64,19 @@ payload = {
     "note": "Tight no_repeat_refund.md guide. Real model from config.get_chat_model().",
 }
 dest = root / "harness" / "runs" / "guide_pass.json"
+committed_run = dest.read_text(encoding="utf-8") if dest.is_file() else ""
 save_run(dest, payload)
 print("wrote", dest.as_posix())
 print("guide_pass_refund_count", tight["refund_count"])
 print("none_refund_count", results["none"]["refund_count"])
 print("vague_refund_count", results["vague"]["refund_count"])
 print("tight_refund_count", results["tight"]["refund_count"])
+
+# %% [markdown]
+# restore the committed copy so the repo stays clean; delete this cell to keep yours
+
+# %%
+print("cell", "restore")
+if committed_run:
+    dest.write_text(committed_run, encoding="utf-8")
+print("restored_committed_run", bool(committed_run))

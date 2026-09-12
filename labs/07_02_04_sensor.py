@@ -111,6 +111,7 @@ for s in chosen["steps"]:
     print("step", s["n"], s["proposal"]["tool"], s.get("sensor"))
 
 dest = root / "harness" / "runs" / "sensor_self_correct.json"
+committed_run = dest.read_text(encoding="utf-8") if dest.is_file() else ""
 save_run(
     dest,
     {
@@ -185,3 +186,12 @@ for s in restored["steps"]:
     if (s.get("sensor") or {}).get("verdict") == "FAIL":
         print("FAIL", s["sensor"]["message"])
 print("restored_refund_count", restored["refund_count"])
+
+# %% [markdown]
+# restore the committed copy so the repo stays clean; delete this cell to keep yours
+
+# %%
+print("cell", "restore")
+if committed_run:
+    dest.write_text(committed_run, encoding="utf-8")
+print("restored_committed_run", bool(committed_run))

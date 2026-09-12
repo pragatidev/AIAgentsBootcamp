@@ -71,6 +71,7 @@ payload = {
     "note": "Real model proposed; harness blocked an actor off the list.",
 }
 dest = root / "harness" / "runs" / "blocked_write.json"
+committed_run = dest.read_text(encoding="utf-8") if dest.is_file() else ""
 save_run(dest, payload)
 print("wrote", dest.as_posix())
 
@@ -118,3 +119,12 @@ for s in restored["steps"]:
         print("blocked_tool", s["proposal"]["tool"])
         print("blocked_actor", s["blocked"]["actor_id"])
 print("refunds_unchanged", restored["refund_count"] == 0)
+
+# %% [markdown]
+# restore the committed copy so the repo stays clean; delete this cell to keep yours
+
+# %%
+print("cell", "restore")
+if committed_run:
+    dest.write_text(committed_run, encoding="utf-8")
+print("restored_committed_run", bool(committed_run))

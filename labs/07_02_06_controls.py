@@ -63,6 +63,7 @@ print("judge_usage", judged["usage"])
 # %%
 print("cell", 2)
 control_path = root / "harness" / "control_class.md"
+committed_table = control_path.read_text(encoding="utf-8") if control_path.is_file() else ""
 table = """# Control class
 
 Measured on a planted refund record with the amount missing.
@@ -116,3 +117,12 @@ except SchemaError as exc:
     print("restored_assert_caught", exc.field)
     print("restored_assert_message", str(exc))
 print("judge_stays_behind_the_assert", True)
+
+# %% [markdown]
+# restore the committed copy so the repo stays clean; delete this cell to keep yours
+
+# %%
+print("cell", "restore")
+if committed_table:
+    control_path.write_text(committed_table, encoding="utf-8")
+print("restored_committed_table", bool(committed_table))

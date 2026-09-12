@@ -21,6 +21,8 @@ test_path = root / "tests" / "test_harness_control.py"
 log_path = root / "harness" / "failure_log.md"
 print("model", config.CHAT_MODEL)
 print("test_path", test_path.as_posix())
+committed_test = test_path.read_text(encoding="utf-8") if test_path.is_file() else ""
+committed_log = log_path.read_text(encoding="utf-8") if log_path.is_file() else ""
 
 WRONG = '''"""Wrong assertion: a log string the control never prints."""
 
@@ -169,10 +171,23 @@ new = (
     "closed by: harness/guides/no_repeat_refund.md "
     "and tests/test_harness_control.py"
 )
-if old in text:
+if new in text:
+    print("already_closed", True)
+elif old in text:
     text = text.replace(old, new, 1)
 else:
     text = text.rstrip() + "\n" + new + "\n"
 log_path.write_text(text, encoding="utf-8")
 print("wrote", log_path.as_posix())
 print(log_path.read_text(encoding="utf-8"))
+
+# %% [markdown]
+# restore the committed copies so the repo stays clean; delete this cell to keep yours
+
+# %%
+print("cell", "restore")
+if committed_test:
+    test_path.write_text(committed_test, encoding="utf-8")
+if committed_log:
+    log_path.write_text(committed_log, encoding="utf-8")
+print("restored_committed_files", bool(committed_test and committed_log))
