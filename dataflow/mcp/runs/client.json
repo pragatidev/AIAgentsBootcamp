@@ -1,0 +1,14 @@
+{
+  "transport": "stdio",
+  "tools": ["lookup_order", "refund"],
+  "result": {
+    "found": true,
+    "order_id": "DF-1001",
+    "item": "desk lamp",
+    "status": "delivered",
+    "days_since_delivery": 12,
+    "amount": 49.0,
+    "customer_id": "C-2001",
+    "region": "NA"
+  }
+}

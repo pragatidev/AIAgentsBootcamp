@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "dataflow": {
+      "command": "python",
+      "args": ["-m", "dataflow.mcp.server"],
+      "transport": "stdio"
+    }
+  }
+}

@@ -113,6 +113,10 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 12_01_04_plan_execute.py  plan then act, unplanned lookup is a miss
 12_01_06_critic.py         writer, miss list, revision; planted empty critic
 12_02_02_eval_optimize.py  rubric, scores per attempt, bar or cap
+13_01_03_fastmcp_server.py  FastMCP lookup, resource, prompt; unknown table is a miss
+13_01_04_mcp_client.py      stdio client, HTTP miss, restore client.json
+13_01_06_mcpadapter.py      MCPAdapter bind, retired import, DF-1002
+13_01_07_gated_mcp_refund.py  park, deny A, approve B, no-checkpointer resume
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt
