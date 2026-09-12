@@ -36,8 +36,14 @@ class ToolCycleState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
 
 
-def build_rag_tool_cycle(*, model: Any = None, tools: list | None = None):
+def build_rag_tool_cycle(
+    *,
+    model: Any = None,
+    tools: list | None = None,
+    system: str | None = None,
+):
     tool_list = list(tools) if tools is not None else list(DESK_TOOLS)
+    prompt = system if system is not None else AGENT_SYSTEM
 
     builder = StateGraph(ToolCycleState, context_schema=DeskContext)
 
@@ -53,7 +59,7 @@ def build_rag_tool_cycle(*, model: Any = None, tools: list | None = None):
             chat = get_chat_model()
         bound = chat.bind_tools(tool_list)
         history = list(state.get("messages") or [])
-        result = bound.invoke([SystemMessage(content=AGENT_SYSTEM), *history])
+        result = bound.invoke([SystemMessage(content=prompt), *history])
         return {"messages": [result]}
 
     builder.add_node("agent", agent_node)

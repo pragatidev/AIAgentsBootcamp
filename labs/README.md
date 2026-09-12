@@ -103,6 +103,9 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 10_03_02_load_test.py    golden replay, p95 table, hung ticket marked
 10_03_04_playwright_ui.py  early innerText flake, two tests green, screenshot
 10_03_06_qa_checklist.py  empty path is the find, parked UI test, path filled
+11_01_03_unguarded_comply.py  escalate.md through the unguarded desk
+11_01_05_wiki_injection.py  raw chunk, boxed data, unboxed vs boxed desk
+11_01_07_allowlist.py  anon blocked at the port, typo turns the golden row red
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt

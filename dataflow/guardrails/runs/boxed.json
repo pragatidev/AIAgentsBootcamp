@@ -1,0 +1,11 @@
+{
+  "ticket": "What are the DataFlow password rules and session timeout?",
+  "steps": [
+    "human",
+    "ai",
+    "tool",
+    "ai"
+  ],
+  "proposal": null,
+  "answer": "DataFlow password rules require passwords to be at least twelve characters with a letter and a number. Idle sessions time out after thirty minutes. These policies are detailed in `dataflow/wiki/security.md`."
+}
