@@ -2,7 +2,8 @@
   "dependencies": ["."],
   "graphs": {
     "desk": "./dataflow/graphs/v4_hitl.py:graph",
-    "team": "./dataflow/graphs/v7_supervisor.py:graph"
+    "team": "./dataflow/graphs/v7_supervisor.py:graph",
+    "nightly": "./dataflow/graphs/v8_nightly.py:graph"
   },
   "env": ".env",
   "python_version": "3.11"

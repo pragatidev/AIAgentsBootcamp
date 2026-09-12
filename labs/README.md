@@ -42,6 +42,9 @@ Curriculum labs are numbered Part.Section.Lecture. Older S1-S16 files stay while
 06_11_02_create_deep_agent.py    virtual filesystem, stream events, todos
 06_11_03_filesystem_and_todo.py  real folder backend, todo changes on disk
 06_11_05_portfolio_research_agent.py  python -m research_agent, then pytest
+06_12_02_wake_on_ticket_file.py  drop two json tickets, watch once, sqlite still holds the park
+06_12_04_inbox_resolve.py        list parked rows, approve and reject, then the crossed resume
+06_12_06_nightly_triage.py       v8 nightly report, inbox rows, hosted cron as code only
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt

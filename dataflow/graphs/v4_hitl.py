@@ -56,6 +56,7 @@ class HitlState(TypedDict, total=False):
     reply: str
     refund: dict[str, Any]
     refund_amount: float | None
+    actor: str
 
 
 class HitlDecision(BaseModel):
@@ -186,6 +187,9 @@ def refund_node(state: HitlState) -> dict[str, Any]:
     # so a write before this line would issue the refund before anyone approved,
     # then issue it again when the reviewer answers.
     action, paid = _parse_decision(decision, amount)
+    actor = ""
+    if isinstance(decision, dict):
+        actor = str(decision.get("actor") or "")
     if action == "unclear":
         record = {
             "refunded": False,
@@ -200,13 +204,7 @@ def refund_node(state: HitlState) -> dict[str, Any]:
             + str(decision)
             + ")"
         )
-        return {
-            "order": order,
-            "decision": decision,
-            "refund": record,
-            "reply": reply,
-        }
-    if action == "reject":
+    elif action == "reject":
         record = decline_refund.invoke(
             {
                 "order_id": order_id,
@@ -219,32 +217,30 @@ def refund_node(state: HitlState) -> dict[str, Any]:
             + ". Reason: "
             + str(record.get("reason"))
         )
-        return {
-            "order": order,
-            "decision": decision,
-            "refund": record,
-            "reply": reply,
-        }
-    record = issue_refund.invoke(
-        {
-            "order_id": order_id,
-            "amount": paid,
-            "reason": "reviewer approved",
-        }
-    )
-    reply = (
-        "Refund issued for order "
-        + order_id
-        + ". Amount: "
-        + str(record.get("amount"))
-        + "."
-    )
-    return {
+    else:
+        record = issue_refund.invoke(
+            {
+                "order_id": order_id,
+                "amount": paid,
+                "reason": "reviewer approved",
+            }
+        )
+        reply = (
+            "Refund issued for order "
+            + order_id
+            + ". Amount: "
+            + str(record.get("amount"))
+            + "."
+        )
+    out = {
         "order": order,
         "decision": decision,
         "refund": record,
         "reply": reply,
     }
+    if actor:
+        out["actor"] = actor
+    return out
 
 
 # PLANTED TRAP for lab 11.2. The write sits before the interrupt, so it

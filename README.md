@@ -10,6 +10,8 @@ Three portfolio worlds, one package each:
 
 The Deep Agents research and report agent lives in `research_agent/`. It imports the DataFlow knowledge base and stands on its own.
 
+Ambient DataFlow (Section 18) lives in `dataflow/ambient/` plus `dataflow/graphs/v8_nightly.py`. A dropped ticket file starts a thread. Parked refunds land in the inbox. The nightly graph fans the desk over the day's tickets and writes a report.
+
 Models live in `config.py`, never in a lecture title. The student default is `qwen3:8b` on Ollama.
 
 ## Quickstart
@@ -46,9 +48,11 @@ Course: https://www.udemy.com/course/ai-agents-bootcamp-build-with-langchain-rag
 
 ```
 techcorp/      IT desk (Part 5)
-dataflow/      customer desk, graphs, knowledge base (Parts 6, 8, 12, 17)
+dataflow/      customer desk, graphs, knowledge base, ambient inbox (Parts 6, 8, 12, 17)
 talentflow/    resumes and templates (6.7, capstone 3)
 research_agent/  Deep Agents research and report package (6.11)
+dataflow/ambient/  file watcher and inbox (6.12)
+dataflow/graphs/v8_nightly.py  nightly triage (6.12)
 labs/          numbered teaching scripts (Run Cell on # %%) plus .ipynb twins
 config.py      the only place a model id lives
 docs/CURRENCY.md
@@ -68,5 +72,13 @@ Labs ship twice: `labs/NN_slug.py` for VS Code Run Cell, and a notebook twin fro
 - `techcorp/data/tickets.jsonl` and `dataflow/data/` for the desks
 - `talentflow/data/` for the resume batch
 - `_archive/2025_live/` only if you want the old listing notebooks. That folder is not the learner path.
+
+Nightly triage, local scheduler (skips the sleep with `run_now=True` in the lab):
+
+```
+python labs/06_12_06_nightly_triage.py
+```
+
+That run writes `dataflow/data/reports/nightly-<date>.md` and parks refund threads the inbox can list. The hosted Agent Server cron (`client.crons.create`) is shown in the lab as code and is not executed here.
 
 License MIT.

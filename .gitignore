@@ -71,6 +71,15 @@ research_agent/reports/*
 !research_agent/reports/.gitkeep
 !research_agent/reports/sample_return_complaints.md
 
+# Lab 6.12 ambient sqlite, drop folder, nightly reports. Keep .gitkeep.
+dataflow/data/ambient.sqlite
+dataflow/data/ambient.sqlite-wal
+dataflow/data/ambient.sqlite-shm
+dataflow/data/inbox_drop/*
+!dataflow/data/inbox_drop/.gitkeep
+dataflow/data/reports/*
+!dataflow/data/reports/.gitkeep
+
 # Project-specific IDE metadata
 *.iml
 
