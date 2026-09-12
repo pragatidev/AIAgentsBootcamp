@@ -1,0 +1,16 @@
+{
+  "id": "context_rot",
+  "ticket": "T-3005",
+  "ticket_text": "You billed me twice for order DF-1010. Please reverse the extra charge.",
+  "summary": "The no-repeat rule sat in the first system message. By step 8 the window was full of refund receipts and lookup dumps. The model answered from the newest tokens and issued another refund. The rule was in the window and then drowned.",
+  "last_proposal": {
+    "tool": "issue_refund",
+    "order_id": "DF-1010",
+    "amount": 22.0,
+    "reason": "duplicate charge"
+  },
+  "what_was_told": "A no-repeat rule was in the opening system message.",
+  "what_was_checked": "the refunds file, after the second write",
+  "window_note": "the rule was cut off the live edge by newer tool dumps",
+  "bucket": "context_problem"
+}

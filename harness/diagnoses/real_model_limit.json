@@ -1,0 +1,16 @@
+{
+  "id": "real_model_limit",
+  "ticket": "T-3005",
+  "ticket_text": "You billed me twice for order DF-1010. Please reverse the extra charge.",
+  "summary": "The model refunded twice. Nothing in the window said a refund already issued on this order must not be issued again. The clerk was never told the rule, in words it could use on the step it was on.",
+  "last_proposal": {
+    "tool": "issue_refund",
+    "order_id": "DF-1010",
+    "amount": 22.0,
+    "reason": "billed twice"
+  },
+  "what_was_told": "nothing about a refund already issued",
+  "what_was_checked": "nothing",
+  "note": "This label is wrong on purpose. Lab 19.5 corrects it. The content is a missing guide, not a model limit.",
+  "bucket": "real_model_limit"
+}

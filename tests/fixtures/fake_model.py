@@ -94,6 +94,14 @@ def _is_next_step_schema(schema: Any) -> bool:
     return "step" in fields and "why" in fields
 
 
+def _is_desk_action_schema(schema: Any) -> bool:
+    name = _schema_name(schema)
+    if name == "DeskAction":
+        return True
+    fields = _schema_fields(schema)
+    return "tool" in fields and "order_id" in fields and "amount" in fields
+
+
 class FakeChatModel:
     """Duck-typed chat model. with_structured_output returns the fixed route
     or a payload from `structured` keyed by schema name."""
@@ -216,6 +224,13 @@ class FakeChatModel:
                     if step not in {"billing", "policy", "writer", "escalate"}:
                         step = "billing"
                     payload = {"step": step, "why": "fixture"}
+                elif payload is None and _is_desk_action_schema(schema):
+                    payload = {
+                        "tool": "stop",
+                        "order_id": "",
+                        "amount": 0.0,
+                        "reason": "fixture stop",
+                    }
                 elif payload is None:
                     payload = {"route": parent.route}
                 if hasattr(schema, "model_validate"):
