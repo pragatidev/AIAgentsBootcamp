@@ -14,7 +14,7 @@ from dataflow.context.agent import ContextAgent, chat_caller
 from dataflow.context.rot import FILLERS
 
 SYSTEM = "You are the DataFlow support desk. Answer in one short sentence."
-turns = ["Order DF-1001, the desk lamp."] + FILLERS[:8]
+turns = ["Order DF-1001, the desk lamp."] + FILLERS[:14]
 
 
 def total_input(trace: list) -> int:
@@ -35,7 +35,7 @@ compacted = ContextAgent(
     chat_caller(),
     system=SYSTEM,
     compact=True,
-    compact_threshold=350,
+    compact_threshold=180,
     keep_last=4,
 )
 comp_out = compacted.run_turns(turns)

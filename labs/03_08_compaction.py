@@ -21,17 +21,17 @@ SYSTEM = (
 turns = [
     "This is about order DF-1001, the desk lamp.",
     "Please remember I want email, never a phone call.",
-] + FILLERS[:10]
+] + FILLERS[:16]
 
 # %%
-print("threshold", 400)
+print("threshold", 180)
 print("keep_last", 4)
 print("summary_prompt", SUMMARIZE_PROMPT)
 agent = ContextAgent(
     chat_caller(),
     system=SYSTEM,
     compact=True,
-    compact_threshold=400,
+    compact_threshold=180,
     keep_last=4,
 )
 out = agent.run_turns(turns)

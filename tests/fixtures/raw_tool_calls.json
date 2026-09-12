@@ -1,8 +1,9 @@
 {
-  "id": "call_reset_e4101",
-  "type": "function",
+  "id": "call_qwf4t7kn",
   "function": {
-    "name": "reset_password",
-    "arguments": "{\"user_id\": \"E-4101\"}"
-  }
+    "arguments": "{\"user_id\":\"E-4101\"}",
+    "name": "reset_password"
+  },
+  "type": "function",
+  "index": 0
 }

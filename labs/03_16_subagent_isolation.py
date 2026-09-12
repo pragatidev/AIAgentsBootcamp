@@ -52,7 +52,7 @@ def ask(messages: list) -> str:
         model=config.CHAT_MODEL,
         messages=messages,
         temperature=0,
-        max_tokens=400,
+        max_tokens=800,
         extra_body={"think": False},
     )
     return resp.choices[0].message.content or ""

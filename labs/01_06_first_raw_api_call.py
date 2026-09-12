@@ -28,7 +28,7 @@ raw = client.chat.completions.create(
     model=config.CHAT_MODEL,
     messages=[{"role": "user", "content": PROMPT}],
     temperature=0,
-    max_tokens=64,
+    max_tokens=256,
     extra_body={"think": False},
 )
 msg = raw.choices[0].message

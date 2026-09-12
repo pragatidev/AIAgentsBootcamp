@@ -156,19 +156,21 @@ else:
 
 # %%
 SMALL_CTX = 512
+ids = enc.encode(STUFFED)
+spill_prompt = enc.decode(ids[:2000])
 tiny = config.get_local_chat_model(
     reasoning=False,
     num_predict=16,
     num_ctx=SMALL_CTX,
 )
-tiny_reply = tiny.invoke(STUFFED)
+tiny_reply = tiny.invoke(spill_prompt)
 tiny_usage = usage_of(tiny_reply)
 print("num_ctx_set", SMALL_CTX)
+print("spill_prompt_tiktoken", len(enc.encode(spill_prompt)))
 print("usage_small_ctx", tiny_usage)
 print("tiktoken_stuffed", tiktoken_stuffed)
 spill_count = max(0, tiktoken_stuffed - SMALL_CTX)
 print("tokens_that_do_not_fit", spill_count)
-ids = enc.encode(STUFFED)
 kept = enc.decode(ids[:SMALL_CTX])
 spilled = enc.decode(ids[SMALL_CTX:]) if len(ids) > SMALL_CTX else ""
 print("kept_head", kept[:240].replace("\n", " "))

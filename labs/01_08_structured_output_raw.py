@@ -76,17 +76,32 @@ ok_resp = client.chat.completions.create(
     model=config.CHAT_MODEL,
     messages=[{"role": "user", "content": ask}],
     temperature=0,
-    max_tokens=256,
-    response_format={"type": "json_object"},
+    max_tokens=1024,
     extra_body={"think": False},
 )
 ok_text = ok_resp.choices[0].message.content or ""
 print("raw_json", ok_text)
+if not ok_text.strip():
+    print("raw_json_empty", True)
+    chat = config.get_local_chat_model(
+        reasoning=False, num_predict=256, format="json"
+    )
+    ok_text = str(chat.invoke(ask).content or "")
+    print("json_via_langchain", ok_text)
 parsed = parse_ticket(ok_text, TicketClass)
 print("parsed_object", parsed)
 print("parsed_dict", parsed.model_dump())
 
 # %%
+print("break_schema", "ImpossibleTicket requires planet Literal must_be_pluto_office_wing")
+try:
+    ImpossibleTicket.model_validate(parsed.model_dump())
+    print("impossible_parsed", "unexpected success")
+    validation_error = None
+except ValidationError as exc:
+    validation_error = str(exc)
+    print("validation_error")
+    print(validation_error)
 bad_schema = ImpossibleTicket.model_json_schema()
 bad_ask = (
     "Classify this TechCorp ticket as JSON matching this schema. "
@@ -100,20 +115,16 @@ bad_resp = client.chat.completions.create(
     model=config.CHAT_MODEL,
     messages=[{"role": "user", "content": bad_ask}],
     temperature=0,
-    max_tokens=256,
-    response_format={"type": "json_object"},
+    max_tokens=1024,
     extra_body={"think": False},
 )
 bad_text = bad_resp.choices[0].message.content or ""
+if not bad_text.strip():
+    chat = config.get_local_chat_model(
+        reasoning=False, num_predict=256, format="json"
+    )
+    bad_text = str(chat.invoke(bad_ask).content or "")
 print("impossible_raw_json", bad_text)
-try:
-    parse_ticket(bad_text, ImpossibleTicket)
-    print("impossible_parsed", "unexpected success")
-    validation_error = None
-except ValidationError as exc:
-    validation_error = str(exc)
-    print("validation_error")
-    print(validation_error)
 
 # %%
 retry_messages = [
@@ -134,11 +145,15 @@ retry_resp = client.chat.completions.create(
     model=config.CHAT_MODEL,
     messages=retry_messages,
     temperature=0,
-    max_tokens=256,
-    response_format={"type": "json_object"},
+    max_tokens=1024,
     extra_body={"think": False},
 )
 retry_text = retry_resp.choices[0].message.content or ""
+if not retry_text.strip():
+    chat = config.get_local_chat_model(
+        reasoning=False, num_predict=256, format="json"
+    )
+    retry_text = str(chat.invoke(retry_messages).content or "")
 print("retry_raw_json", retry_text)
 try:
     retry_obj = parse_ticket(retry_text, ImpossibleTicket)
