@@ -81,7 +81,36 @@ if ai.tool_calls:
         tool_call_id=tool_call_id,
         name=name,
     )
-    final = bound.invoke([system, human, ai, matching])
+    # The model may ask for another tool before it writes a sentence (the
+    # system line says look up the user before you reset). Run each proposal
+    # by hand, up to three hops, until the reply carries no tool call.
+    history = [system, human, ai, matching]
+    final = bound.invoke(history)
+    hop = 1
+    while final.tool_calls and hop < 3:
+        hop += 1
+        nxt = final.tool_calls[0]
+        nxt_name = nxt.get("name")
+        nxt_args = dict(nxt.get("args") or {})
+        print("hop", hop, "proposed_name", nxt_name)
+        print("hop", hop, "proposed_args", nxt_args)
+        if nxt_name == "reset_password":
+            nxt_result = reset_password.func(
+                str(nxt_args.get("user_id") or ticket["customer_id"]),
+                runtime=dummy_runtime(),
+            )
+        else:
+            nxt_result = tool_by_name[nxt_name].invoke(nxt_args)
+        print("hop", hop, "hand_result", nxt_result)
+        matching = ToolMessage(
+            content=json.dumps(nxt_result, ensure_ascii=True),
+            tool_call_id=nxt.get("id"),
+            name=nxt_name,
+        )
+        name = nxt_name
+        history = history + [final, matching]
+        final = bound.invoke(history)
+    print("hops", hop)
     print("final_type", type(final).__name__)
     print("final_content", final.content)
     print("final_tool_calls", final.tool_calls)
@@ -102,7 +131,7 @@ try:
             tool_call_id="not-the-real-id",
             name=name,
         )
-        broken = bound.invoke([system, human, ai, wrong])
+        broken = bound.invoke(history[:-1] + [wrong])
         print("wrong_id_type", type(broken).__name__)
         print("wrong_id_content", broken.content)
         print("wrong_id_tool_calls", broken.tool_calls)

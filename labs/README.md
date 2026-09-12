@@ -45,3 +45,4 @@ Curriculum labs are numbered Part.Section.Lecture. Older S1-S16 files stay while
 ```
 
 The worlds are `techcorp/`, `dataflow/`, and `talentflow/`. These scripts teach. Pytest is the clone contract. Run `python scripts/make_twins.py` to refresh the notebook twins.
+05_14_reject_with_message_break.py  reject the parked reset with a reviewer message
