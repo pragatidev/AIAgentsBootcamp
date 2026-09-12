@@ -217,6 +217,7 @@ class FakeChatModel:
         self.invoke_calls = 0
         self.stream_calls = 0
         self._schema_i: dict[str, int] = {}
+        self._reply_i: int = 0
         self._tools: Any = None
 
     def bind_tools(self, tools: Any, **kwargs: Any) -> FakeChatModel:
@@ -229,26 +230,40 @@ class FakeChatModel:
     def bind(self, **kwargs: Any) -> FakeChatModel:
         return self
 
+    def _reply_text(self) -> str:
+        if isinstance(self.reply, list):
+            i = int(self._reply_i)
+            if self.reply:
+                text = self.reply[i] if i < len(self.reply) else self.reply[-1]
+            else:
+                text = ""
+            self._reply_i = i + 1
+            return str(text)
+        return str(self.reply)
+
     def invoke(self, messages: Any, **kwargs: Any) -> AIMessage:
         self.calls += 1
         self.invoke_calls += 1
+        text = self._reply_text()
         if self.usage_metadata is not None:
             return AIMessage(
-                content=self.reply,
+                content=text,
                 usage_metadata=self.usage_metadata,
             )
-        return AIMessage(content=self.reply)
+        return AIMessage(content=text)
 
     def stream(self, messages: Any, **kwargs: Any):
         """Yield the reply in two chunks so messages mode has tokens."""
         self.calls += 1
         self.stream_calls += 1
-        first, second = _split_reply(self.reply)
+        raw = self.reply[0] if isinstance(self.reply, list) and self.reply else self.reply
+        first, second = _split_reply(str(raw))
         yield AIMessageChunk(content=first)
         yield AIMessageChunk(content=second)
 
     def _stream(self, messages: Any, stop: Any = None, **kwargs: Any):
-        first, second = _split_reply(self.reply)
+        raw = self.reply[0] if isinstance(self.reply, list) and self.reply else self.reply
+        first, second = _split_reply(str(raw))
         yield ChatGenerationChunk(message=AIMessageChunk(content=first))
         yield ChatGenerationChunk(message=AIMessageChunk(content=second))
 
@@ -335,6 +350,22 @@ class FakeChatModel:
                     payload = {"step": step, "why": "fixture"}
                 elif payload is None and name == "Grade":
                     payload = {"label": "keep", "reason": "fixture keep"}
+                elif payload is None and name == "Plan":
+                    payload = {
+                        "steps": [
+                            {"tool": "retrieve", "why": "fixture policy read"}
+                        ]
+                    }
+                elif payload is None and name == "Misses":
+                    payload = {"items": []}
+                elif payload is None and name == "Scores":
+                    payload = {
+                        "names_the_candidate": 0.5,
+                        "names_the_role": 0.5,
+                        "cites_one_resume_skill": 0.5,
+                        "under_180_words": 1.0,
+                        "total": 0.5,
+                    }
                 elif payload is None and _is_ticket_schema(schema):
                     payload = _ticket_payload(messages)
                 elif payload is None and _is_desk_action_schema(schema):

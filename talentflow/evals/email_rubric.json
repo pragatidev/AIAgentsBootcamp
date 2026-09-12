@@ -1,0 +1,26 @@
+{
+  "bar": 0.9,
+  "cap": 3,
+  "criteria": [
+    {
+      "id": "names_the_candidate",
+      "weight": 0.3,
+      "check": "The mail uses the candidate's name from the resume."
+    },
+    {
+      "id": "names_the_role",
+      "weight": 0.3,
+      "check": "The mail names the role title from the job file."
+    },
+    {
+      "id": "cites_one_resume_skill",
+      "weight": 0.25,
+      "check": "The mail cites one skill that appears on the resume."
+    },
+    {
+      "id": "under_180_words",
+      "weight": 0.15,
+      "check": "The mail is under 180 words."
+    }
+  ]
+}
