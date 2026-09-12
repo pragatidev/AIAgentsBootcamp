@@ -60,6 +60,12 @@ dataflow/data/checkpoints_14.sqlite
 dataflow/data/checkpoints_14.sqlite-wal
 dataflow/data/checkpoints_14.sqlite-shm
 
+# Lab 6.10 local traces. Created at run time, not committed.
+dataflow/data/traces/
+
+# langgraph dev local runtime. Created at run time, not committed.
+.langgraph_api/
+
 # Project-specific IDE metadata
 *.iml
 

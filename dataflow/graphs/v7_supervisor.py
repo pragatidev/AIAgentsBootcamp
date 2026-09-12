@@ -32,7 +32,9 @@ __all__ = [
     "TeamState",
     "add_usage",
     "build_v7_supervisor",
+    "builder_for_server",
     "escalate_node",
+    "graph",
     "supervise",
     "writer",
 ]
@@ -604,9 +606,15 @@ def build_v7_supervisor(
     max_handoffs=MAX_HANDOFFS,
     parallel_writers: bool = False,
     plant_loop: bool = False,
+    *,
+    for_server: bool = False,
 ):
-    """Compile the team. Command handoffs on one thread, unless the lab breaks it."""
-    if checkpointer is None:
+    """Compile the team. Command handoffs on one thread, unless the lab breaks it.
+
+    for_server=True compiles with no checkpointer. The Agent Server injects
+    persistence. Do not use that path in pytest; tests need InMemorySaver.
+    """
+    if not for_server and checkpointer is None:
         checkpointer = InMemorySaver()
     builder = StateGraph(TeamState, context_schema=DeskContext)
     billing_spec = build_billing_spec(model=model, write_reply=parallel_writers)
@@ -627,6 +635,8 @@ def build_v7_supervisor(
         builder.add_edge("supervise", "policy")
         builder.add_edge("billing", END)
         builder.add_edge("policy", END)
+        if for_server:
+            return builder.compile()
         return builder.compile(checkpointer=checkpointer)
 
     def supervise_node(
@@ -661,4 +671,14 @@ def build_v7_supervisor(
     builder.add_edge("policy", "supervise")
     builder.add_edge("writer", END)
     builder.add_edge("escalate", END)
+    if for_server:
+        return builder.compile()
     return builder.compile(checkpointer=checkpointer)
+
+
+def builder_for_server():
+    """Compile without a checkpointer. The Agent Server injects persistence."""
+    return build_v7_supervisor(for_server=True)
+
+
+graph = builder_for_server()

@@ -36,6 +36,9 @@ Curriculum labs are numbered Part.Section.Lecture. Older S1-S16 files stay while
 06_09_03_debug_a_failed_handoff.py  planted bad return, then the good path
 06_09_05_handoffs_with_command.py  history on one thread, then parallel collision
 06_09_06_overspawn_and_the_cap.py  planted loop, token climb, then the cap
+06_10_02_studio.py               langgraph.json, langgraph dev, two graphs
+06_10_03_read_a_failed_run.py    waterfall FAIL plus checkpoint rail
+06_10_05_wire_the_tracer.py      tracing_callbacks, traced_invoke, pytest
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt

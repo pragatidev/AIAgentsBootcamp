@@ -25,7 +25,9 @@ __all__ = [
     "HitlDecision",
     "HitlState",
     "build_v4_hitl",
+    "builder_for_server",
     "classify",
+    "graph",
     "lookup_node",
     "pick_route",
     "policy_node",
@@ -348,9 +350,15 @@ def build_v4_hitl(
     model=None,
     interrupt_before=None,
     write_before_interrupt: bool = False,
+    *,
+    for_server: bool = False,
 ):
-    """Compile the desk. Defaults to InMemorySaver when checkpointer is None."""
-    if checkpointer is None:
+    """Compile the desk. Defaults to InMemorySaver when checkpointer is None.
+
+    for_server=True compiles with no checkpointer. The Agent Server injects
+    persistence. Do not use that path in pytest; tests need InMemorySaver.
+    """
+    if not for_server and checkpointer is None:
         checkpointer = InMemorySaver()
 
     builder = StateGraph(HitlState, context_schema=DeskContext)
@@ -379,7 +387,19 @@ def build_v4_hitl(
     builder.add_edge("lookup", END)
     builder.add_edge("policy", END)
     builder.add_edge("refund", END)
+    if for_server:
+        return builder.compile(
+            interrupt_before=interrupt_before or [],
+        )
     return builder.compile(
         checkpointer=checkpointer,
         interrupt_before=interrupt_before or [],
     )
+
+
+def builder_for_server():
+    """Compile without a checkpointer. The Agent Server injects persistence."""
+    return build_v4_hitl(for_server=True)
+
+
+graph = builder_for_server()

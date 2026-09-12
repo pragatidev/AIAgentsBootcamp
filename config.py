@@ -56,3 +56,10 @@ def get_chat_model():
     from langchain_ollama import ChatOllama
 
     return ChatOllama(model=CHAT_MODEL, base_url=_ollama_base(), temperature=0)
+
+
+def tracing_callbacks():
+    """Local jsonl tracer. Always on. No LangSmith key required."""
+    from dataflow.ops.tracer import LocalTraceHandler
+
+    return [LocalTraceHandler()]
