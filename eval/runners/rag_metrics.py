@@ -93,7 +93,7 @@ def run_naive(
     model: Any = None,
     index: Any = None,
 ) -> dict[str, Any]:
-    store = index if index is not None else get_index()
+    store = index if index is not None else get_index(scope="all")
     hits = search(store, question, k=3, folder=None)
     state = generate(
         {"question": question, "graded": hits},

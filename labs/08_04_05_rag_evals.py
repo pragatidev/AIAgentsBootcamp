@@ -19,7 +19,7 @@ from eval.runners.rag_metrics import QUESTIONS, render, run_metrics
 print("model", CHAT_MODEL)
 print("questions", QUESTIONS.as_posix())
 print("building_index")
-get_index()
+get_index(scope="all")
 print("index_ready")
 report = run_metrics()
 print(render(report))
