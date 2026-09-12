@@ -13,6 +13,10 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 01_08_structured_output_raw.py   Pydantic TicketClass, one failure, one retry
 01_10_raw_tool_call.py           tools list, raw tool_calls, run, blank description
 01_14_swap_the_model.py          same agent code, two model ids, same shape
+02_03_scratch_agent.py           plain loop, cap 8, TC-1001
+02_04_second_tool.py             lookup then reset, VPN only lookup
+02_06_break_the_loop.py          runaway, blank description, write gate
+02_13_loop_as_a_class.py         ScratchAgent.run, pytest
 06_01_03_build_triage_graph.py   three-node DataFlow graph, mermaid, compile
 06_01_04_invoke_and_test.py      invoke a real ticket, classify alone, pytest
 06_02_02_route_three_ways.py     three tickets, three labeled routes, mermaid
