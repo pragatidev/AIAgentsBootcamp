@@ -149,6 +149,9 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 18_01_07_own_the_harness.py    self-judge plant all green, golden check fails the miss
 18_02_03_portfolio_walkthrough.py  README refuse line, pytest no key, four-clouds break
 18_02_07_saas_replace.py       leftover seat named, no currency, ATS-delete break
+19_02_dataflow_capstone.py     starter fill, planted fluent miss, refuse test, smoke, golden
+19_03_research_capstone.py     empty-source report, citation check, sourced report
+19_04_talentflow_capstone.py   score collision, reducer, N resumes, summary
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt
