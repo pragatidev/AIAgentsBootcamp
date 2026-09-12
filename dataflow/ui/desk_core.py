@@ -27,6 +27,10 @@ __all__ = [
 ]
 
 
+# Nodes whose model output is routing, not chat. Their tokens never reach the bubble.
+ROUTING_NODES = {"classify"}
+
+
 def thread_config(thread_id: str) -> dict[str, Any]:
     return {"configurable": {"thread_id": str(thread_id)}}
 
@@ -219,6 +223,11 @@ def stream_tokens(
             meta: dict[str, Any] = {}
             if isinstance(data, tuple) and len(data) == 2:
                 message, meta = data
+            node_name = str(meta.get("langgraph_node") or "") if isinstance(meta, dict) else ""
+            if node_name in ROUTING_NODES:
+                # classify is a structured routing call. Its JSON tokens are
+                # for the graph, not the chat bubble.
+                continue
             text = _message_text(message)
             if text:
                 saw_token = True
