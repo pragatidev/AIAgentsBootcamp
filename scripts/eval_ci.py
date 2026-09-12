@@ -73,6 +73,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=None,
         help="also write this run's numbers to a markdown file",
     )
+    parser.add_argument(
+        "--skip-red-team",
+        action="store_true",
+        help="planted miss for the lab. A skip is a FAIL line, not a silent pass.",
+    )
     return parser.parse_args(argv)
 
 
@@ -127,6 +132,19 @@ def main(argv: list[str] | None = None) -> int:
         f"delta {_delta(latency_now, latency_base):+.2f} verdict REPORTED",
         flush=True,
     )
+    if args.skip_red_team:
+        print("red_team verdict FAIL skipped", flush=True)
+        failed = True
+    else:
+        from eval.runners.red_team import run_red_team
+
+        suite = run_red_team(fixture=bool(args.fixture))
+        all_blocked = bool((suite.get("summary") or {}).get("all_blocked"))
+        if all_blocked:
+            print("red_team verdict PASS", flush=True)
+        else:
+            print("red_team verdict FAIL", flush=True)
+            failed = True
     return 1 if failed else 0
 
 

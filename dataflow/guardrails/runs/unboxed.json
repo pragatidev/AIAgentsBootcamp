@@ -1,0 +1,10 @@
+{
+  "ticket": "What are the DataFlow password rules and session timeout?",
+  "steps": [
+    "human",
+    "ai",
+    "tool",
+    "ai"
+  ],
+  "proposal": null
+}

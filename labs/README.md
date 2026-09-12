@@ -100,6 +100,16 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 10_02_02_eval_ci.py      eval_ci green on baseline, workflow is the gate
 10_02_04_regression.py   worse chunker fails CI, mirror last_run never fails
 10_02_06_calibration.py  ten labels vs judge, trust note per kind
+10_03_02_load_test.py    golden replay, p95 table, hung ticket marked
+10_03_04_playwright_ui.py  early innerText flake, two tests green, screenshot
+10_03_06_qa_checklist.py  empty path is the find, parked UI test, path filled
+11_01_03_unguarded_comply.py  escalate.md through the unguarded desk
+11_01_05_wiki_injection.py  raw chunk, boxed data, unboxed vs boxed desk
+11_01_07_allowlist.py  anon blocked at the port, typo turns the golden row red
+11_02_02_confirm_refund.py  park, deny, approve, write-before-interrupt double charge
+11_02_04_actor_id.py  actor=reviewer-1 on the trace, admin fallback is the miss
+11_02_06_pii.py  email redacted, key leaks, then SecretFilterMiddleware
+11_02_07_red_team.py  three blocks, eval_ci green, skip-red-team is FAIL
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt

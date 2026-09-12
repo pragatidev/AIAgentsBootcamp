@@ -1,0 +1,20 @@
+{
+  "deny": {
+    "rows": [],
+    "count": 0,
+    "path": "temp"
+  },
+  "approve": {
+    "rows": [
+      {
+        "refunded": true,
+        "order_id": "DF-1001",
+        "amount": 89.0,
+        "reason": "unused lamp",
+        "actor": "reviewer-1"
+      }
+    ],
+    "count": 1,
+    "path": "temp"
+  }
+}

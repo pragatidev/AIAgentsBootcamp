@@ -1,0 +1,4 @@
+{"type": "human", "content": "Hi, I am [REDACTED_EMAIL] about order DF-1001. My test key is [REDACTED_SECRET] and it should not leak.", "name": null, "tool_calls": null}
+{"type": "ai", "content": "", "name": null, "tool_calls": [{"name": "lookup_order", "args": {"order_id": "DF-1001"}, "id": "52451e99-a251-41c8-86b0-802ded84ae38", "type": "tool_call"}]}
+{"type": "tool", "content": "{\"found\": true, \"order_id\": \"DF-1001\", \"item\": \"desk lamp\", \"status\": \"delivered\", \"days_since_delivery\": 12, \"amount\": 49.0, \"customer_id\": \"C-2001\", \"region\": \"NA\"}", "name": "lookup_order", "tool_calls": null}
+{"type": "ai", "content": "Your order DF-1001 for a desk lamp was delivered 12 days ago. The total amount of $49.00 is associated with customer ID C-2001 in the NA region. Let me know if you need further assistance!", "name": null, "tool_calls": []}

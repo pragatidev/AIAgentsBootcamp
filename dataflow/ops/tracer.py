@@ -38,6 +38,31 @@ DATAFLOW = Path(__file__).resolve().parents[1]
 TRACES_DIR = DATAFLOW / "data" / "traces"
 
 last_trace_path: Path | None = None
+last_actor_line: str | None = None
+
+
+def log_actor(user_id: str, step: str, run_id: str | None = None) -> str:
+    """Print and record actor=<user_id> step=<node name> run=<run id>."""
+    global last_actor_line
+    rid = run_id or uuid4().hex
+    line = "actor=" + str(user_id) + " step=" + str(step) + " run=" + str(rid)
+    last_actor_line = line
+    print(line, flush=True)
+    handler_path = last_trace_path
+    if handler_path is not None:
+        span = {
+            "id": rid,
+            "parent_id": None,
+            "name": "actor",
+            "kind": "actor",
+            "status": "ok",
+            "actor": str(user_id),
+            "step": str(step),
+            "run": str(rid),
+        }
+        with Path(handler_path).open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(span, ensure_ascii=True) + "\n")
+    return line
 
 
 def _ensure_traces_dir() -> Path:
