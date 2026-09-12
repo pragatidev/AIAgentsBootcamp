@@ -40,6 +40,10 @@ pytest -q
 
 `pytest -q` must exit 0 with no cloud key. Live model calls skip without a key or Ollama.
 
+## What the desk refuses
+
+The DataFlow desk refuses when the knowledge base has nothing. It does not invent a policy. It does not write a refund until a named reviewer resumes the parked card. Run the tests with no cloud key: `pytest -q` must exit 0. Live model calls skip without a key or Ollama.
+
 For labs that call a model, install [Ollama](https://ollama.com) and run `ollama pull qwen3:8b`. Copy `.env.sample` to `.env` if you want a hosted key later. Never commit `.env`.
 
 First lab: `labs/00_03_setup_check.py`. Then `labs/00_04_keys_and_config.py` and `labs/00_05_notebook_twin_demo.py`.

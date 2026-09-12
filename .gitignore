@@ -141,3 +141,6 @@ dataflow/data/serve_checkpoints.sqlite-wal
 dataflow/data/serve_checkpoints.sqlite-shm
 dataflow/data/serve_checkpoints.sqlite.meta.json
 
+# Section 46 runtime. The stakeholder demo writes this; it is not the source.
+career/pm/runs/
+
