@@ -18,7 +18,6 @@ from langchain_core.messages import HumanMessage
 from config import CHAT_MODEL
 from dataflow.graphs.rag_tool_cycle import build_rag_tool_cycle
 from dataflow.tools.orders import lookup_order
-from dataflow.tools.policy import search_policy
 from dataflow.tools.retrieve import (
     RETRIEVE_DESCRIPTION,
     build_retrieve_tool,
@@ -91,7 +90,8 @@ run_ticket(graph, "Thanks, that fixed it.", "chitchat")
 print("break_empty_description")
 blank = build_retrieve_tool(description="")
 print("blank_description", repr(blank.description))
-broken = build_rag_tool_cycle(tools=[lookup_order, search_policy, blank])
+print("desk_tools", ["lookup_order", blank.name])
+broken = build_rag_tool_cycle(tools=[lookup_order, blank])
 run_ticket(
     broken,
     "Can I send back an unused lamp after twelve days?",
@@ -100,7 +100,8 @@ run_ticket(
 
 # %%
 print("restore_description", RETRIEVE_DESCRIPTION)
-restored = build_rag_tool_cycle(tools=[lookup_order, search_policy, retrieve])
+print("desk_tools", ["lookup_order", retrieve.name])
+restored = build_rag_tool_cycle(tools=[lookup_order, retrieve])
 run_ticket(
     restored,
     "Can I send back an unused lamp after twelve days?",

@@ -1,7 +1,8 @@
 """DataFlow RAG tool cycle: agent, ToolNode, back to the agent.
 
-The Section 8 cycle with retrieve on the desk's tool list. The model
-chooses lookup_order, search_policy, or retrieve. Recursion cap is 10.
+The Section 8 cycle binds lookup_order and retrieve. retrieve replaces
+the Section 9 keyword search; search_policy stays on v2_tools. Recursion
+cap is 10.
 """
 
 from __future__ import annotations
@@ -16,17 +17,16 @@ from langgraph.runtime import Runtime
 
 from config import get_chat_model
 from dataflow.graphs.v1_triage import DeskContext
-from dataflow.graphs.v2_tools import DESK_TOOLS as V2_DESK_TOOLS
+from dataflow.tools.orders import lookup_order
 from dataflow.tools.retrieve import retrieve
 
-DESK_TOOLS = [*V2_DESK_TOOLS, retrieve]
+DESK_TOOLS = [lookup_order, retrieve]
 RECURSION_LIMIT = 10
 
 AGENT_SYSTEM = (
     "You are the DataFlow support desk. "
     "When the user names an order id like DF-1001, call lookup_order. "
     "When they ask a policy or guide question, call retrieve. "
-    "Do not call search_policy when retrieve can answer. "
     "After you receive a tool result, write one short reply. "
     "Do not call a tool for thanks, chitchat, or when you already have the result."
 )

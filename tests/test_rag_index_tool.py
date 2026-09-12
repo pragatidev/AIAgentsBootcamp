@@ -2,7 +2,7 @@
 
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
-from dataflow.graphs.rag_tool_cycle import build_rag_tool_cycle
+from dataflow.graphs.rag_tool_cycle import DESK_TOOLS, build_rag_tool_cycle
 from dataflow.rag.faiss_index import build_faiss_index, search
 from dataflow.rag.load import KB_DIR, WIKI_DIR, load_knowledge_base
 from dataflow.rag.pgvector_store import check_dimension, postgres_reachable
@@ -66,6 +66,12 @@ def test_retrieve_is_a_tool():
     assert RETRIEVE_DESCRIPTION
     assert retrieve.description
     assert len(retrieve.description) > 10
+
+
+def test_rag_desk_tools_are_lookup_and_retrieve():
+    names = [tool.name for tool in DESK_TOOLS]
+    assert names == ["lookup_order", "retrieve"]
+    assert "search_policy" not in names
 
 
 def test_cycle_calls_retrieve_on_policy_question(tmp_path):
