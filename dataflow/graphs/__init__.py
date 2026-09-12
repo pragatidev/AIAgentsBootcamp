@@ -7,6 +7,7 @@ from dataflow.graphs.v2_route import build_v2_route
 from dataflow.graphs.v2_tools import build_v2_tools
 from dataflow.graphs.v3_memory import build_v3_memory
 from dataflow.graphs.v4_hitl import build_v4_hitl
+from dataflow.graphs.v5_stream import build_v5_stream
 
 __all__ = [
     "build_collision",
@@ -19,4 +20,5 @@ __all__ = [
     "build_v2_tools",
     "build_v3_memory",
     "build_v4_hitl",
+    "build_v5_stream",
 ]

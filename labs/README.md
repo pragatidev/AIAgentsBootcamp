@@ -21,6 +21,10 @@ Curriculum labs are numbered Part.Section.Lecture. Older S1-S16 files stay while
 06_05_03_resume_approve_reject.py  two threads, approve writes, reject does not
 06_05_04_edit_state_before_resume.py  dict decision lowers the refund amount
 06_05_06_policy_lookup_free_refund_parks.py  lookup free, refund parks, pytest
+06_06_02_stream.py               values, updates, messages, then custom+updates
+06_06_03_stream_events.py        stream_events v3 interrupt projections, then approve
+06_06_05_fork.py                 fork before speak, original trail intact
+06_06_06_full_run.py             lookup through, refund parks, approve, pytest
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt

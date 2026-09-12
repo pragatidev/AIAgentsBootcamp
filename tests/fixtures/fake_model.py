@@ -5,7 +5,8 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, AIMessageChunk
+from langchain_core.outputs import ChatGenerationChunk
 
 
 def _messages_text(messages: Any) -> str:
@@ -49,6 +50,12 @@ def _is_preference_schema(schema: Any) -> bool:
     return "channel" in fields and "stated" in fields
 
 
+def _split_reply(text: str) -> tuple[str, str]:
+    body = text or "ok"
+    mid = max(1, len(body) // 2)
+    return body[:mid], body[mid:]
+
+
 class FakeChatModel:
     """Duck-typed chat model. with_structured_output returns the fixed route
     or a PreferenceDecision when that schema is requested."""
@@ -60,9 +67,27 @@ class FakeChatModel:
     ) -> None:
         self.route = route
         self.reply = reply
+        self.calls = 0
+        self.invoke_calls = 0
+        self.stream_calls = 0
 
     def invoke(self, messages: Any, **kwargs: Any) -> AIMessage:
+        self.calls += 1
+        self.invoke_calls += 1
         return AIMessage(content=self.reply)
+
+    def stream(self, messages: Any, **kwargs: Any):
+        """Yield the reply in two chunks so messages mode has tokens."""
+        self.calls += 1
+        self.stream_calls += 1
+        first, second = _split_reply(self.reply)
+        yield AIMessageChunk(content=first)
+        yield AIMessageChunk(content=second)
+
+    def _stream(self, messages: Any, stop: Any = None, **kwargs: Any):
+        first, second = _split_reply(self.reply)
+        yield ChatGenerationChunk(message=AIMessageChunk(content=first))
+        yield ChatGenerationChunk(message=AIMessageChunk(content=second))
 
     def with_structured_output(self, schema: Any, **kwargs: Any) -> Any:
         route = self.route
