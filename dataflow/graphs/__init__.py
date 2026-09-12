@@ -7,6 +7,8 @@ from dataflow.graphs.v2_route import build_v2_route
 from dataflow.graphs.v2_tools import build_v2_tools
 from dataflow.graphs.v3_memory import build_v3_memory
 from dataflow.graphs.v4_hitl import build_v4_hitl
+from dataflow.graphs.crag import build_crag
+from dataflow.graphs.rag_graph import build_rag_graph
 from dataflow.graphs.rag_tool_cycle import build_rag_tool_cycle
 
 __all__ = [
@@ -21,4 +23,6 @@ __all__ = [
     "build_v3_memory",
     "build_v4_hitl",
     "build_rag_tool_cycle",
+    "build_rag_graph",
+    "build_crag",
 ]

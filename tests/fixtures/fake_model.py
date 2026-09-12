@@ -50,29 +50,45 @@ def _is_preference_schema(schema: Any) -> bool:
 
 
 class FakeChatModel:
-    """Duck-typed chat model. with_structured_output returns the fixed route
-    or a PreferenceDecision when that schema is requested."""
+    """Duck-typed chat model. with_structured_output returns the fixed route,
+    a PreferenceDecision, or a payload from structured[schema_name]."""
 
     def __init__(
         self,
         route: str = "orders",
         reply: str = "looked up desk lamp",
+        structured: dict[str, Any] | None = None,
     ) -> None:
         self.route = route
         self.reply = reply
+        self.structured = structured or {}
+        self._struct_i: dict[str, int] = {}
 
     def invoke(self, messages: Any, **kwargs: Any) -> AIMessage:
         return AIMessage(content=self.reply)
 
     def with_structured_output(self, schema: Any, **kwargs: Any) -> Any:
         route = self.route
+        parent = self
+        name = str(getattr(schema, "__name__", "") or "")
 
         class _Runner:
             def invoke(self, messages: Any, **kw: Any) -> Any:
-                if _is_preference_schema(schema):
+                if name in parent.structured:
+                    payload = parent.structured[name]
+                    if callable(payload):
+                        payload = payload(messages)
+                    elif isinstance(payload, list):
+                        index = parent._struct_i.get(name, 0)
+                        item = payload[min(index, len(payload) - 1)]
+                        parent._struct_i[name] = index + 1
+                        payload = item
+                elif name == "Grade":
+                    payload = {"label": "keep", "reason": "fixture keep"}
+                elif _is_preference_schema(schema):
                     text = _last_user_text(messages).lower()
                     if "email" in text:
-                        payload: dict[str, Any] = {
+                        payload = {
                             "channel": "email",
                             "stated": True,
                         }
