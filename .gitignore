@@ -84,6 +84,9 @@ dataflow/data/reports/*
 dataflow/context/notes.json
 dataflow/context/_last_rot.json
 
+# TechCorp password-reset audit. Created at run time, not committed.
+techcorp/data/audit.jsonl
+
 # Project-specific IDE metadata
 *.iml
 

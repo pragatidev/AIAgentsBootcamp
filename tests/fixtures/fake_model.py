@@ -150,6 +150,33 @@ class ScriptedToolChatModel(BaseChatModel):
             )
         )
 
+def _is_ticket_schema(schema: Any) -> bool:
+    name = str(getattr(schema, "__name__", "") or "")
+    if name in {"TicketClass", "TicketClassNoVpn"}:
+        return True
+    fields = getattr(schema, "model_fields", None) or {}
+    return "category" in fields and "priority" in fields and "needs_human" in fields
+
+
+def _ticket_payload(messages: Any) -> dict[str, Any]:
+    text = _last_user_text(messages).lower()
+    if "vpn" in text:
+        category = "vpn"
+    elif "password" in text or "reset" in text:
+        category = "password"
+    elif "access" in text or "grant" in text or "share" in text:
+        category = "access"
+    elif "install" in text or "vs code" in text or "slack" in text:
+        category = "software"
+    else:
+        category = "other"
+    return {
+        "category": category,
+        "priority": "normal",
+        "needs_human": category in {"vpn", "software"},
+        "reason": "classified from ticket text",
+    }
+
 
 class FakeChatModel:
     """Duck-typed chat model. with_structured_output returns the fixed route
@@ -186,6 +213,12 @@ class FakeChatModel:
 
     def bind_tools(self, tools: Any, **kwargs: Any) -> FakeChatModel:
         self._tools = tools
+        return self
+
+    def bind_tools(self, tools: Any, **kwargs: Any) -> FakeChatModel:
+        return self
+
+    def bind(self, **kwargs: Any) -> FakeChatModel:
         return self
 
     def invoke(self, messages: Any, **kwargs: Any) -> AIMessage:
@@ -290,6 +323,8 @@ class FakeChatModel:
                     if step not in {"billing", "policy", "writer", "escalate"}:
                         step = "billing"
                     payload = {"step": step, "why": "fixture"}
+                elif payload is None and _is_ticket_schema(schema):
+                    payload = _ticket_payload(messages)
                 elif payload is None:
                     payload = {"route": parent.route}
                 if hasattr(schema, "model_validate"):
@@ -315,8 +350,28 @@ class FakeChatModel:
         return _Runner()
 
 
+def _last_tool_content(messages: Any) -> str:
+    if not isinstance(messages, list):
+        return ""
+    for item in reversed(messages):
+        if isinstance(item, dict):
+            role = str(item.get("type") or item.get("role") or "").lower()
+            if role in {"tool", "toolmessage"}:
+                return str(item.get("content") or "")
+            continue
+        kind = str(getattr(item, "type", "") or item.__class__.__name__).lower()
+        if "tool" in kind and "call" not in kind:
+            return str(getattr(item, "content", "") or "")
+    return ""
+
+
 class FakeToolModel:
-    """Duck-typed chat model. Yields one tool call, then a final AI message."""
+    """Duck-typed chat model. Yields one tool call, then a final AI message.
+
+    Works under create_agent: bind_tools returns self, invoke returns an
+    AIMessage, and a script item of the string echo_tool copies the last
+    tool result into the reply so tests can assert on a temporary password.
+    """
 
     def __init__(self, script: list[Any] | None = None) -> None:
         self._script = script
@@ -327,10 +382,16 @@ class FakeToolModel:
         self._tools = tools
         return self
 
+    def bind(self, **kwargs: Any) -> FakeToolModel:
+        return self
+
     def invoke(self, messages: Any, **kwargs: Any) -> AIMessage:
         if self._script is not None:
             item = self._script[min(self._i, len(self._script) - 1)]
             self._i += 1
+            if item == "echo_tool":
+                content = _last_tool_content(messages)
+                return AIMessage(content=f"Done. {content}")
             return item
         text = _messages_text(messages)
         match = re.search(r"DF-\d+", text.upper())
