@@ -54,6 +54,9 @@ dataflow/data/checkpoints.sqlite-shm
 # Lab 6.5 refund ledger. Created at run time, not committed.
 dataflow/data/refunds.jsonl
 
+# Section 23 FAISS index. Built at run time, not committed.
+dataflow/data/faiss_index/
+
 # Project-specific IDE metadata
 *.iml
 
