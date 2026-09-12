@@ -68,8 +68,8 @@ def policy_desk(state: TriageState) -> dict[str, Any]:
     if hit.get("found"):
         reply = f"From {hit['path']}: {hit['paragraph']}"
     else:
-        reason = hit.get("reason", "no match")
-        reply = f"I could not find a matching policy paragraph ({reason})."
+        reason = hit.get("reason", "no customer policy matched")
+        reply = f"I could not find a customer policy ({reason})."
     return {"policy": hit, "reply": reply}
 
 

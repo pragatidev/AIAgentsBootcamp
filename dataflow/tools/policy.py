@@ -1,4 +1,4 @@
-"""Policy search over the DataFlow knowledge base. No model."""
+"""Customer-facing policy search for the DataFlow desk. No model. No embeddings."""
 
 from __future__ import annotations
 
@@ -7,8 +7,11 @@ from pathlib import Path
 
 from langchain.tools import tool
 
-WIKI = Path(__file__).resolve().parents[1] / "wiki"
-KNOWLEDGE_BASE = Path(__file__).resolve().parents[1] / "knowledge_base"
+DATAFLOW = Path(__file__).resolve().parents[1]
+WIKI = DATAFLOW / "wiki"
+CUSTOMER_FACING = DATAFLOW / "knowledge_base" / "customer_facing"
+
+POLICY_SUFFIXES = {".md", ".markdown", ".txt"}
 
 _STOP = {
     "a",
@@ -54,6 +57,11 @@ _STOP = {
     "their",
 }
 
+MISS = {
+    "found": False,
+    "reason": "no customer policy matched",
+}
+
 
 def read_policy(ticket: str) -> dict:
     path = WIKI / "return_policy.md"
@@ -69,31 +77,49 @@ def _tokens(text: str) -> list[str]:
 def _paragraphs(text: str) -> list[str]:
     chunks = re.split(r"\n\s*\n|^\s*---\s*$", text, flags=re.MULTILINE)
     out: list[str] = []
+    pending_heading = ""
     for chunk in chunks:
-        cleaned = " ".join(chunk.strip().split())
-        if cleaned:
-            out.append(cleaned)
+        raw = chunk.strip()
+        cleaned = " ".join(raw.split())
+        if not cleaned:
+            continue
+        if re.match(r"^#+ ", raw):
+            pending_heading = re.sub(r"^#+\s*", "", cleaned)
+            continue
+        if pending_heading:
+            cleaned = pending_heading + " " + cleaned
+            pending_heading = ""
+        out.append(cleaned)
+    if pending_heading:
+        out.append(pending_heading)
     return out
 
 
+def _customer_policy_files() -> list[Path]:
+    files: list[Path] = []
+    if WIKI.is_dir():
+        files.extend(sorted(WIKI.glob("*.md")))
+    if CUSTOMER_FACING.is_dir():
+        for path in sorted(CUSTOMER_FACING.iterdir()):
+            if not path.is_file():
+                continue
+            if path.suffix.lower() not in POLICY_SUFFIXES:
+                continue
+            files.append(path)
+    return files
+
+
 def search_policy_docs(question: str) -> dict:
-    """Keyword search over markdown and txt files under knowledge_base/."""
+    """Keyword search over wiki and customer_facing policy files only."""
     query = _tokens(question)
     if not query:
-        return {
-            "found": False,
-            "reason": "no searchable terms in the question",
-            "question": question,
-        }
+        return {**MISS, "question": question}
     query_set = set(query)
     best: dict | None = None
     best_score = 0
-    files: list[Path] = []
-    for suffix in (".md", ".markdown", ".txt"):
-        files.extend(KNOWLEDGE_BASE.rglob(f"*{suffix}"))
-    for path in files:
+    for path in _customer_policy_files():
         body = path.read_text(encoding="utf-8", errors="replace")
-        rel = path.relative_to(KNOWLEDGE_BASE).as_posix()
+        rel = path.relative_to(DATAFLOW).as_posix()
         name_hits = len(query_set.intersection(_tokens(path.stem.replace("_", " "))))
         for paragraph in _paragraphs(body):
             para_tokens = _tokens(paragraph)
@@ -111,15 +137,11 @@ def search_policy_docs(question: str) -> dict:
                     "score": score,
                 }
     if not best or best_score <= 0:
-        return {
-            "found": False,
-            "reason": "no matching policy paragraph",
-            "question": question,
-        }
+        return {**MISS, "question": question}
     return best
 
 
 @tool
 def search_policy(question: str) -> dict:
-    """Search DataFlow policy markdown and txt files. Returns the best paragraph or a typed miss."""
+    """Search customer-facing DataFlow policy files. Returns the best paragraph or a typed miss."""
     return search_policy_docs(question)

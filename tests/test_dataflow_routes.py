@@ -5,6 +5,7 @@ from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from dataflow.graphs.v2_command import build_v2_command
 from dataflow.graphs.v2_route import build_v2_route, pick_route
 from dataflow.graphs.v2_tools import build_v2_tools
+from dataflow.tools.policy import search_policy
 from tests.fixtures.fake_model import FakeChatModel, FakeToolModel
 
 
@@ -63,3 +64,24 @@ def test_pick_route_reads_state():
     assert pick_route({"route": "orders"}) == "orders"
     assert pick_route({"route": "policy"}) == "policy"
     assert pick_route({"route": "escalate"}) == "escalate"
+
+
+def test_policy_search_is_customer_facing():
+    hit = search_policy.invoke(
+        {"question": "What is your return window? I cannot find it on the site."}
+    )
+    assert hit.get("found") is True
+    path = str(hit.get("path") or "").replace("\\", "/")
+    assert path.startswith("wiki/") or path.startswith(
+        "knowledge_base/customer_facing/"
+    )
+    assert "internal_operations" not in path
+    assert "hr_policies" not in path
+
+
+def test_policy_search_miss_is_typed():
+    hit = search_policy.invoke(
+        {"question": "What is the xylophone nebula docking tariff?"}
+    )
+    assert hit.get("found") is False
+    assert hit.get("reason") == "no customer policy matched"
