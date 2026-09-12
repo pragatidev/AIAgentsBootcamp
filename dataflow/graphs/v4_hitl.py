@@ -30,6 +30,7 @@ __all__ = [
     "pick_route",
     "policy_node",
     "refund_node",
+    "refund_node_planted",
     "resume_with",
 ]
 
@@ -244,12 +245,110 @@ def refund_node(state: HitlState) -> dict[str, Any]:
     }
 
 
+# PLANTED TRAP for lab 11.2. The write sits before the interrupt, so it
+# runs when the node first executes, before any person answered, and the
+# node re-runs from its top on resume, so it runs again. Never ship this
+# shape.
+def refund_node_planted(state: HitlState) -> dict[str, Any]:
+    """Copy of refund_node with the write before interrupt. Lab 11.2 only."""
+    ticket = state.get("ticket", "")
+    order = lookup_order_from_ticket(ticket)
+    hit = search_policy.invoke({"question": ticket})
+    if hit.get("found"):
+        policy_line = str(hit.get("paragraph") or "")
+    else:
+        policy_line = str(hit.get("reason") or "no customer policy matched")
+    amount = float(state.get("refund_amount") or order.get("amount") or 0)
+    order_id = str(order.get("order_id") or "")
+    payload = {
+        "action": "refund",
+        "ticket": ticket,
+        "order_id": order_id,
+        "amount": amount,
+        "amount_source": "state" if state.get("refund_amount") else "order",
+        "policy": policy_line,
+        "question": (
+            "Approve this refund of "
+            + str(amount)
+            + " on order "
+            + order_id
+            + "?"
+        ),
+    }
+    already = issue_refund.invoke(
+        {
+            "order_id": order_id,
+            "amount": amount,
+            "reason": "written before anyone approved",
+        }
+    )
+    decision = interrupt(payload)
+    action, paid = _parse_decision(decision, amount)
+    if action == "unclear":
+        record = {
+            "refunded": False,
+            "unclear": True,
+            "order_id": order_id,
+            "answer": decision,
+        }
+        reply = (
+            "Refund not issued for order "
+            + order_id
+            + ": reviewer answer not understood ("
+            + str(decision)
+            + ")"
+        )
+        return {
+            "order": order,
+            "decision": decision,
+            "refund": record,
+            "reply": reply,
+        }
+    if action == "reject":
+        record = decline_refund.invoke(
+            {
+                "order_id": order_id,
+                "reason": "reviewer rejected the refund",
+            }
+        )
+        reply = (
+            "Refund declined for order "
+            + order_id
+            + ". Reason: "
+            + str(record.get("reason"))
+        )
+        return {
+            "order": order,
+            "decision": decision,
+            "refund": record,
+            "reply": reply,
+        }
+    reply = (
+        "Refund issued for order "
+        + order_id
+        + ". Amount: "
+        + str(already.get("amount"))
+        + "."
+    )
+    return {
+        "order": order,
+        "decision": decision,
+        "refund": already,
+        "reply": reply,
+    }
+
+
 def resume_with(graph: Any, config: dict[str, Any], decision: Any) -> Any:
     """Resume a parked thread with the reviewer's answer."""
     return graph.invoke(Command(resume=decision), config)
 
 
-def build_v4_hitl(checkpointer=None, model=None, interrupt_before=None):
+def build_v4_hitl(
+    checkpointer=None,
+    model=None,
+    interrupt_before=None,
+    write_before_interrupt: bool = False,
+):
     """Compile the desk. Defaults to InMemorySaver when checkpointer is None."""
     if checkpointer is None:
         checkpointer = InMemorySaver()
@@ -262,10 +361,11 @@ def build_v4_hitl(checkpointer=None, model=None, interrupt_before=None):
     ) -> dict[str, str]:
         return classify(state, runtime=runtime, model=model)
 
+    refund_fn = refund_node_planted if write_before_interrupt else refund_node
     builder.add_node("classify", classify_node)
     builder.add_node("lookup", lookup_node)
     builder.add_node("policy", policy_node)
-    builder.add_node("refund", refund_node)
+    builder.add_node("refund", refund_fn)
     builder.add_edge(START, "classify")
     builder.add_conditional_edges(
         "classify",

@@ -74,3 +74,23 @@ print("refunds_rows", len(rows))
 refunds_written = refunds_path.exists() and len(rows) > 0
 print("refunds_written", refunds_written)
 print("parked", bool(state.interrupts))
+
+# %% [markdown]
+# break it on purpose
+
+# %%
+from dataflow.graphs.v4_hitl import resume_with
+
+if refunds_path.exists():
+    refunds_path.unlink()
+graph = build_v4_hitl(write_before_interrupt=True)
+thread = {"configurable": {"thread_id": "lab-11-2-planted"}}
+graph.invoke({"ticket": chosen["ticket"]["text"]}, thread)
+rows = read_refunds()
+print("refunds_rows", len(rows))
+resume_with(graph, thread, "approve")
+rows = read_refunds()
+print("refunds_rows", len(rows))
+for row in rows:
+    print(row)
+print("the write goes after the interrupt")

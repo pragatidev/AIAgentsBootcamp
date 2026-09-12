@@ -159,3 +159,17 @@ def test_write_is_after_interrupt(tmp_path, monkeypatch):
     except Exception:
         pass
     assert len(refund_mod.read_refunds()) == 1
+
+
+def test_write_before_interrupt_double_writes(tmp_path, monkeypatch):
+    path = _patch_refunds(tmp_path, monkeypatch)
+    graph = build_v4_hitl(
+        model=FakeChatModel(route="refund"),
+        write_before_interrupt=True,
+    )
+    cfg = {"configurable": {"thread_id": "test-11-planted"}}
+    graph.invoke({"ticket": REFUND_TICKET}, cfg)
+    assert path.is_file()
+    assert len(refund_mod.read_refunds()) == 1
+    resume_with(graph, cfg, "approve")
+    assert len(refund_mod.read_refunds()) == 2
