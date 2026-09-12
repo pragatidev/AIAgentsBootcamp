@@ -1,0 +1,8 @@
+{
+  "id": "call_reset_e4101",
+  "type": "function",
+  "function": {
+    "name": "reset_password",
+    "arguments": "{\"user_id\": \"E-4101\"}"
+  }
+}

@@ -8,6 +8,11 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 00_03_setup_check.py             python, venv, git branch, pytest exit
 00_04_keys_and_config.py         local model call, hosted skip or hosted then local
 00_05_notebook_twin_demo.py      three cells so the twin shows cells
+01_04_tokens_and_window.py       tiktoken plus usage_metadata, window, spill
+01_06_first_raw_api_call.py      OpenAI SDK against Ollama /v1, then LangChain
+01_08_structured_output_raw.py   Pydantic TicketClass, one failure, one retry
+01_10_raw_tool_call.py           tools list, raw tool_calls, run, blank description
+01_14_swap_the_model.py          same agent code, two model ids, same shape
 06_01_03_build_triage_graph.py   three-node DataFlow graph, mermaid, compile
 06_01_04_invoke_and_test.py      invoke a real ticket, classify alone, pytest
 06_02_02_route_three_ways.py     three tickets, three labeled routes, mermaid
