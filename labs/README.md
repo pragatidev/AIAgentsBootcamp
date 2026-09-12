@@ -17,6 +17,16 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 02_04_second_tool.py             lookup then reset, VPN only lookup
 02_06_break_the_loop.py          runaway, blank description, write gate
 02_13_loop_as_a_class.py         ScratchAgent.run, pytest
+03_02_context_rot.py             constraint at turn 4, needed at turn 30
+03_03_measure_tokens.py          tokens before and after the death
+03_05_map_file.py                FAT and MAP constants, written to disk
+03_06_fat_vs_map.py              same ticket, both files, token delta
+03_08_compaction.py              sawtooth of token counts
+03_09_compare_compaction.py      compacted vs uncompacted totals
+03_11_notes_file.py              notes.json after each turn
+03_12_recover_from_notes.py      fact the summary dropped, recovered
+03_14_just_in_time_read.py       read only on the ticket that needs it
+03_16_subagent_isolation.py      polluted vs isolated scores
 06_01_03_build_triage_graph.py   three-node DataFlow graph, mermaid, compile
 06_01_04_invoke_and_test.py      invoke a real ticket, classify alone, pytest
 06_02_02_route_three_ways.py     three tickets, three labeled routes, mermaid

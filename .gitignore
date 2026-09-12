@@ -54,6 +54,10 @@ dataflow/data/checkpoints.sqlite-shm
 # Lab 6.5 refund ledger. Created at run time, not committed.
 dataflow/data/refunds.jsonl
 
+# Part 3 notes and rot capture. Created at run time, not committed.
+dataflow/context/notes.json
+dataflow/context/_last_rot.json
+
 # Project-specific IDE metadata
 *.iml
 
