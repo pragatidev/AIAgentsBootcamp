@@ -4,23 +4,23 @@ from langgraph.errors import InvalidUpdateError
 from langgraph.store.memory import InMemoryStore
 from langgraph.types import Command
 
-from northstar.graphs.collision import build_collision, build_reduced
-from northstar.graphs.runaway import run_with_cap
-from northstar.graphs.trim import trim_messages
-from northstar.graphs.v2_route import build_v2_route
-from northstar.graphs.v3_memory import (
+from dataflow.graphs.collision import build_collision, build_reduced
+from dataflow.graphs.runaway import run_with_cap
+from dataflow.graphs.trim import trim_messages
+from dataflow.graphs.v2_route import build_v2_route
+from dataflow.graphs.v3_memory import (
     build_v3_memory,
     read_preference,
     remember_preference,
 )
-from northstar.graphs.v4_hitl import build_v4_hitl
-from northstar.tools.retrieve import retrieve
-from northstar.tools.structured import parse_tool_json
+from dataflow.graphs.v4_hitl import build_v4_hitl
+from dataflow.tools.retrieve import retrieve
+from dataflow.tools.structured import parse_tool_json
 
 
 def test_routes_three_ways():
     graph = build_v2_route()
-    orders = graph.invoke({"ticket": "Can I return order NS-1001?"})
+    orders = graph.invoke({"ticket": "Can I return order DF-1001?"})
     policy = graph.invoke({"ticket": "What is your shipping time?"})
     human = graph.invoke({"ticket": "I want a human manager please"})
     assert orders["route"] == "orders"
@@ -35,11 +35,11 @@ def test_routes_three_ways():
 
 def test_collision_then_reducer():
     try:
-        build_collision().invoke({"ticket": "NS-1001", "log": ""})
+        build_collision().invoke({"ticket": "DF-1001", "log": ""})
         raise AssertionError("collision should raise")
     except InvalidUpdateError:
         pass
-    out = build_reduced().invoke({"ticket": "NS-1001", "log": []})
+    out = build_reduced().invoke({"ticket": "DF-1001", "log": []})
     assert sorted(out["log"]) == ["orders looked up", "policy read"]
 
 
@@ -66,12 +66,12 @@ def test_store_is_cross_thread():
 def test_lookup_does_not_park_refund_does():
     graph = build_v4_hitl()
     look = graph.invoke(
-        {"ticket": "Status of order NS-1001?"},
+        {"ticket": "Status of order DF-1001?"},
         {"configurable": {"thread_id": "l1"}},
     )
     assert "looked up" in look.get("reply", "")
     parked = graph.invoke(
-        {"ticket": "Please refund order NS-1001"},
+        {"ticket": "Please refund order DF-1001"},
         {"configurable": {"thread_id": "r1"}},
     )
     state = graph.get_state({"configurable": {"thread_id": "r1"}})

@@ -1,0 +1,402 @@
+{
+  "DF-1001": {
+    "item": "desk lamp",
+    "status": "delivered",
+    "days_since_delivery": 12,
+    "amount": 49.0,
+    "customer_id": "C-2001",
+    "region": "NA"
+  },
+  "DF-1002": {
+    "item": "USB-C hub",
+    "status": "in_transit",
+    "days_since_delivery": null,
+    "amount": 29.99,
+    "customer_id": "C-2002",
+    "region": "EU"
+  },
+  "DF-1003": {
+    "item": "notebook",
+    "status": "delivered",
+    "days_since_delivery": 3,
+    "amount": 12.5,
+    "customer_id": "C-2003",
+    "region": "APAC"
+  },
+  "DF-1004": {
+    "item": "wireless mouse",
+    "status": "returned",
+    "days_since_delivery": 23,
+    "amount": 24.0,
+    "customer_id": "C-2004",
+    "region": "LATAM"
+  },
+  "DF-1005": {
+    "item": "standing desk",
+    "status": "delivered",
+    "days_since_delivery": 27,
+    "amount": 389.0,
+    "customer_id": "C-2005",
+    "region": "UK"
+  },
+  "DF-1006": {
+    "item": "monitor arm",
+    "status": "cancelled",
+    "days_since_delivery": null,
+    "amount": 79.0,
+    "customer_id": "C-2006",
+    "region": "NA"
+  },
+  "DF-1007": {
+    "item": "webcam",
+    "status": "in_transit",
+    "days_since_delivery": null,
+    "amount": 59.0,
+    "customer_id": "C-2007",
+    "region": "EU"
+  },
+  "DF-1008": {
+    "item": "mechanical keyboard",
+    "status": "delivered",
+    "days_since_delivery": 8,
+    "amount": 129.0,
+    "customer_id": "C-2008",
+    "region": "APAC"
+  },
+  "DF-1009": {
+    "item": "over ear headphones",
+    "status": "delivered",
+    "days_since_delivery": 44,
+    "amount": 89.0,
+    "customer_id": "C-2009",
+    "region": "LATAM"
+  },
+  "DF-1010": {
+    "item": "laptop sleeve",
+    "status": "returned",
+    "days_since_delivery": 29,
+    "amount": 22.0,
+    "customer_id": "C-2010",
+    "region": "UK"
+  },
+  "DF-1011": {
+    "item": "HDMI cable",
+    "status": "delivered",
+    "days_since_delivery": 1,
+    "amount": 9.99,
+    "customer_id": "C-2011",
+    "region": "NA"
+  },
+  "DF-1012": {
+    "item": "power bank",
+    "status": "in_transit",
+    "days_since_delivery": null,
+    "amount": 39.5,
+    "customer_id": "C-2012",
+    "region": "EU"
+  },
+  "DF-1013": {
+    "item": "phone stand",
+    "status": "delivered",
+    "days_since_delivery": 19,
+    "amount": 18.0,
+    "customer_id": "C-2013",
+    "region": "APAC"
+  },
+  "DF-1014": {
+    "item": "desk mat",
+    "status": "returned",
+    "days_since_delivery": 23,
+    "amount": 27.0,
+    "customer_id": "C-2014",
+    "region": "LATAM"
+  },
+  "DF-1015": {
+    "item": "ring light",
+    "status": "delivered",
+    "days_since_delivery": 6,
+    "amount": 34.0,
+    "customer_id": "C-2015",
+    "region": "UK"
+  },
+  "DF-1016": {
+    "item": "USB microphone",
+    "status": "cancelled",
+    "days_since_delivery": null,
+    "amount": 69.0,
+    "customer_id": "C-2016",
+    "region": "NA"
+  },
+  "DF-1017": {
+    "item": "1TB SSD",
+    "status": "in_transit",
+    "days_since_delivery": null,
+    "amount": 99.0,
+    "customer_id": "C-2017",
+    "region": "EU"
+  },
+  "DF-1018": {
+    "item": "wifi router",
+    "status": "delivered",
+    "days_since_delivery": 31,
+    "amount": 119.0,
+    "customer_id": "C-2018",
+    "region": "APAC"
+  },
+  "DF-1019": {
+    "item": "chair cushion",
+    "status": "delivered",
+    "days_since_delivery": 15,
+    "amount": 32.0,
+    "customer_id": "C-2019",
+    "region": "LATAM"
+  },
+  "DF-1020": {
+    "item": "insulated bottle",
+    "status": "returned",
+    "days_since_delivery": 29,
+    "amount": 16.0,
+    "customer_id": "C-2020",
+    "region": "UK"
+  },
+  "DF-1021": {
+    "item": "laptop stand",
+    "status": "delivered",
+    "days_since_delivery": 2,
+    "amount": 45.0,
+    "customer_id": "C-2021",
+    "region": "NA"
+  },
+  "DF-1022": {
+    "item": "cable tray",
+    "status": "in_transit",
+    "days_since_delivery": null,
+    "amount": 21.0,
+    "customer_id": "C-2022",
+    "region": "EU"
+  },
+  "DF-1023": {
+    "item": "4K monitor",
+    "status": "delivered",
+    "days_since_delivery": 22,
+    "amount": 249.0,
+    "customer_id": "C-2023",
+    "region": "APAC"
+  },
+  "DF-1024": {
+    "item": "docking station",
+    "status": "returned",
+    "days_since_delivery": 23,
+    "amount": 159.0,
+    "customer_id": "C-2024",
+    "region": "LATAM"
+  },
+  "DF-1025": {
+    "item": "trackball",
+    "status": "delivered",
+    "days_since_delivery": 9,
+    "amount": 54.0,
+    "customer_id": "C-2025",
+    "region": "UK"
+  },
+  "DF-1026": {
+    "item": "document camera",
+    "status": "cancelled",
+    "days_since_delivery": null,
+    "amount": 139.0,
+    "customer_id": "C-2026",
+    "region": "NA"
+  },
+  "DF-1027": {
+    "item": "label printer",
+    "status": "in_transit",
+    "days_since_delivery": null,
+    "amount": 84.0,
+    "customer_id": "C-2027",
+    "region": "EU"
+  },
+  "DF-1028": {
+    "item": "surge strip",
+    "status": "delivered",
+    "days_since_delivery": 18,
+    "amount": 26.0,
+    "customer_id": "C-2028",
+    "region": "APAC"
+  },
+  "DF-1029": {
+    "item": "ergonomic footrest",
+    "status": "delivered",
+    "days_since_delivery": 5,
+    "amount": 41.0,
+    "customer_id": "C-2001",
+    "region": "LATAM"
+  },
+  "DF-1030": {
+    "item": "blue light glasses",
+    "status": "returned",
+    "days_since_delivery": 29,
+    "amount": 28.0,
+    "customer_id": "C-2002",
+    "region": "UK"
+  },
+  "DF-1031": {
+    "item": "portable SSD",
+    "status": "delivered",
+    "days_since_delivery": 12,
+    "amount": 74.0,
+    "customer_id": "C-2003",
+    "region": "NA"
+  },
+  "DF-1032": {
+    "item": "USB headset",
+    "status": "in_transit",
+    "days_since_delivery": null,
+    "amount": 62.0,
+    "customer_id": "C-2004",
+    "region": "EU"
+  },
+  "DF-1033": {
+    "item": "whiteboard",
+    "status": "delivered",
+    "days_since_delivery": 3,
+    "amount": 48.0,
+    "customer_id": "C-2005",
+    "region": "APAC"
+  },
+  "DF-1034": {
+    "item": "desk organizer",
+    "status": "returned",
+    "days_since_delivery": 23,
+    "amount": 19.0,
+    "customer_id": "C-2006",
+    "region": "LATAM"
+  },
+  "DF-1035": {
+    "item": "LED bulb 4 pack",
+    "status": "delivered",
+    "days_since_delivery": 27,
+    "amount": 14.0,
+    "customer_id": "C-2007",
+    "region": "UK"
+  },
+  "DF-1036": {
+    "item": "travel adapter",
+    "status": "cancelled",
+    "days_since_delivery": null,
+    "amount": 23.0,
+    "customer_id": "C-2008",
+    "region": "NA"
+  },
+  "DF-1037": {
+    "item": "camera tripod",
+    "status": "in_transit",
+    "days_since_delivery": null,
+    "amount": 37.0,
+    "customer_id": "C-2009",
+    "region": "EU"
+  },
+  "DF-1038": {
+    "item": "stylus pen",
+    "status": "delivered",
+    "days_since_delivery": 8,
+    "amount": 31.0,
+    "customer_id": "C-2010",
+    "region": "APAC"
+  },
+  "DF-1039": {
+    "item": "tablet case",
+    "status": "delivered",
+    "days_since_delivery": 44,
+    "amount": 27.5,
+    "customer_id": "C-2011",
+    "region": "LATAM"
+  },
+  "DF-1040": {
+    "item": "ethernet cable",
+    "status": "returned",
+    "days_since_delivery": 29,
+    "amount": 11.0,
+    "customer_id": "C-2012",
+    "region": "UK"
+  },
+  "DF-1041": {
+    "item": "wireless charger",
+    "status": "delivered",
+    "days_since_delivery": 1,
+    "amount": 33.0,
+    "customer_id": "C-2013",
+    "region": "NA"
+  },
+  "DF-1042": {
+    "item": "laptop backpack",
+    "status": "in_transit",
+    "days_since_delivery": null,
+    "amount": 64.0,
+    "customer_id": "C-2014",
+    "region": "EU"
+  },
+  "DF-1043": {
+    "item": "privacy screen",
+    "status": "delivered",
+    "days_since_delivery": 19,
+    "amount": 42.0,
+    "customer_id": "C-2015",
+    "region": "APAC"
+  },
+  "DF-1044": {
+    "item": "USB fan",
+    "status": "returned",
+    "days_since_delivery": 23,
+    "amount": 17.0,
+    "customer_id": "C-2016",
+    "region": "LATAM"
+  },
+  "DF-1045": {
+    "item": "monitor light bar",
+    "status": "delivered",
+    "days_since_delivery": 6,
+    "amount": 52.0,
+    "customer_id": "C-2017",
+    "region": "UK"
+  },
+  "DF-1046": {
+    "item": "split keyboard",
+    "status": "cancelled",
+    "days_since_delivery": null,
+    "amount": 149.0,
+    "customer_id": "C-2018",
+    "region": "NA"
+  },
+  "DF-1047": {
+    "item": "vertical mouse",
+    "status": "in_transit",
+    "days_since_delivery": null,
+    "amount": 58.0,
+    "customer_id": "C-2019",
+    "region": "EU"
+  },
+  "DF-1048": {
+    "item": "cable clips",
+    "status": "delivered",
+    "days_since_delivery": 31,
+    "amount": 8.5,
+    "customer_id": "C-2020",
+    "region": "APAC"
+  },
+  "DF-1049": {
+    "item": "laptop lock",
+    "status": "delivered",
+    "days_since_delivery": 15,
+    "amount": 29.0,
+    "customer_id": "C-2021",
+    "region": "LATAM"
+  },
+  "DF-1050": {
+    "item": "desk clock",
+    "status": "returned",
+    "days_since_delivery": 29,
+    "amount": 21.5,
+    "customer_id": "C-2022",
+    "region": "UK"
+  }
+}

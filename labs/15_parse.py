@@ -6,10 +6,10 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from northstar.tools.structured import parse_tool_json
+from dataflow.tools.structured import parse_tool_json
 
 # %%
-good = parse_tool_json('{"found": true, "order_id": "NS-1001"}')
+good = parse_tool_json('{"found": true, "order_id": "DF-1001"}')
 print("good_ok", good["ok"])
 
 # %%

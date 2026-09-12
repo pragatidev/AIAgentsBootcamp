@@ -12,10 +12,12 @@ NESTED_HINTS = (
 
 
 def _is_repo_root(path: Path) -> bool:
+    if (path / "config.py").is_file() and (path / "dataflow").is_dir():
+        return True
     src = path / "src"
-    if not src.is_dir():
-        return False
-    return (src / "llm.py").is_file() or (path / "Section_5_Autonomous_Workflows").is_dir()
+    if src.is_dir() and (src / "llm.py").is_file():
+        return True
+    return False
 
 
 def find_repo_root(*hints: Path | str) -> Path:
@@ -23,7 +25,7 @@ def find_repo_root(*hints: Path | str) -> Path:
 
     Student clone: AIAgentsBootcamp/ is the root.
     This workspace: .../viralLoom/data/udemy/courses/ai_agents_bootcamp/course_repo/
-    Opening a notebook inside Section_5 still walks up to that root.
+    Opening a notebook inside labs/ still walks up to that root.
     """
     starts: list[Path] = []
     env = os.environ.get("BOOTCAMP_ROOT", "").strip()

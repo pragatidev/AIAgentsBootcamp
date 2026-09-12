@@ -1,9 +1,9 @@
 """S7.4 class matches the fixture loop."""
 
-from northstar.agent.loop import AgentLoop, run_loop
-from northstar.tools.escalate import escalate_to_human
-from northstar.tools.orders import lookup_order
-from northstar.tools.policy import read_policy
+from dataflow.agent.loop import AgentLoop, run_loop
+from dataflow.tools.escalate import escalate_to_human
+from dataflow.tools.orders import lookup_order
+from dataflow.tools.policy import read_policy
 
 TOOLS = {
     "orders": lookup_order,
@@ -13,7 +13,7 @@ TOOLS = {
 
 
 def test_class_matches_function():
-    ticket = "Can I return order NS-1001?"
+    ticket = "Can I return order DF-1001?"
     a = run_loop(ticket, TOOLS)
     b = AgentLoop(TOOLS).run(ticket)
     assert a["ticket"] == b["ticket"]

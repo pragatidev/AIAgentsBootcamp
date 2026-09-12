@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.store.memory import InMemoryStore
 
-from northstar.graphs.v3_memory import (
+from dataflow.graphs.v3_memory import (
     build_v3_memory,
     read_preference,
     remember_preference,
@@ -18,9 +18,9 @@ from northstar.graphs.v3_memory import (
 # %%
 saver = MemorySaver()
 graph = build_v3_memory(saver)
-config = {"configurable": {"thread_id": "ns-desk-1"}}
-first = graph.invoke({"ticket": "NS-1001"}, config)
-second = graph.invoke({"ticket": "NS-1002"}, config)
+config = {"configurable": {"thread_id": "df-desk-1"}}
+first = graph.invoke({"ticket": "DF-1001"}, config)
+second = graph.invoke({"ticket": "DF-1002"}, config)
 print("turns", second.get("turns"))
 print("last_ticket", second.get("last_ticket"))
 

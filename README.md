@@ -1,12 +1,14 @@
 # AI Agents Bootcamp workbench
 
-Companion repo for the Udemy course **AI Agents Bootcamp** (listing 6521157).
+Companion repo for the Udemy course AI Agents Bootcamp (listing 6521157).
 
-One package (`northstar/`). One fake company. A support desk: a policy wiki, an order lookup, and an escalate-to-human gate. Models live in `config.py`, never in a lecture title.
+Three portfolio worlds, one package each:
 
-[![pytest](https://img.shields.io/badge/pytest-no%20API%20key-2ea44f)](tests/test_smoke.py)
-[![python](https://img.shields.io/badge/python-3.11%20%7C%203.12-3776ab)](.python-version)
-[![license](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
+- **TechCorp** (`techcorp/`) is the IT desk. LangChain. Password reset, VPN, software install.
+- **DataFlow** (`dataflow/`) is the customer knowledge desk. LangGraph and RAG. Orders, tickets, a 20-file knowledge base.
+- **TalentFlow** (`talentflow/`) is resumes, a job description, and email templates. Parallel and map-reduce.
+
+Models live in `config.py`, never in a lecture title. The student default is `qwen3:8b` on Ollama.
 
 ## Quickstart
 
@@ -19,6 +21,7 @@ Windows:
 ```
 .venv\Scripts\activate
 pip install -r requirements.txt
+copy .env.sample .env
 pytest -q
 ```
 
@@ -27,29 +30,40 @@ macOS / Linux:
 ```
 source .venv/bin/activate
 pip install -r requirements.txt
+cp .env.sample .env
 pytest -q
 ```
 
-Live GitHub notebooks are back at the repo root: `Section_1_Introduction` through `Section_12_Bonus_Future_of_AI_Agents`, plus TalentFlow resumes and the DataFlow knowledge base. Those are the portfolios. `northstar/` and `labs/` are the 2026 spine growing beside them.
+`pytest -q` must exit 0 with no cloud key. Live model calls skip without a key or Ollama.
 
-No cloud key is required for pytest. Hosted pings skip without a key. Local Ollama is the honest default. Copy `.env.sample` to `.env` if you want a key later. Never commit `.env`.
-
-Notebooks call `get_llm()` from `src/llm.py`. Set `PREFERRED_PROVIDER` in `.env` to `anthropic`, `openai`, or `ollama`. Do not change the notebook to change the model. The first cell finds this repo whether you cloned it as the folder root or opened it from inside another project.
+For labs that call a model, install [Ollama](https://ollama.com) and run `ollama pull qwen3:8b`. Copy `.env.sample` to `.env` if you want a hosted key later. Never commit `.env`.
 
 Course: https://www.udemy.com/course/ai-agents-bootcamp-build-with-langchain-rag-langflow-gpt/
 
 ## Layout
 
 ```
-northstar/     the package you own by the end
-labs/          S1-S8 teaching scripts (Run Cell on # %%)
+techcorp/      IT desk (Part 5)
+dataflow/      customer desk, graphs, knowledge base (Parts 6, 8, 12, 17)
+talentflow/    resumes and templates (6.7, capstone 3)
+labs/          numbered teaching scripts (Run Cell on # %%) plus .ipynb twins
 config.py      the only place a model id lives
 docs/CURRENCY.md
 tests/         green without a key
+scripts/make_twins.py
+_archive/2025_live/   2025 listing notebooks. They are not the path you follow.
 ```
 
-No cloud key is required for pytest or for the S1-S8 labs except the hosted ping, which prints SKIPPED.
+Labs ship twice: `labs/NN_slug.py` for VS Code Run Cell, and a notebook twin from `python scripts/make_twins.py`.
 
-2025 notebooks from the live listing sit in `_archive/2025_live/`. They are not the path you follow.
+`initialize_agent` does not ship. `create_react_agent` does not ship.
 
-`initialize_agent` does not ship.
+## What you open in class
+
+- `labs/` as the lectures tell you
+- `dataflow/graphs/` as the graphs grow
+- `techcorp/data/tickets.jsonl` and `dataflow/data/` for the desks
+- `talentflow/data/` for the resume batch
+- `_archive/2025_live/` only if you want the old listing notebooks. That folder is not the learner path.
+
+License MIT.

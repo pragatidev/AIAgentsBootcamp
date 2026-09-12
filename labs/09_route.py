@@ -6,12 +6,12 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from northstar.graphs.v2_route import build_v2_route
+from dataflow.graphs.v2_route import build_v2_route
 
 # %%
 graph = build_v2_route()
 tickets = [
-    "Can I return order NS-1001?",
+    "Can I return order DF-1001?",
     "What is your shipping time?",
     "I want a human manager please",
 ]

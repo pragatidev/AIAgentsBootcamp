@@ -1,0 +1,12 @@
+{"ticket_id": "TC-1001", "customer_id": "E-4101", "text": "I forgot my laptop password after the long weekend. Please reset it.", "created_at": "2026-08-04T08:05:00Z"}
+{"ticket_id": "TC-1002", "customer_id": "E-4102", "text": "VPN connects then drops every few minutes from the home office.", "created_at": "2026-08-04T09:18:00Z"}
+{"ticket_id": "TC-1003", "customer_id": "E-4103", "text": "Need VS Code and Git installed on the new Windows laptop.", "created_at": "2026-08-05T10:42:00Z"}
+{"ticket_id": "TC-1004", "customer_id": "E-4104", "text": "Please grant me read access to the finance share for Q3 close.", "created_at": "2026-08-05T14:11:00Z"}
+{"ticket_id": "TC-1005", "customer_id": "E-4105", "text": "Password expired overnight. I cannot get into email.", "created_at": "2026-08-06T07:55:00Z"}
+{"ticket_id": "TC-1006", "customer_id": "E-4106", "text": "Company VPN will not accept my MFA code. It says invalid.", "created_at": "2026-08-06T11:27:00Z"}
+{"ticket_id": "TC-1007", "customer_id": "E-4107", "text": "Install Slack and the VPN client on a MacBook we just imaged.", "created_at": "2026-08-07T09:03:00Z"}
+{"ticket_id": "TC-1008", "customer_id": "E-4108", "text": "I need admin rights on Jira for the platform board.", "created_at": "2026-08-07T15:40:00Z"}
+{"ticket_id": "TC-1009", "customer_id": "E-4109", "text": "Reset the password for the shared lab account. It was rotated out.", "created_at": "2026-08-08T08:22:00Z"}
+{"ticket_id": "TC-1010", "customer_id": "E-4110", "text": "VPN split tunnel is blocking the internal wiki. Can you whitelist it?", "created_at": "2026-08-08T13:16:00Z"}
+{"ticket_id": "TC-1011", "customer_id": "E-4111", "text": "Please install the printer driver for floor 4 on my desktop.", "created_at": "2026-08-09T10:08:00Z"}
+{"ticket_id": "TC-1012", "customer_id": "E-4112", "text": "Requesting access to the GitHub org for the new contractor start.", "created_at": "2026-08-09T16:51:00Z"}

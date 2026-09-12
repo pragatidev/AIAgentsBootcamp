@@ -1,0 +1,30 @@
+{"ticket_id": "T-3001", "customer_id": "C-2001", "text": "Hi, I want to return order DF-1001. The desk lamp is unused. Can I get a refund?", "created_at": "2026-08-02T09:14:00Z"}
+{"ticket_id": "T-3002", "customer_id": "C-2002", "text": "Where is order DF-1002? Tracking still says in transit.", "created_at": "2026-08-03T11:02:00Z"}
+{"ticket_id": "T-3003", "customer_id": "C-2003", "text": "What is your return window? I cannot find it on the site.", "created_at": "2026-08-03T15:40:00Z"}
+{"ticket_id": "T-3004", "customer_id": "C-2004", "text": "I cannot log in. Please reset the password on my DataFlow account.", "created_at": "2026-08-04T08:21:00Z"}
+{"ticket_id": "T-3005", "customer_id": "C-2010", "text": "You billed me twice for order DF-1010. Please reverse the extra charge.", "created_at": "2026-08-04T16:05:00Z"}
+{"ticket_id": "T-3006", "customer_id": "C-2006", "text": "This is the third time I am writing. I want a manager on the phone today.", "created_at": "2026-08-05T10:11:00Z"}
+{"ticket_id": "T-3007", "customer_id": "C-2007", "text": "It is not working and I do not know what to do next.", "created_at": "2026-08-05T13:33:00Z"}
+{"ticket_id": "T-3008", "customer_id": "C-2008", "text": "How many business days is standard shipping inside the country?", "created_at": "2026-08-06T09:00:00Z"}
+{"ticket_id": "T-3009", "customer_id": "C-2009", "text": "Order DF-1009 arrived damaged. I want a replacement or a refund.", "created_at": "2026-08-06T17:22:00Z"}
+{"ticket_id": "T-3010", "customer_id": "C-2011", "text": "Can I cancel order DF-1006? I placed it by mistake last night.", "created_at": "2026-08-07T07:45:00Z"}
+{"ticket_id": "T-3011", "customer_id": "C-2012", "text": "Do you ship to apartments that need a signature?", "created_at": "2026-08-07T12:18:00Z"}
+{"ticket_id": "T-3012", "customer_id": "C-2013", "text": "My invoice for DF-1023 is missing the tax line. Can you resend it?", "created_at": "2026-08-08T09:50:00Z"}
+{"ticket_id": "T-3013", "customer_id": "C-2014", "text": "The site says I am locked out after too many password tries.", "created_at": "2026-08-08T18:04:00Z"}
+{"ticket_id": "T-3014", "customer_id": "C-2015", "text": "I opened a return for DF-1004 and nobody has emailed me a label.", "created_at": "2026-08-09T10:27:00Z"}
+{"ticket_id": "T-3015", "customer_id": "C-2016", "text": "Legal team asked me to get this in writing. Your terms look wrong.", "created_at": "2026-08-09T14:55:00Z"}
+{"ticket_id": "T-3016", "customer_id": "C-2017", "text": "Is the 30 day return window calendar days or business days?", "created_at": "2026-08-10T08:12:00Z"}
+{"ticket_id": "T-3017", "customer_id": "C-2018", "text": "Status on DF-1018 please. Customer id C-2018.", "created_at": "2026-08-10T11:41:00Z"}
+{"ticket_id": "T-3018", "customer_id": "C-2019", "text": "Charged a restocking fee I never agreed to on DF-1024.", "created_at": "2026-08-11T09:09:00Z"}
+{"ticket_id": "T-3019", "customer_id": "C-2020", "text": "The package for DF-1008 showed delivered but nothing is at the door.", "created_at": "2026-08-11T16:30:00Z"}
+{"ticket_id": "T-3020", "customer_id": "C-2021", "text": "Can I change the address on an order that has not shipped yet?", "created_at": "2026-08-12T07:58:00Z"}
+{"ticket_id": "T-3021", "customer_id": "C-2022", "text": "Need a copy of the privacy policy for our vendor review.", "created_at": "2026-08-12T13:14:00Z"}
+{"ticket_id": "T-3022", "customer_id": "C-2023", "text": "Hi, just checking in. Did you get my last note about the lamp?", "created_at": "2026-08-13T10:02:00Z"}
+{"ticket_id": "T-3023", "customer_id": "C-2024", "text": "Refund for DF-1030 still has not hit the card. It has been two weeks.", "created_at": "2026-08-13T15:47:00Z"}
+{"ticket_id": "T-3024", "customer_id": "C-2025", "text": "Someone used my account. Please freeze it and reset the password.", "created_at": "2026-08-14T08:36:00Z"}
+{"ticket_id": "T-3025", "customer_id": "C-2026", "text": "Order DF-1035 is cancelled in your app but the card still pending.", "created_at": "2026-08-14T19:20:00Z"}
+{"ticket_id": "T-3026", "customer_id": "C-2027", "text": "Do unused items need the original box for a return?", "created_at": "2026-08-15T09:11:00Z"}
+{"ticket_id": "T-3027", "customer_id": "C-2028", "text": "I am furious. Four emails, no answer. Escalate this now.", "created_at": "2026-08-15T12:44:00Z"}
+{"ticket_id": "T-3028", "customer_id": "C-2001", "text": "Quick one: can I add a warranty to DF-1001 after delivery?", "created_at": "2026-08-16T08:05:00Z"}
+{"ticket_id": "T-3029", "customer_id": "C-2003", "text": "The tracking page is blank. That is all I can tell you.", "created_at": "2026-08-16T14:22:00Z"}
+{"ticket_id": "T-3030", "customer_id": "C-2005", "text": "Please confirm the shipping SLA in writing for APAC orders.", "created_at": "2026-08-17T09:33:00Z"}

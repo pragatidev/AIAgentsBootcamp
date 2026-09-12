@@ -1,5 +1,5 @@
 # %%
-"""S4.5 Walk the Northstar package. Empty folders they will fill."""
+"""S4.5 Walk the DataFlow package. Empty folders they will fill."""
 
 from pathlib import Path
 import sys
@@ -10,9 +10,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 root = Path(__file__).resolve().parents[1]
 must = [
     root / "config.py",
-    root / "northstar" / "tools",
-    root / "northstar" / "graphs",
-    root / "northstar" / "evals",
+    root / "dataflow" / "tools",
+    root / "dataflow" / "graphs",
+    root / "dataflow" / "evals",
     root / "docs" / "CURRENCY.md",
 ]
 

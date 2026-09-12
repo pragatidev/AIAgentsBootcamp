@@ -6,14 +6,14 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from northstar.tools.orders import lookup_order_by_id
+from dataflow.tools.orders import lookup_order_by_id
 
 # %%
-hit = lookup_order_by_id("NS-1001")
+hit = lookup_order_by_id("DF-1001")
 print("hit_found", hit["found"])
 print("hit_item", hit.get("item"))
 
 # %%
-miss = lookup_order_by_id("NS-9999")
+miss = lookup_order_by_id("DF-9999")
 print("miss_found", miss["found"])
 print("miss_reason", miss.get("reason"))

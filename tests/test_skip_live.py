@@ -1,7 +1,7 @@
 """S5 live labs skip without a key or a local server."""
 
 import config
-from northstar.llm import ping_hosted, ping_local
+from dataflow.llm import ping_hosted, ping_local
 
 
 def test_hosted_skips_without_key():

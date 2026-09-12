@@ -7,7 +7,13 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_initialize_agent_absent_from_package():
     hits = []
-    roots = [ROOT / "northstar", ROOT / "labs", ROOT / "config.py"]
+    roots = [
+        ROOT / "dataflow",
+        ROOT / "techcorp",
+        ROOT / "talentflow",
+        ROOT / "labs",
+        ROOT / "config.py",
+    ]
     for root in roots:
         paths = [root] if root.is_file() else list(root.rglob("*.py"))
         for path in paths:
@@ -24,3 +30,9 @@ def test_archive_is_not_on_the_learner_path():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     assert "_archive/2025_live" in readme
     assert "not the path" in readme.lower() or "not the learner" in readme.lower()
+
+
+def test_northstar_is_off_the_learner_path():
+    assert not (ROOT / "northstar").exists()
+    readme = (ROOT / "README.md").read_text(encoding="utf-8").lower()
+    assert "northstar" not in readme

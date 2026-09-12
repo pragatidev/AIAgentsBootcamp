@@ -6,7 +6,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from northstar.graphs.runaway import run_with_cap
+from dataflow.graphs.runaway import run_with_cap
 
 # %%
 out = run_with_cap(8)

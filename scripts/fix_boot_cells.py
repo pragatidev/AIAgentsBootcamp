@@ -15,7 +15,7 @@ def _find_root():
         Path("course_repo"),
     ]
     def ok(p: Path) -> bool:
-        return (p / "src" / "llm.py").is_file() or (p / "Section_5_Autonomous_Workflows").is_dir()
+        return (p / "config.py").is_file() or (p / "src" / "llm.py").is_file()
     cur = Path.cwd().resolve()
     for p in [cur, *cur.parents]:
         if ok(p):

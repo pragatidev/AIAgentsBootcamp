@@ -3,18 +3,18 @@
 from pathlib import Path
 
 import config
-from northstar.agent.loop import run_loop
-from northstar.serve.app import health
-from northstar.tools.escalate import escalate_to_human
-from northstar.tools.orders import lookup_order
-from northstar.tools.policy import read_policy
+from dataflow.agent.loop import run_loop
+from dataflow.serve.app import health
+from dataflow.tools.escalate import escalate_to_human
+from dataflow.tools.orders import lookup_order
+from dataflow.tools.policy import read_policy
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_wiki_and_orders_exist():
-    assert (ROOT / "northstar" / "wiki" / "return_policy.md").is_file()
-    assert (ROOT / "northstar" / "data" / "orders.json").is_file()
+    assert (ROOT / "dataflow" / "wiki" / "return_policy.md").is_file()
+    assert (ROOT / "dataflow" / "data" / "orders.json").is_file()
     assert (ROOT / "docs" / "CURRENCY.md").is_file()
     assert (ROOT / "config.py").is_file()
 
@@ -26,14 +26,14 @@ def test_config_has_local_default_and_import_does_not_need_a_key():
 
 
 def test_lookup_known_order():
-    row = lookup_order("Can I return order NS-1001?")
+    row = lookup_order("Can I return order DF-1001?")
     assert row["found"] is True
     assert row["item"] == "desk lamp"
     assert row["days_since_delivery"] == 12
 
 
 def test_lookup_unknown_order():
-    row = lookup_order("Can I return order NS-9999?")
+    row = lookup_order("Can I return order DF-9999?")
     assert row["found"] is False
 
 
@@ -54,7 +54,7 @@ def test_fixture_loop_stops():
         "policy": read_policy,
         "escalate": escalate_to_human,
     }
-    out = run_loop("Can I return order NS-1001?", tools)
+    out = run_loop("Can I return order DF-1001?", tools)
     actions = [step["action"] for step in out["steps"]]
     assert "orders" in actions
     assert actions[-1] == "stop"

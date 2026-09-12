@@ -1,10 +1,17 @@
 # Clone contract. Pytest green with no API key.
+# This is the only install manifest. Do not pip-install files under _archive/.
 pytest>=8.0
 tiktoken>=0.7
 langchain>=1.0
 langgraph>=1.0
 langchain-anthropic>=0.3
+langchain-openai>=0.3
 langchain-ollama>=0.3
 langchain-huggingface>=0.1
 sentence-transformers>=3.0
+langchain-community>=0.3
+faiss-cpu>=1.8
 python-dotenv>=1.0
+jupyter>=1.0
+nbformat>=5.10
+pydantic>=2.0

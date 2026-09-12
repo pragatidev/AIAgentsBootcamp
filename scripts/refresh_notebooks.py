@@ -14,7 +14,7 @@ BOOT = (
     "llm = get_llm()\n"
 )
 
-SKIP_DIRS = {".venv", "__pycache__", ".git", "northstar", "labs", "tests"}
+SKIP_DIRS = {".venv", "__pycache__", ".git", "dataflow", "labs", "tests"}
 
 
 def cell_text(cell: dict) -> str:

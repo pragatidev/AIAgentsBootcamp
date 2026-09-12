@@ -1,6 +1,6 @@
 # Install
 
-Python 3.11 or 3.12. VS Code. Git. **No API key.**
+Python 3.11 or 3.12. VS Code. Git. No API key.
 
 ```
 python -m venv .venv
@@ -11,6 +11,7 @@ Windows:
 ```
 .venv\Scripts\activate
 pip install -r requirements.txt
+copy .env.sample .env
 pytest -q
 ```
 
@@ -19,17 +20,22 @@ macOS / Linux:
 ```
 source .venv/bin/activate
 pip install -r requirements.txt
+cp .env.sample .env
 pytest -q
 ```
 
-Open this folder in VS Code. Clone is done when `pytest -q` exits 0.
+Clone is done when `pytest -q` exits 0 with no cloud key.
 
-Copy `.env.sample` to `.env` and set a key, or use Ollama. Notebooks call `get_llm()`. Change `PREFERRED_PROVIDER` in `.env` to swap Anthropic, OpenAI, or Ollama. Do not edit the notebook to change models.
+Open `.env`. Pick one:
 
-This folder is the repo root if you cloned `AIAgentsBootcamp`. If you opened it from inside another project, the first notebook cell still finds this folder.
+- leave it on Ollama (default) and run `ollama pull qwen3:8b`. No key. This is the student default in `config.py`.
+- set `OPENAI_API_KEY` and `OPENAI_CHAT_MODEL`.
+- set `ANTHROPIC_API_KEY` and `ANTHROPIC_CHAT_MODEL`.
 
-First labs live in `labs/`. Live portfolios live in `Section_3_LangChain_GPT4` through `Section_9_LangGraph_Reliable_Workflows`. The product package is `northstar/`.
+Labs call `get_chat_model()` in `config.py`. Do not paste keys into cells. Do not commit `.env`.
 
-Optional live calls: copy `.env.sample` to `.env`. Set a key, or point `OLLAMA_BASE_URL` at a local server. Model ids are in `config.py`. Verify them at record time against `docs/CURRENCY.md`. Never commit `.env`.
+This folder is the repo root when you clone `AIAgentsBootcamp`.
 
-Optional Docker is for S23. Clone and pytest do not start it.
+First labs live in `labs/`. The three worlds are `techcorp/`, `dataflow/`, and `talentflow/`. 2025 listing notebooks sit in `_archive/2025_live/` and are not the path you follow.
+
+Optional Docker is for later deploy labs. Clone and pytest do not start it.
