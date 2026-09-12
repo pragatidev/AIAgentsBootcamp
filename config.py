@@ -37,7 +37,20 @@ def _ollama_base() -> str:
     return url
 
 
-def get_chat_model():
+def get_local_chat_model(**kwargs):
+    """ChatOllama on the student default. Ignores hosted keys."""
+    from langchain_ollama import ChatOllama
+
+    params = {
+        "model": kwargs.pop("model", CHAT_MODEL),
+        "base_url": kwargs.pop("base_url", _ollama_base()),
+        "temperature": kwargs.pop("temperature", 0),
+    }
+    params.update(kwargs)
+    return ChatOllama(**params)
+
+
+def get_chat_model(**kwargs):
     """Return a LangChain chat model for the configured provider.
 
     Hosted OpenAI or Anthropic when a key and a model id are set.
@@ -45,14 +58,13 @@ def get_chat_model():
     """
     openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
-    if openai_key and OPENAI_CHAT_MODEL:
+    if openai_key and OPENAI_CHAT_MODEL and not kwargs.get("force_local"):
         from langchain_openai import ChatOpenAI
 
         return ChatOpenAI(model=OPENAI_CHAT_MODEL, temperature=0)
-    if anthropic_key and ANTHROPIC_CHAT_MODEL:
+    if anthropic_key and ANTHROPIC_CHAT_MODEL and not kwargs.get("force_local"):
         from langchain_anthropic import ChatAnthropic
 
         return ChatAnthropic(model=ANTHROPIC_CHAT_MODEL, temperature=0)
-    from langchain_ollama import ChatOllama
-
-    return ChatOllama(model=CHAT_MODEL, base_url=_ollama_base(), temperature=0)
+    kwargs.pop("force_local", None)
+    return get_local_chat_model(**kwargs)

@@ -4,9 +4,9 @@ Companion repo for the Udemy course AI Agents Bootcamp (listing 6521157).
 
 Three portfolio worlds, one package each:
 
-- **TechCorp** (`techcorp/`) is the IT desk. LangChain. Password reset, VPN, software install.
-- **DataFlow** (`dataflow/`) is the customer knowledge desk. LangGraph and RAG. Orders, tickets, a 20-file knowledge base.
-- **TalentFlow** (`talentflow/`) is resumes, a job description, and email templates. Parallel and map-reduce.
+- TechCorp (`techcorp/`) is the IT desk. LangChain. Password reset, VPN, software install.
+- DataFlow (`dataflow/`) is the customer knowledge desk. LangGraph and RAG. Orders, tickets, a 20-file knowledge base.
+- TalentFlow (`talentflow/`) is resumes, a job description, and email templates. Parallel and map-reduce.
 
 Models live in `config.py`, never in a lecture title. The student default is `qwen3:8b` on Ollama.
 
@@ -38,14 +38,16 @@ pytest -q
 
 For labs that call a model, install [Ollama](https://ollama.com) and run `ollama pull qwen3:8b`. Copy `.env.sample` to `.env` if you want a hosted key later. Never commit `.env`.
 
+First lab: `labs/00_03_setup_check.py`. Then `labs/00_04_keys_and_config.py` and `labs/00_05_notebook_twin_demo.py`.
+
 Course: https://www.udemy.com/course/ai-agents-bootcamp-build-with-langchain-rag-langflow-gpt/
 
 ## Layout
 
 ```
-techcorp/      IT desk (Part 5)
-dataflow/      customer desk, graphs, knowledge base (Parts 6, 8, 12, 17)
-talentflow/    resumes and templates (6.7, capstone 3)
+techcorp/      IT desk (Section 6)
+dataflow/      customer desk, graphs, knowledge base (Sections 7 to 12, 22)
+talentflow/    resumes and templates
 labs/          numbered teaching scripts (Run Cell on # %%) plus .ipynb twins
 config.py      the only place a model id lives
 docs/CURRENCY.md
@@ -55,6 +57,8 @@ _archive/2025_live/   2025 listing notebooks. They are not the path you follow.
 ```
 
 Labs ship twice: `labs/NN_slug.py` for VS Code Run Cell, and a notebook twin from `python scripts/make_twins.py`.
+
+Foundation labs (Udemy Sections 1 to 5) are numbered `00_` through `04_` as those lectures land. LangGraph labs stay on `06_`.
 
 `initialize_agent` does not ship. `create_react_agent` does not ship.
 

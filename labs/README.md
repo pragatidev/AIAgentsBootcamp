@@ -2,9 +2,12 @@
 
 Teaching scripts. One idea per file. Open in VS Code and Run Cell on `# %%` blocks.
 
-Curriculum labs are numbered Part.Section.Lecture. Older S1-S16 files stay while that spine is rewritten.
+Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that spine is rewritten.
 
 ```
+00_03_setup_check.py             python, venv, git branch, pytest exit
+00_04_keys_and_config.py         local model call, hosted skip or hosted then local
+00_05_notebook_twin_demo.py      three cells so the twin shows cells
 06_01_03_build_triage_graph.py   three-node DataFlow graph, mermaid, compile
 06_01_04_invoke_and_test.py      invoke a real ticket, classify alone, pytest
 06_02_02_route_three_ways.py     three tickets, three labeled routes, mermaid
