@@ -138,6 +138,9 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 17_01_03_serve.py              health, 422 on free text, ticket prints thread_id
 17_01_05_postgres_resume.py    kill and resume parked refund; sqlite if no Postgres
 17_01_06_secrets.py            .dockerignore excludes .env; config still finds the model
+17_02_02_actor_header.py       401, allowlist refuse, reviewer parks, skip-key break
+17_02_04_rate_limit.py         burst 20, 429 Retry-After, second key 200, limit off
+17_02_06_docker.py             compose config, docker build, BLOCKED ON DOCKER fallback
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt
