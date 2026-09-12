@@ -20,6 +20,7 @@ import config
 failing_path = root / "harness" / "runs" / "failing_ticket.json"
 lookalike_path = root / "harness" / "runs" / "model_limit_lookalike.json"
 log_path = root / "harness" / "failure_log.md"
+committed_log = log_path.read_text(encoding="utf-8") if log_path.is_file() else ""
 
 failing = json.loads(failing_path.read_text(encoding="utf-8"))
 print("model", config.CHAT_MODEL)
@@ -109,3 +110,12 @@ print("wrote", log_path.as_posix())
 print(log_path.read_text(encoding="utf-8"))
 print("entries", 2)
 print("buckets", "missing_guide", "missing_sensor")
+
+# %% [markdown]
+# restore the committed log so the repo stays clean; Section 20 closes it
+
+# %%
+print("cell", 3)
+if committed_log:
+    log_path.write_text(committed_log, encoding="utf-8")
+print("restored_committed_log", bool(committed_log))

@@ -28,7 +28,10 @@ print("heading_tools", "## Tools" in parts)
 print("heading_context", "## Context policy" in parts)
 print("heading_permissions", "## Permissions" in parts)
 print("heading_stop", "## Stop rules" in parts)
-print("permissions_row", "none yet, Section 21" in parts)
+print(
+    "permissions_row",
+    "harness/permissions.py" in parts or "none yet, Section 21" in parts,
+)
 
 ticket = load_ticket("T-3005")
 print("ticket_id", ticket["ticket_id"])

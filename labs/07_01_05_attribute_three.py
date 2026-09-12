@@ -24,6 +24,7 @@ names = [
 ]
 print("model", config.CHAT_MODEL)
 print("diag_dir", diag_dir.as_posix())
+original_texts = {name: (diag_dir / name).read_text(encoding="utf-8") for name in names}
 
 loaded = []
 for name in names:
@@ -69,3 +70,11 @@ print("files", [p.name for p in sorted(diag_dir.glob("*.json"))])
 for p in sorted(diag_dir.glob("*.json")):
     data = json.loads(p.read_text(encoding="utf-8"))
     print("final", p.name, data.get("bucket"))
+
+# %% [markdown]
+# restore the fixture so the next student gets the same exercise
+
+# %%
+print("cell", 3)
+path.write_text(original_texts[name], encoding="utf-8")
+print("restored", path.name, json.loads(path.read_text(encoding="utf-8")).get("bucket"))
