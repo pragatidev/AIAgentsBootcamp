@@ -19,3 +19,6 @@ pydantic>=2.0
 langgraph-cli[inmem]>=0.4
 langsmith>=0.4
 deepagents>=0.7
+
+openai>=1.0
+ollama>=0.4

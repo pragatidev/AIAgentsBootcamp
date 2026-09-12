@@ -80,6 +80,10 @@ dataflow/data/inbox_drop/*
 dataflow/data/reports/*
 !dataflow/data/reports/.gitkeep
 
+# Part 3 notes and rot capture. Created at run time, not committed.
+dataflow/context/notes.json
+dataflow/context/_last_rot.json
+
 # Project-specific IDE metadata
 *.iml
 

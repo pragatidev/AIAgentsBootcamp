@@ -2,9 +2,38 @@
 
 Teaching scripts. One idea per file. Open in VS Code and Run Cell on `# %%` blocks.
 
-Curriculum labs are numbered Part.Section.Lecture. Older S1-S16 files stay while that spine is rewritten.
+Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that spine is rewritten.
 
 ```
+00_03_setup_check.py             python, venv, git branch, pytest exit
+00_04_keys_and_config.py         local model call, hosted skip or hosted then local
+00_05_notebook_twin_demo.py      three cells so the twin shows cells
+01_04_tokens_and_window.py       tiktoken plus usage_metadata, window, spill
+01_06_first_raw_api_call.py      OpenAI SDK against Ollama /v1, then LangChain
+01_08_structured_output_raw.py   Pydantic TicketClass, one failure, one retry
+01_10_raw_tool_call.py           tools list, raw tool_calls, run, blank description
+01_14_swap_the_model.py          same agent code, two model ids, same shape
+02_03_scratch_agent.py           plain loop, cap 8, TC-1001
+02_04_second_tool.py             lookup then reset, VPN only lookup
+02_06_break_the_loop.py          runaway, blank description, write gate
+02_13_loop_as_a_class.py         ScratchAgent.run, pytest
+03_02_context_rot.py             constraint at turn 4, needed at turn 30
+03_03_measure_tokens.py          tokens before and after the death
+03_05_map_file.py                FAT and MAP constants, written to disk
+03_06_fat_vs_map.py              same ticket, both files, token delta
+03_08_compaction.py              sawtooth of token counts
+03_09_compare_compaction.py      compacted vs uncompacted totals
+03_11_notes_file.py              notes.json after each turn
+03_12_recover_from_notes.py      fact the summary dropped, recovered
+03_14_just_in_time_read.py       read only on the ticket that needs it
+03_16_subagent_isolation.py      polluted vs isolated scores
+04_03_thread_memory.py           second turn uses the first
+04_03_other_thread_break.py      same graph, other thread id, the desk is a stranger
+04_05_summarizer.py              facts, actions, decisions, open questions
+04_07_store_preference.py        preference across threads, profile, forget
+04_07_forget_break.py            forget the profile, read on a new thread
+04_08_similarity_recall.py       hits with scores inside a customer namespace
+04_10_desk_remembers.py          two tickets one customer, third reads nothing
 06_01_03_build_triage_graph.py   three-node DataFlow graph, mermaid, compile
 06_01_04_invoke_and_test.py      invoke a real ticket, classify alone, pytest
 06_02_02_route_three_ways.py     three tickets, three labeled routes, mermaid

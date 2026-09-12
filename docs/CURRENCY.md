@@ -10,6 +10,7 @@ Never put a model id in a lecture title.
 - Chat tag to verify: `qwen3:8b` (env override `OLLAMA_CHAT_MODEL`)
 - Why this tag: tool calling works, and the weights fit a 16 GB laptop
 - No-tools fallback for Part 1 prints: `llama3.2:3b` (`NO_TOOLS_MODEL` in `config.py`)
+- Embed tag to verify: `nomic-embed-text` (768 dims, env override `OLLAMA_EMBED_MODEL`)
 - No key
 - Every lecture capture that calls a model runs on this student default so the screen matches what the student sees. Pull `qwen3:8b` and prove tool calling with `scripts/probe_tool_calling.py` before the first Part 6 capture.
 
