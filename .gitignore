@@ -54,6 +54,9 @@ dataflow/data/checkpoints.sqlite-shm
 # Lab 6.5 refund ledger. Created at run time, not committed.
 dataflow/data/refunds.jsonl
 
+# TechCorp password-reset audit. Created at run time, not committed.
+techcorp/data/audit.jsonl
+
 # Project-specific IDE metadata
 *.iml
 

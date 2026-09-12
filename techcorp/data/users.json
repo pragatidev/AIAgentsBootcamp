@@ -1,0 +1,122 @@
+{
+  "E-4101": {
+    "user_id": "E-4101",
+    "name": "Amina Cole",
+    "email": "amina.cole@techcorp.example",
+    "department": "Engineering",
+    "laptop_os": "Windows",
+    "vpn_enabled": true,
+    "groups": ["eng-staff", "vpn-users"],
+    "region": "US"
+  },
+  "E-4102": {
+    "user_id": "E-4102",
+    "name": "Ben Ortiz",
+    "email": "ben.ortiz@techcorp.example",
+    "department": "Sales",
+    "laptop_os": "Windows",
+    "vpn_enabled": true,
+    "groups": ["sales-staff", "vpn-users"],
+    "region": "US"
+  },
+  "E-4103": {
+    "user_id": "E-4103",
+    "name": "Priya Shah",
+    "email": "priya.shah@techcorp.example",
+    "department": "Engineering",
+    "laptop_os": "Windows",
+    "vpn_enabled": true,
+    "groups": ["eng-staff"],
+    "region": "US"
+  },
+  "E-4104": {
+    "user_id": "E-4104",
+    "name": "Tomas Alvarez",
+    "email": "tomas.alvarez@techcorp.example",
+    "department": "Finance",
+    "laptop_os": "Windows",
+    "vpn_enabled": true,
+    "groups": ["finance-staff"],
+    "region": "EU"
+  },
+  "E-4105": {
+    "user_id": "E-4105",
+    "name": "Nina Patel",
+    "email": "nina.patel@techcorp.example",
+    "department": "Marketing",
+    "laptop_os": "macOS",
+    "vpn_enabled": true,
+    "groups": ["marketing-staff", "vpn-users"],
+    "region": "US"
+  },
+  "E-4106": {
+    "user_id": "E-4106",
+    "name": "Omar Haddad",
+    "email": "omar.haddad@techcorp.example",
+    "department": "Support",
+    "laptop_os": "Windows",
+    "vpn_enabled": true,
+    "groups": ["support-staff", "vpn-users"],
+    "region": "EU"
+  },
+  "E-4107": {
+    "user_id": "E-4107",
+    "name": "Grace Lin",
+    "email": "grace.lin@techcorp.example",
+    "department": "Engineering",
+    "laptop_os": "macOS",
+    "vpn_enabled": true,
+    "groups": ["eng-staff"],
+    "region": "US"
+  },
+  "E-4108": {
+    "user_id": "E-4108",
+    "name": "Jordan Blake",
+    "email": "jordan.blake@techcorp.example",
+    "department": "Product",
+    "laptop_os": "Windows",
+    "vpn_enabled": true,
+    "groups": ["product-staff"],
+    "region": "US"
+  },
+  "E-4109": {
+    "user_id": "E-4109",
+    "name": "Sam Rivera",
+    "email": "sam.rivera@techcorp.example",
+    "department": "Lab",
+    "laptop_os": "Windows",
+    "vpn_enabled": true,
+    "groups": ["lab-staff"],
+    "region": "US"
+  },
+  "E-4110": {
+    "user_id": "E-4110",
+    "name": "Elena Rossi",
+    "email": "elena.rossi@techcorp.example",
+    "department": "Operations",
+    "laptop_os": "Windows",
+    "vpn_enabled": true,
+    "groups": ["ops-staff", "vpn-users"],
+    "region": "EU"
+  },
+  "E-4111": {
+    "user_id": "E-4111",
+    "name": "Chris Young",
+    "email": "chris.young@techcorp.example",
+    "department": "Facilities",
+    "laptop_os": "Windows",
+    "vpn_enabled": false,
+    "groups": ["facilities-staff"],
+    "region": "US"
+  },
+  "E-4112": {
+    "user_id": "E-4112",
+    "name": "Mei Chen",
+    "email": "mei.chen@techcorp.example",
+    "department": "Engineering",
+    "laptop_os": "Windows",
+    "vpn_enabled": true,
+    "groups": ["eng-staff", "contractors"],
+    "region": "US"
+  }
+}
