@@ -50,12 +50,18 @@ def write_refund(order_id: str, amount: float, reason: str) -> dict:
 @tool
 def issue_refund(order_id: str, amount: float, reason: str) -> dict:
     """Issue a pretend refund. Appends one row to refunds.jsonl. No real money."""
+    from harness.permissions import apply_write_permission
+
+    apply_write_permission("issue_refund", order_id)
     return write_refund(order_id, amount, reason)
 
 
 @tool
 def decline_refund(order_id: str, reason: str) -> dict:
     """Decline a refund. Typed miss, no disk write."""
+    from harness.permissions import apply_write_permission
+
+    apply_write_permission("decline_refund", order_id)
     return {
         "refunded": False,
         "declined": True,

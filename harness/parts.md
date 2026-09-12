@@ -16,7 +16,9 @@ A map of the desk's harness. Each row names the file and the line that implement
 
 ## Permissions
 
-- none yet, Section 21
+- harness/permissions.py line 7 `ALLOWED_REFUND_ACTORS`
+- harness/permissions.py line 43 `def check_write_permission(`
+- dataflow/tools/refund.py line 51 `issue_refund` and line 60 `decline_refund` call it before they write
 
 ## Stop rules
 

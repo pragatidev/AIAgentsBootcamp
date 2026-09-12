@@ -6,7 +6,7 @@ ticket: T-3005
 what happened: the desk issued 1 refund row(s) on DF-1010 with no guide in the window
 bucket: missing_guide
 why: nothing in the window said a refund already issued on this order must not be issued again
-closed by:
+closed by: harness/guides/no_repeat_refund.md and tests/test_harness_control.py
 
 ## lookalike claimed refund on a miss
 

@@ -16,7 +16,7 @@ def test_parts_md_names_existing_files():
     assert "## Context policy" in text
     assert "## Permissions" in text
     assert "## Stop rules" in text
-    assert "none yet, Section 21" in text
+    assert "none yet, Section 21" in text or "ALLOWED_REFUND_ACTORS" in text
     paths = re.findall(r"([A-Za-z0-9_./-]+\.(?:py|md))", text)
     assert paths
     missing = []
