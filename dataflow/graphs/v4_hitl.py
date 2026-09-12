@@ -205,10 +205,13 @@ def refund_node(state: HitlState) -> dict[str, Any]:
             + ")"
         )
     elif action == "reject":
+        reject_reason = "reviewer rejected the refund"
+        if isinstance(decision, dict) and decision.get("reason"):
+            reject_reason = str(decision.get("reason"))
         record = decline_refund.invoke(
             {
                 "order_id": order_id,
-                "reason": "reviewer rejected the refund",
+                "reason": reject_reason,
             }
         )
         reply = (
@@ -218,11 +221,14 @@ def refund_node(state: HitlState) -> dict[str, Any]:
             + str(record.get("reason"))
         )
     else:
+        refund_reason = "reviewer approved"
+        if isinstance(decision, dict) and decision.get("reason"):
+            refund_reason = str(decision.get("reason"))
         record = issue_refund.invoke(
             {
                 "order_id": order_id,
                 "amount": paid,
-                "reason": "reviewer approved",
+                "reason": refund_reason,
             }
         )
         reply = (
