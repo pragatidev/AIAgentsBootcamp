@@ -80,6 +80,16 @@ Run naive vs agentic evals on `eval/questions.jsonl`:
 python labs/08_04_05_rag_evals.py
 ```
 
+## Evals (Part 10)
+
+The golden set is `eval/golden.jsonl`. A run writes `eval/baseline.md` with `unique_tickets` at the top. Node tests live in `tests/test_nodes_dataflow.py`. Faithfulness is `eval/runners/faithfulness.py`.
+
+```
+python labs/10_01_03_golden_set.py
+python labs/10_01_05_node_tests.py
+python labs/10_01_07_fluent_wrong.py
+```
+
 pgvector is optional. `docker compose up -d postgres` starts `pgvector/pgvector:pg16`. Labs skip cleanly when Docker is down.
 
 ## What you open in class

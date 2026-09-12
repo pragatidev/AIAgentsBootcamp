@@ -32,6 +32,9 @@ Curriculum labs are numbered Part.Section.Lecture. Older S1-S16 files stay while
 08_04_04_refuse_on_empty.py      REFUSE vs FABRICATED
 08_04_05_rag_evals.py            naive vs agentic table, fluent miss marked
 08_04_06_portfolio_knowledge_desk.py  three tickets plus pytest test_rag_*.py
+10_01_03_golden_set.py   twenty distinct tickets, baseline.md, pad does not count
+10_01_05_node_tests.py   classify three tickets, refuse trap, wiring fix
+10_01_07_fluent_wrong.py ninety-day plant: heuristic pass, claim check fail
 01_setup.py          clone, pytest green, no key
 02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt
