@@ -12,6 +12,25 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 
+
+def _load_dotenv() -> None:
+    """Load .env from the repo root. Never print values. Do not overwrite."""
+    env_path = ROOT / ".env"
+    if not env_path.is_file():
+        return
+    for raw in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+_load_dotenv()
+
 # Local default. Free. No key. Verify the tag at record time.
 # qwen3:8b is the student chat model: tool calling works on a 16 GB laptop.
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
@@ -83,10 +102,15 @@ def get_chat_model(**kwargs):
 
 
 def tracing_callbacks():
-    """Local jsonl tracer. Always on. No LangSmith key required."""
+    """Local jsonl tracer, always on. LangChainTracer too when a key is set."""
     from dataflow.ops.tracer import LocalTraceHandler
+    from dataflow.tracing import langsmith_tracer_if_key
 
-    return [LocalTraceHandler()]
+    handlers: list = [LocalTraceHandler()]
+    hosted = langsmith_tracer_if_key()
+    if hosted is not None:
+        handlers.append(hosted)
+    return handlers
 
 
 def get_embeddings():

@@ -94,6 +94,11 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 08_04_04_refuse_on_empty.py      REFUSE vs FABRICATED
 08_04_05_rag_evals.py            naive vs agentic table, fluent miss marked
 08_04_06_portfolio_knowledge_desk.py  three tickets plus pytest test_rag_*.py
+09_01_02_trace_run.py    LangChainTracer or local fallback, retrieve span, default then dataflow-desk
+09_01_05_upload_dataset.py  dataflow-golden evaluate, missing reference skip then fill
+09_01_07_llm_judge.py    three scores twice, cite rule flips fluent-wrong
+09_02_03_prompt_hub.py   two prompt commits, two labels on disk and in LangSmith
+09_02_05_studio_replay.py  empty history, then edit chunk and replay
 10_01_03_golden_set.py   twenty distinct tickets, baseline.md, pad does not count
 10_01_05_node_tests.py   classify three tickets, refuse trap, wiring fix
 10_01_07_fluent_wrong.py ninety-day plant: heuristic pass, claim check fail

@@ -430,6 +430,56 @@ class LocalTraceHandler(BaseCallbackHandler):
     ) -> None:
         self._finish(_sid(run_id), status="error", error=_error_text(error))
 
+    def on_chain_start(
+        self,
+        serialized: dict[str, Any],
+        inputs: dict[str, Any],
+        *,
+        run_id: UUID,
+        parent_run_id: UUID | None = None,
+        tags: list[str] | None = None,
+        metadata: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> None:
+        name = str(kwargs.get("name") or "")
+        if not name and isinstance(serialized, dict):
+            name = str(serialized.get("name") or "")
+            if not name:
+                ident = serialized.get("id")
+                if isinstance(ident, list) and ident:
+                    name = str(ident[-1])
+                elif ident:
+                    name = str(ident)
+        self._begin(
+            _sid(run_id),
+            name=name or "chain",
+            kind="chain",
+            parent_id=self._parent(parent_run_id),
+        )
+
+    def on_chain_end(
+        self,
+        outputs: dict[str, Any],
+        *,
+        run_id: UUID,
+        parent_run_id: UUID | None = None,
+        **kwargs: Any,
+    ) -> None:
+        self._finish(
+            _sid(run_id),
+            extra={"result": _summarize(outputs)},
+        )
+
+    def on_chain_error(
+        self,
+        error: BaseException,
+        *,
+        run_id: UUID,
+        parent_run_id: UUID | None = None,
+        **kwargs: Any,
+    ) -> None:
+        self._finish(_sid(run_id), status="error", error=_error_text(error))
+
 
 @contextmanager
 def trace(run_name: str) -> Iterator[LocalTraceHandler]:
