@@ -43,4 +43,26 @@ config.py           the only place a model id lives
 _archive/2025_live/ 2025 listing notebooks. Not the learner path.
 ```
 
+## RAG (Part 8)
+
+Local default embedder is `nomic-embed-text` on Ollama. Chat is `qwen3:8b`.
+
+Build the FAISS index (writes `dataflow/data/faiss_index`, gitignored):
+
+```
+python -m dataflow.rag.faiss_index
+```
+
+Run the knowledge desk on three tickets (policy with a citation, unknown that refuses, order id that does not retrieve):
+
+```
+python labs/08_04_06_portfolio_knowledge_desk.py
+```
+
+Run naive vs agentic evals on `eval/questions.jsonl`:
+
+```
+python labs/08_04_05_rag_evals.py
+```
+
 First lab: `labs/00_03_setup_check.py`. Twins: `python scripts/make_twins.py`. License MIT.

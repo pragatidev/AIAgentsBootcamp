@@ -3,7 +3,7 @@
 #
 # No checkpointer, so get_state_history is empty. Add InMemorySaver,
 # edit the retrieved chunk, rerun. The second answer cites the edited
-# chunk in this terminal. Studio clicks are for the founder on port 2024.
+# chunk in this terminal. Then do the same edit with a mouse in Studio on port 2024.
 
 # %%
 from pathlib import Path
@@ -108,7 +108,7 @@ print("studio_url", STUDIO_URL, flush=True)
 print("thread_id", THREAD_ID, flush=True)
 print(
     "studio_note",
-    "Founder opens Studio on port 2024, desk graph, thread lab-27-5, "
-    "edits the retrieved chunk the same way the terminal just did.",
+    "Open Studio on port 2024, pick the desk graph and thread lab-27-5, "
+    "and edit the retrieved chunk the same way the terminal just did.",
     flush=True,
 )

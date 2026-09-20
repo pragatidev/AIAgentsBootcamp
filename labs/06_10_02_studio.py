@@ -3,8 +3,8 @@
 #
 # Print langgraph.json, the command langgraph dev, then start the
 # local Agent Server for 20 seconds with --no-browser. Capture the
-# server URL and the Studio URL. List the two graphs. Studio clicks
-# themselves are recorded by the founder on screen.
+# server URL and the Studio URL. List the two graphs. The Studio clicks
+# themselves you do with a mouse; the lesson shows them on screen.
 
 # %%
 from pathlib import Path
