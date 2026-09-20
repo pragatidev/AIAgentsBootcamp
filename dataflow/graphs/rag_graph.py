@@ -227,14 +227,18 @@ def generate(
     model: Any = None,
     strip_sources: bool = False,
     allow_ungrounded: bool = False,
+    system_prompt: str | None = None,
 ) -> dict[str, Any]:
     chat = _chat(model, runtime)
     question = state.get("rewritten_question") or state.get("question") or ""
-    kept = list(state.get("graded") or [])
+    kept = list(state.get("graded") or state.get("passages") or [])
     blob = "\n\n".join(
         f"Source: {row.get('source')}\n{row.get('text')}" for row in kept
     )
-    system = FORCE_GENERATE_SYSTEM if allow_ungrounded else GENERATE_SYSTEM
+    if system_prompt:
+        system = system_prompt
+    else:
+        system = FORCE_GENERATE_SYSTEM if allow_ungrounded else GENERATE_SYSTEM
     result = chat.invoke(
         [
             SystemMessage(content=system),
@@ -321,6 +325,8 @@ def build_rag_graph(
     scope: str = "customer",
     retrieve_k: int = 3,
     cite_node: Any = ...,
+    generate_system: str | None = None,
+    system_prompt: str | None = None,
 ):
     builder = StateGraph(RagState, context_schema=DeskContext)
 
@@ -355,6 +361,7 @@ def build_rag_graph(
             model=model,
             strip_sources=strip_sources,
             allow_ungrounded=force_generate_on_empty,
+            system_prompt=system_prompt or generate_system,
         )
 
     def answer_bound(
