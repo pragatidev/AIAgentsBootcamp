@@ -51,11 +51,15 @@ def launch_streamlit(
             "127.0.0.1",
             "--browser.gatherUsageStats",
             "false",
+            # the file watcher walks every loaded module and logs a traceback for each one it cannot import
+            "--server.fileWatcherType",
+            "none",
         ],
         cwd=str(ROOT),
         env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
+        # nobody reads the server log; a pipe that fills up freezes the server mid-page
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
 
 
