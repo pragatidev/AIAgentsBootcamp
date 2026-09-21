@@ -4,6 +4,10 @@
 # When this works, the chat hits the turn cap with no answer. Add a
 # stop when lookup is done (termination on the writer's message) and
 # the policy line prints.
+#
+# Run this one from the terminal with the AutoGen venv (steps at the top of requirements-frameworks.txt):
+# `.venv-autogen\Scripts\python labs/16_02_01_autogen.py`.
+# no-twin: the framework runs its own asyncio event loop, which cannot start inside a Jupyter kernel that already runs one.
 
 # %%
 from pathlib import Path
@@ -18,13 +22,23 @@ if hasattr(sys.stdout, "reconfigure"):
 import config
 
 sys.path.insert(0, str(root / "labs" / "16_autogen"))
-from supportflow import run_sync
+try:
+    from supportflow import run_sync
+except ModuleNotFoundError as exc:
+    if not (exc.name or "").startswith("autogen"):
+        raise
+    run_sync = None
 
 run_path = root / "labs" / "16_autogen" / "runs" / "supportflow_run.json"
 committed_run = run_path.read_text(encoding="utf-8") if run_path.is_file() else ""
 
 print("model", config.CHAT_MODEL)
 print("base_url", config.OLLAMA_BASE_URL)
+
+if run_sync is None:
+    from labs._quiet_exit import AUTOGEN_LINE, quiet_exit
+
+    quiet_exit(AUTOGEN_LINE)
 
 # %%
 print("cell", "break")

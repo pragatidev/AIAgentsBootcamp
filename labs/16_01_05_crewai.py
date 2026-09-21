@@ -22,7 +22,8 @@ import config
 run_path = root / "labs" / "16_crewai" / "runs" / "crew_run.json"
 committed_run = run_path.read_text(encoding="utf-8") if run_path.is_file() else ""
 crew_py = root / "labs" / "16_crewai" / "crew.py"
-crewai_py = Path(r"D:\project\viralLoom\.venv_crewai\Scripts\python.exe")
+# CrewAI lives in its own venv (steps at the top of requirements-frameworks.txt)
+crewai_py = root / ".venv-crewai" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
 
 print("model", config.CHAT_MODEL)
 print("base_url", config.OLLAMA_BASE_URL)

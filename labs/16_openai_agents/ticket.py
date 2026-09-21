@@ -14,9 +14,16 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 import config
-from agents import Agent, Runner, function_tool, set_default_openai_api, set_default_openai_client
-from agents.models.openai_chatcompletions import OpenAIChatCompletionsModel
-from agents.tracing import set_tracing_disabled
+try:
+    from agents import Agent, Runner, function_tool, set_default_openai_api, set_default_openai_client
+    from agents.models.openai_chatcompletions import OpenAIChatCompletionsModel
+    from agents.tracing import set_tracing_disabled
+except ModuleNotFoundError:
+    if __name__ != "__main__":
+        raise
+    from labs._quiet_exit import FRAMEWORKS_LINE, quiet_exit
+
+    quiet_exit(FRAMEWORKS_LINE)
 from openai import AsyncOpenAI
 
 from dataflow.tools.orders import lookup_order_by_id

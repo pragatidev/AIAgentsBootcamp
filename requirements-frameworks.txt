@@ -1,0 +1,17 @@
+# Part 16 compares agent frameworks. Install this once, into the course venv, after requirements.txt:
+#   pip install -r requirements-frameworks.txt
+# It covers the OpenAI Agents SDK lab and the Google ADK lab. LiteLLM is how ADK talks to Ollama.
+#
+# CrewAI and AutoGen pin versions that clash with the course install (CrewAI wants mcp 1.x, AutoGen wants
+# protobuf 5.x) and with each other, so each gets its own small venv. From the repo root, on Windows:
+#   python -m venv .venv-crewai
+#   .venv-crewai\Scripts\pip install "crewai[litellm]"
+#   python labs/16_01_05_crewai.py                       (finds .venv-crewai by itself)
+#
+#   python -m venv .venv-autogen
+#   .venv-autogen\Scripts\pip install autogen-agentchat "autogen-ext[ollama]"
+#   .venv-autogen\Scripts\python labs/16_02_01_autogen.py
+# macOS / Linux: use .venv-crewai/bin/pip and .venv-autogen/bin/python.
+openai-agents>=0.20,<0.22
+google-adk>=2.9
+litellm>=1.100

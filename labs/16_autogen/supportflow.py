@@ -16,11 +16,18 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 import config
-from autogen_agentchat.agents import AssistantAgent
-from autogen_agentchat.conditions import MaxMessageTermination, TextMessageTermination
-from autogen_agentchat.teams import RoundRobinGroupChat
-from autogen_core.models import ModelFamily
-from autogen_ext.models.ollama import OllamaChatCompletionClient
+try:
+    from autogen_agentchat.agents import AssistantAgent
+    from autogen_agentchat.conditions import MaxMessageTermination, TextMessageTermination
+    from autogen_agentchat.teams import RoundRobinGroupChat
+    from autogen_core.models import ModelFamily
+    from autogen_ext.models.ollama import OllamaChatCompletionClient
+except ModuleNotFoundError:
+    if __name__ != "__main__":
+        raise
+    from labs._quiet_exit import AUTOGEN_LINE, quiet_exit
+
+    quiet_exit(AUTOGEN_LINE)
 
 TICKET = (
     "Hi, I want to return order DF-1001. The desk lamp is unused. "

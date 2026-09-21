@@ -4,6 +4,9 @@
 # When this works, a missing job instruction makes the agent loop
 # (the lab caps it). Paste the DataFlow job from the spec and it
 # stops with the policy line.
+#
+# Run this one from the terminal: `python labs/16_02_03_adk.py`.
+# no-twin: the framework runs its own asyncio event loop, which cannot start inside a Jupyter kernel that already runs one.
 
 # %%
 from pathlib import Path

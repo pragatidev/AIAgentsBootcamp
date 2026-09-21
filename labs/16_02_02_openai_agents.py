@@ -4,6 +4,9 @@
 # When this works, the refund handoff has no confirmation and a refund
 # row is written. Add a guard and the second run parks. Refund writes
 # go to a temp file through DATAFLOW_REFUNDS_PATH.
+#
+# Run this one from the terminal: `python labs/16_02_02_openai_agents.py`.
+# no-twin: the framework runs its own asyncio event loop, which cannot start inside a Jupyter kernel that already runs one.
 
 # %%
 from pathlib import Path
@@ -21,7 +24,12 @@ import config
 from dataflow.tools.refund import read_refunds
 
 sys.path.insert(0, str(root / "labs" / "16_openai_agents"))
-from ticket import run as run_ticket
+try:
+    from ticket import run as run_ticket
+except ModuleNotFoundError as exc:
+    if not (exc.name or "").startswith("agents"):
+        raise
+    run_ticket = None
 
 run_path = root / "labs" / "16_openai_agents" / "runs" / "ticket_run.json"
 committed_run = run_path.read_text(encoding="utf-8") if run_path.is_file() else ""
@@ -37,6 +45,11 @@ payload: dict = {
     "base_url": config.OLLAMA_BASE_URL,
     "refunds_path": str(ledger),
 }
+
+if run_ticket is None:
+    from labs._quiet_exit import FRAMEWORKS_LINE, quiet_exit
+
+    quiet_exit(FRAMEWORKS_LINE)
 
 # %%
 print("cell", "break")

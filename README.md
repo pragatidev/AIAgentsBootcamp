@@ -29,6 +29,7 @@ macOS / Linux: `source .venv/bin/activate` then `cp .env.sample .env`. `pytest -
 The DataFlow desk refuses when the knowledge base has nothing. It does not invent a policy. It does not write a refund until a named reviewer resumes the parked card.
 
 For labs that call a model, install Ollama and run `ollama pull qwen3:8b`. Models live in `config.py`. Never commit `.env`. Capstones: `labs/19_dataflow/starter`, `labs/19_research/starter`, `labs/19_talentflow/starter`.
+Part 16 compares agent frameworks: run `pip install -r requirements-frameworks.txt` once (CrewAI and AutoGen get their own venv, the steps are in that file).
 
 ## Layout
 

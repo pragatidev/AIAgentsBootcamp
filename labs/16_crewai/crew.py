@@ -18,8 +18,15 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 import config
-from crewai import Agent, Crew, LLM, Process, Task
-from crewai.tools import tool
+try:
+    from crewai import Agent, Crew, LLM, Process, Task
+    from crewai.tools import tool
+except ModuleNotFoundError:
+    if __name__ != "__main__":
+        raise
+    from labs._quiet_exit import CREWAI_LINE, quiet_exit
+
+    quiet_exit(CREWAI_LINE)
 
 TICKET = (
     "Hi, I want to return order DF-1001. The desk lamp is unused. "
