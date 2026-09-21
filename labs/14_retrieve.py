@@ -6,14 +6,16 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from dataflow.tools.retrieve import retrieve
+# The keyword stand-in lives in dataflow.tools.policy. dataflow.tools.retrieve is the FAISS tool,
+# which always returns its nearest passages, so it never shows an empty hit.
+from dataflow.tools.policy import search_policy
 
 # %%
-hit = retrieve("Can I return an unused item after delivery?")
+hit = search_policy.invoke({"question": "Can I return an unused item after delivery?"})
 print("hit_found", hit["found"])
-print("hit_path", (hit.get("hits") or [{}])[0].get("path"))
+print("hit_path", hit.get("path"))
 
 # %%
-miss = retrieve("What is the weather on Mars?")
+miss = search_policy.invoke({"question": "What is the weather on Mars?"})
 print("miss_found", miss["found"])
-print("miss_refuse", miss.get("refuse"))
+print("miss_refuse", not miss["found"], miss.get("reason"))
