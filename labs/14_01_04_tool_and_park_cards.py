@@ -4,6 +4,9 @@
 # When this works, a refund ticket prints a tool card and a park card.
 # Raw JSON makes the park look like a crash. The card names the tool
 # and the waiting state.
+#
+# Run this one from the terminal: `python labs/14_01_04_tool_and_park_cards.py`.
+# no-twin: the Playwright sync API refuses to start inside a Jupyter kernel, which already runs an event loop.
 
 # %%
 from pathlib import Path

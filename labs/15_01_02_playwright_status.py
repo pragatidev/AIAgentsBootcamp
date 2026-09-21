@@ -5,6 +5,9 @@
 # with the model from config.py reads it and answers "Is the VPN down?",
 # a planted file:// read scrapes README.md, and the allowlist blocks
 # that URL without opening a browser.
+#
+# Run this one from the terminal: `python labs/15_01_02_playwright_status.py`.
+# no-twin: the Playwright sync API refuses to start inside a Jupyter kernel, which already runs an event loop.
 
 # %%
 from pathlib import Path

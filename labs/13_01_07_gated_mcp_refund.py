@@ -5,6 +5,9 @@
 # nothing, approve on thread B writes one row, a graph with no
 # checkpointer cannot resume, and the server pid is still there after
 # both resumes.
+#
+# Run this one from the terminal: `python labs/13_01_07_gated_mcp_refund.py`.
+# no-twin: an MCP stdio client starts the server as a subprocess and needs a real stderr handle, which a Jupyter kernel does not have.
 
 # %%
 from pathlib import Path

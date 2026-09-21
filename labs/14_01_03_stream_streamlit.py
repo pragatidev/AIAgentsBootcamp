@@ -3,6 +3,9 @@
 #
 # When this works, tokens print as they arrive, then the node rows.
 # invoke prints nothing for the whole wait and then everything.
+#
+# Run this one from the terminal: `python labs/14_01_03_stream_streamlit.py`.
+# no-twin: the Playwright sync API refuses to start inside a Jupyter kernel, which already runs an event loop.
 
 # %%
 from pathlib import Path

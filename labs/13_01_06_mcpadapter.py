@@ -4,6 +4,9 @@
 # When this works, the bound names print, the desk answers where order
 # DF-1002 is, the retired adapters import raises ImportError, and the
 # langchain.mcp path is the one that bound the tools.
+#
+# Run this one from the terminal: `python labs/13_01_06_mcpadapter.py`.
+# no-twin: an MCP stdio client starts the server as a subprocess and needs a real stderr handle, which a Jupyter kernel does not have.
 
 # %%
 from pathlib import Path

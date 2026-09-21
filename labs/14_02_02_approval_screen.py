@@ -3,6 +3,9 @@
 #
 # When this works, approve prints the write, reject prints the miss,
 # edit prints the edited args. The planted reject still writes.
+#
+# Run this one from the terminal: `python labs/14_02_02_approval_screen.py`.
+# no-twin: the Playwright sync API refuses to start inside a Jupyter kernel, which already runs an event loop.
 
 # %%
 from pathlib import Path

@@ -4,6 +4,9 @@
 # When this works, lookup prints with the transport named. The break is
 # a streamable HTTP URL nothing serves. The fix is stdio matching the
 # script.
+#
+# Run this one from the terminal: `python labs/13_01_04_mcp_client.py`.
+# no-twin: an MCP stdio client starts the server as a subprocess and needs a real stderr handle, which a Jupyter kernel does not have.
 
 # %%
 from pathlib import Path

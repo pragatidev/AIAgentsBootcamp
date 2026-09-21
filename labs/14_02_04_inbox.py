@@ -4,6 +4,9 @@
 # When this works, two rows print with id, age and payload, then one
 # approve and one reject by name. The planted resolve resumes the
 # wrong thread. The fix is each row carries its own id.
+#
+# Run this one from the terminal: `python labs/14_02_04_inbox.py`.
+# no-twin: the Playwright sync API refuses to start inside a Jupyter kernel, which already runs an event loop.
 
 # %%
 from pathlib import Path
