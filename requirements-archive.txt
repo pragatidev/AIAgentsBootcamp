@@ -9,5 +9,6 @@ langchain-google-genai>=2.0   # Section 2, the provider setup guide
 langchain-openai>=0.3         # Section 2 OpenAI lecture, and PREFERRED_PROVIDER=openai
 langchain-classic>=1.0        # Section 6, RetrievalQA and ConversationBufferMemory
 langchain-text-splitters>=0.3 # Section 6, text splitters
+jq>=1.6                       # Section 6 DataFlow, the JSON documents
 requests>=2.31
 numpy>=1.26
