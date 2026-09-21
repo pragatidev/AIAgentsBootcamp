@@ -61,8 +61,24 @@ def as_source_list(text: str) -> list[str]:
     return [text]
 
 
-def build_notebook(cells: list[tuple[str, str]]) -> dict:
+BOOT = '''# Boot cell: makes this notebook behave exactly like `python labs/{name}` run from the repo root.
+# A Jupyter kernel has no __file__, starts in the labs folder and carries its own sys.argv; the script expects none of that.
+import os, sys
+from pathlib import Path
+
+_root = next(p for p in [Path.cwd(), *Path.cwd().parents] if (p / "config.py").is_file() and (p / "labs").is_dir())
+os.chdir(_root)
+if str(_root) not in sys.path:
+    sys.path.insert(0, str(_root))
+__file__ = str(_root / "labs" / "{name}")
+sys.argv = [__file__]
+print("repo root:", _root)'''
+
+
+def build_notebook(cells: list[tuple[str, str]], name: str = "") -> dict:
     nb_cells = []
+    if name:
+        cells = [("code", BOOT.replace("{name}", name)), *cells]
     for kind, source in cells:
         if kind == "markdown":
             nb_cells.append(
@@ -102,7 +118,7 @@ def convert_file(py_path: Path) -> Path | None:
     if "# %%" not in text:
         return None
     cells = split_cells(text)
-    nb = build_notebook(cells)
+    nb = build_notebook(cells, py_path.name)
     out = py_path.with_suffix(".ipynb")
     payload = json.dumps(nb, indent=1, ensure_ascii=True) + "\n"
     if out.is_file() and out.read_text(encoding="utf-8") == payload:
