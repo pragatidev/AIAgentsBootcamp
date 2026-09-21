@@ -1,0 +1,10 @@
+# Extra packages that some 2025 edition notebooks import and requirements.txt never installed.
+# Install AFTER requirements.txt:   pip install -r requirements.txt -r requirements-archive.txt
+# This branch is archived (September 2026) and is no longer updated.
+jupyter>=1.0
+ipykernel>=6.0
+crewai>=0.80            # Section 8, three notebooks
+groq>=0.11              # Section 2, the provider setup guide
+langchain-google-genai>=2.0   # Section 2, the provider setup guide
+requests>=2.31
+numpy>=1.26

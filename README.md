@@ -1,4 +1,6 @@
-# AI Agents Bootcamp
+# AI Agents Bootcamp, the 2025 edition (archived)
+
+**This branch, `original-2025`, is the notebook edition of the course as it was before September 2026. It is archived and no longer updated.** The course was rebuilt, and the lectures on Udemy now teach from the branch `master`: one real repo with modules, tests, evals and a deploy door, because that is how agent products are built at work. Every lab there still comes with a notebook twin. If you started with these notebooks, they are all here, unchanged apart from two install fixes: `pip install -r requirements.txt -r requirements-archive.txt` adds the packages a few notebooks needed (crewai, groq, langchain-google-genai, jupyter), and the import in `Section_2_Setup/Lecture_7_CostFree_LLM_Foundation.ipynb` is repaired.
 
 Companion repo for the Udemy course
 https://www.udemy.com/course/ai-agents-bootcamp-build-with-langchain-rag-langflow-gpt/
