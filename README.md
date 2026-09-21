@@ -22,7 +22,7 @@ copy .env.sample .env
 pytest -q
 ```
 
-macOS / Linux: `source .venv/bin/activate` then `cp .env.sample .env`. `pytest -q` must exit 0 with no cloud key. Live model calls skip without a key or Ollama.
+macOS / Linux: `source .venv/bin/activate` then `cp .env.sample .env`. `pytest -q` must exit 0 with no cloud key. Live model calls skip without a key or Ollama. The browser labs (Playwright) need a browser that pip does not install: run `playwright install chromium` once; until then their two tests skip and say so.
 
 ## What the desk refuses
 
@@ -44,28 +44,14 @@ tests/              green without a key
 config.py           the only place a model id lives
 ```
 
-The 2025 edition notebooks are not in this branch. They live on the branch `original-2025`.
-
 ## RAG (Part 8)
 
 Local default embedder is `nomic-embed-text` on Ollama. Chat is `qwen3:8b`.
 
-Build the FAISS index (writes `dataflow/data/faiss_index`, gitignored):
-
 ```
-python -m dataflow.rag.faiss_index
-```
-
-Run the knowledge desk on three tickets (policy with a citation, unknown that refuses, order id that does not retrieve):
-
-```
-python labs/08_04_06_portfolio_knowledge_desk.py
-```
-
-Run naive vs agentic evals on `eval/questions.jsonl`:
-
-```
-python labs/08_04_05_rag_evals.py
+python -m dataflow.rag.faiss_index                 # build the FAISS index (dataflow/data/faiss_index, gitignored)
+python labs/08_04_06_portfolio_knowledge_desk.py   # three tickets: a cited policy, an unknown that refuses, an order id that does not retrieve
+python labs/08_04_05_rag_evals.py                  # naive vs agentic evals on eval/questions.jsonl
 ```
 
 First lab: `labs/00_03_setup_check.py`. Twins: `python scripts/make_twins.py`. License MIT.

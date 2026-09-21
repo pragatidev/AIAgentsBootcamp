@@ -2,6 +2,13 @@
 
 from __future__ import annotations
 
+import pytest
+
+from tests.fixtures.browser_ready import REASON, browser_ready
+
+pytestmark = pytest.mark.skipif(not browser_ready(), reason=REASON)
+
+
 from langchain_core.messages import AIMessage
 from langgraph.checkpoint.memory import InMemorySaver
 
