@@ -36,7 +36,7 @@ Labs call `get_chat_model()` in `config.py`. Do not paste keys into cells. Do no
 
 This folder is the repo root when you clone `AIAgentsBootcamp`.
 
-First labs live in `labs/00_03_setup_check.py`, `labs/00_04_keys_and_config.py`, and `labs/00_05_notebook_twin_demo.py`. The three worlds are `techcorp/`, `dataflow/`, and `talentflow/`. 2025 listing notebooks sit in `_archive/2025_live/` and are not the path you follow.
+First labs live in `labs/00_03_setup_check.py`, `labs/00_04_keys_and_config.py`, and `labs/00_05_notebook_twin_demo.py`. The three worlds are `techcorp/`, `dataflow/`, and `talentflow/`. The 2025 edition notebooks are not in this branch; they live on the branch `original-2025` (`git checkout original-2025`), archived as they were.
 
 Later labs also use `llama3.2:3b` (model swap) and `nomic-embed-text` (similarity recall). Pull them when those lectures say so:
 

@@ -25,11 +25,12 @@ def test_initialize_agent_absent_from_package():
     assert hits == []
 
 
-def test_archive_is_not_on_the_learner_path():
-    assert (ROOT / "_archive" / "2025_live").is_dir()
+def test_2025_edition_lives_on_its_own_branch():
+    # 2026-09-21: the 2025 notebooks left this branch; the README must tell a 2025 student where they went
+    assert not (ROOT / "_archive" / "2025_live").exists()
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    assert "_archive/2025_live" in readme
-    assert "not the path" in readme.lower() or "not the learner" in readme.lower()
+    assert "original-2025" in readme
+    assert "git checkout original-2025" in readme
 
 
 def test_northstar_is_off_the_learner_path():
