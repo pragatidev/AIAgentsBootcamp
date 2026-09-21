@@ -4,6 +4,9 @@
 # When this works, the early innerText read is printed five times, two
 # Playwright tests go green, and a screenshot of the policy answer sits
 # at eval/ui/screens/policy_citation.png.
+#
+# Run this one from the terminal: `python labs/10_03_04_playwright_ui.py`.
+# no-twin: the Playwright sync API refuses to start inside a Jupyter kernel, which already runs an event loop.
 
 # %%
 from pathlib import Path

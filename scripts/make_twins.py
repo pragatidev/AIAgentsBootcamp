@@ -117,6 +117,14 @@ def convert_file(py_path: Path) -> Path | None:
     text = py_path.read_text(encoding="utf-8")
     if "# %%" not in text:
         return None
+    if "# no-twin:" in text:
+        # a lab that cannot run inside a Jupyter kernel (the Playwright sync API refuses a running event loop)
+        # says so on a `# no-twin: <reason>` line and ships as a script only
+        stale = py_path.with_suffix(".ipynb")
+        if stale.is_file():
+            stale.unlink()
+            print("removed", stale.relative_to(ROOT).as_posix(), "(no-twin)")
+        return None
     cells = split_cells(text)
     nb = build_notebook(cells, py_path.name)
     out = py_path.with_suffix(".ipynb")
