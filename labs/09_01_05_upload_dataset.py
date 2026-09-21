@@ -65,7 +65,9 @@ print("filled_reference_comment", hit.get("comment"))
 if not langsmith_key_present():
     print("langsmith fallback no key")
     print("n_scored", 0)
-    raise SystemExit(0)
+    from labs._quiet_exit import quiet_exit
+
+    quiet_exit()
 
 # %%
 print("cell", "upload")

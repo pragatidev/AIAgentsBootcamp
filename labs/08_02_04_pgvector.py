@@ -38,14 +38,15 @@ if compose.stdout:
     print(compose.stdout)
 if compose.stderr:
     print(compose.stderr)
+from labs._quiet_exit import quiet_exit
+
 if compose.returncode != 0:
     print("BLOCKED ON DOCKER")
-    sys.exit(0)
-
-if not postgres_reachable(DEFAULT_CONNECTION):
+    quiet_exit()
+elif not postgres_reachable(DEFAULT_CONNECTION):
     print("BLOCKED ON DOCKER")
     print("postgres is not reachable at", DEFAULT_CONNECTION)
-    sys.exit(0)
+    quiet_exit()
 
 # %%
 path = (

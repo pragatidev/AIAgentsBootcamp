@@ -18,8 +18,11 @@ side = root / "dataflow" / "context" / "_last_rot.json"
 if not side.is_file():
     print("missing_rot_trace", str(side))
     print("run labs/03_02_context_rot.py first")
-    raise SystemExit(0)
+    from labs._quiet_exit import quiet_exit
 
+    quiet_exit()
+
+# %%
 payload = json.loads(side.read_text(encoding="utf-8"))
 trace = payload.get("trace") or []
 fail_turn = payload.get("fail_turn")

@@ -86,7 +86,9 @@ print("fluent_wrong_is_the_fail", fluent_second["score"] == 0)
 
 if not langsmith_key_present():
     print("langsmith fallback no key")
-    raise SystemExit(0)
+    from labs._quiet_exit import quiet_exit
+
+    quiet_exit()
 
 # %%
 print("cell", "evaluate_three")

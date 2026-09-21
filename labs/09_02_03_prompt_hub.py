@@ -174,8 +174,11 @@ if client is None:
     dest = write_labels(labels)
     print("labels_path", dest.as_posix(), flush=True)
     print("feedback skipped: no LangSmith key", flush=True)
-    raise SystemExit(0)
+    from labs._quiet_exit import quiet_exit
 
+    quiet_exit()
+
+# %%
 grounded_run = newest_root_run(client, project)
 print("grounded_run", flush=True)
 print_hosted_run(grounded_run, project_name=project)
