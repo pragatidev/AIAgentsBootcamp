@@ -32,6 +32,26 @@ class AssistantAgent:
             )
         return str(content)
 
+    def generate_reply(self, messages=None, sender=None, **kwargs) -> str:
+        """AutoGen shape: answer a list of {"role", "content"} messages."""
+        parts = [m.get("content", "") if isinstance(m, dict) else str(m) for m in (messages or [])]
+        return self.reply("\n\n".join(parts))
+
+    def initiate_chat(self, recipient, message: str = "", **kwargs):
+        return _initiate_chat(self, recipient, message)
+
+
+def _initiate_chat(sender, recipient, message: str):
+    print(f"{sender.name} (to {recipient.name}):\n")
+    print(message)
+    print()
+    print("-" * 80)
+    reply = recipient.reply(message)
+    print(f"{recipient.name} (to {sender.name}):\n")
+    print(reply)
+    print()
+    return reply
+
 
 class UserProxyAgent:
     def __init__(
@@ -48,15 +68,7 @@ class UserProxyAgent:
         self.code_execution_config = code_execution_config
 
     def initiate_chat(self, recipient: AssistantAgent, message: str = "", **kwargs):
-        print(f"{self.name} (to {recipient.name}):\n")
-        print(message)
-        print()
-        print("-" * 80)
-        reply = recipient.reply(message)
-        print(f"{recipient.name} (to {self.name}):\n")
-        print(reply)
-        print()
-        return reply
+        return _initiate_chat(self, recipient, message)
 
 
 class GroupChat:
@@ -67,13 +79,23 @@ class GroupChat:
 
 
 class GroupChatManager:
-    def __init__(self, groupchat: GroupChat, llm_config=None) -> None:
+    def __init__(self, groupchat: GroupChat, llm_config=None, name: str = "chat_manager") -> None:
         self.groupchat = groupchat
         self.llm_config = llm_config
+        self.name = name
 
     def run(self, message: str) -> str:
         text = message
         for agent in self.groupchat.agents:
             if hasattr(agent, "reply"):
                 text = agent.reply(text)
+        return text
+
+    def reply(self, message: str) -> str:
+        """Each agent speaks once, in order, and hands its answer to the next."""
+        text = message
+        for agent in self.groupchat.agents[: self.groupchat.max_round]:
+            if hasattr(agent, "reply"):
+                text = agent.reply(text)
+                print(f"{agent.name}:\n{text}\n")
         return text

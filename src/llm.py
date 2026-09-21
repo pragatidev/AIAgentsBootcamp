@@ -132,6 +132,22 @@ def get_autogen_config() -> list[dict[str, Any]]:
     ]
 
 
+def get_crewai_llm():
+    """CrewAI LLM from the same .env as get_llm(). CrewAI 1.x takes its own LLM class."""
+    from crewai import LLM
+
+    name = provider_name()
+    if name == "anthropic":
+        model = _first("ANTHROPIC_DEFAULT_MODEL", "LLM_MODEL", default="claude-haiku-4-5")
+        return LLM(model="anthropic/" + model, api_key=_first("ANTHROPIC_API_KEY", "LLM_API_KEY"))
+    if name == "openai":
+        model = _first("OPENAI_DEFAULT_MODEL", "LLM_MODEL", default="gpt-4o-mini")
+        return LLM(model="openai/" + model, api_key=_first("OPENAI_API_KEY", "LLM_API_KEY"))
+    # Ollama speaks the OpenAI protocol on /v1, so CrewAI needs no extra package for it.
+    cfg = get_autogen_config()[0]
+    return LLM(model="openai/" + cfg["model"], base_url=cfg["base_url"], api_key="ollama")
+
+
 def get_memory_chat():
     """Drop-in for the old ConversationChain.run('...')."""
     from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
