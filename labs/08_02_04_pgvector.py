@@ -4,6 +4,7 @@
 # When this works, docker compose starts Postgres, the refund
 # procedure is inserted, and a query prints the row and its source.
 # Insert a vector of the wrong width and print the database error.
+# A cold Postgres needs a few seconds, so the lab waits up to 90 for it.
 # If Docker is down, this lab prints BLOCKED ON DOCKER and exits 0.
 
 # %%
@@ -22,8 +23,8 @@ from dataflow.rag.pgvector_store import (
     DEFAULT_CONNECTION,
     build_pgvector_store,
     insert_docs,
-    postgres_reachable,
     query,
+    wait_for_postgres,
 )
 
 print("compose_up")
@@ -42,11 +43,16 @@ from labs._quiet_exit import quiet_exit
 
 if compose.returncode != 0:
     print("BLOCKED ON DOCKER")
-    quiet_exit()
-elif not postgres_reachable(DEFAULT_CONNECTION):
-    print("BLOCKED ON DOCKER")
-    print("postgres is not reachable at", DEFAULT_CONNECTION)
-    quiet_exit()
+    quiet_exit(
+        "docker compose could not start Postgres (its error is above); "
+        "if Docker is not running, start Docker Desktop and run this lab again."
+    )
+elif not wait_for_postgres(DEFAULT_CONNECTION, seconds=90):
+    print("BLOCKED ON POSTGRES")
+    quiet_exit(
+        "Postgres did not accept connections at " + DEFAULT_CONNECTION
+        + " within 90 seconds: check docker compose logs postgres, then run this lab again."
+    )
 
 # %%
 path = (

@@ -118,6 +118,7 @@ try:
 except Exception as exc:
     print("BLOCKED ON DOCKER")
     print("postgres_error", type(exc).__name__ + ":", exc)
+    print("Postgres is not up: start Docker Desktop, run docker compose up -d postgres, wait a few seconds, run again.")
     print("sqlite_fallback proving the same kill-and-resume shape")
 
 # %%

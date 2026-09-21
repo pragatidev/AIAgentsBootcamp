@@ -42,6 +42,23 @@ def postgres_reachable(connection: str | None = None) -> bool:
         return False
 
 
+def wait_for_postgres(connection: str | None = None, seconds: int = 90) -> bool:
+    """Retry until Postgres accepts a connection. A fresh container needs a few seconds."""
+    import time
+
+    deadline = time.monotonic() + seconds
+    print("waiting for postgres ", end="", flush=True)
+    while True:
+        if postgres_reachable(connection):
+            print(" ready", flush=True)
+            return True
+        if time.monotonic() >= deadline:
+            print(" gave up", flush=True)
+            return False
+        print(".", end="", flush=True)
+        time.sleep(2)
+
+
 def build_pgvector_store(
     collection: str,
     connection: str | None = None,

@@ -3,7 +3,9 @@
 #
 # When this works, a broken service flag makes health 500, rolling back
 # the flag makes health ok, the runbook prints, and an image retag is
-# tried once. BLOCKED ON DOCKER if the daemon is down.
+# tried once. The previous tag is the image lab 17_02_06 built; if it is
+# missing, the lab names it previous first. BLOCKED ON DOCKER if the
+# daemon is down.
 
 # %%
 from pathlib import Path
@@ -125,21 +127,45 @@ finally:
 
 # %%
 print("cell", "image_retag")
-retag = subprocess.run(
-    ["docker", "tag", "dataflow-desk:previous", "dataflow-desk:live"],
-    cwd=str(root),
-    capture_output=True,
-    text=True,
-    encoding="utf-8",
-    errors="replace",
-)
-print("docker_tag_exit", retag.returncode)
-err = (retag.stderr or retag.stdout or "").strip()
-if retag.returncode != 0:
+
+
+def docker(*args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        ["docker", *args],
+        cwd=str(root),
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+
+
+def image_id(tag: str) -> str:
+    found = docker("image", "inspect", "--format", "{{.Id}}", tag)
+    return found.stdout.strip() if found.returncode == 0 else ""
+
+
+if docker("info").returncode != 0:
     print("BLOCKED ON DOCKER")
-    print("docker_error", err[:2000])
+    print("Docker is not running: start Docker Desktop, then run this lab again.")
 else:
-    print("retag_ok", "dataflow-desk:previous -> dataflow-desk:live")
+    if not image_id("dataflow-desk:previous"):
+        print("missing_image", "dataflow-desk:previous")
+        if image_id("dataflow-desk:lab"):
+            # The known-good image is the one lab 17_02_06 built; name it previous.
+            docker("tag", "dataflow-desk:lab", "dataflow-desk:previous")
+            print("tagged_previous", "dataflow-desk:lab -> dataflow-desk:previous")
+    if not image_id("dataflow-desk:previous"):
+        print("No known-good image to roll back to: run labs/17_02_06_docker.py first, it builds dataflow-desk:lab.")
+    else:
+        retag = docker("tag", "dataflow-desk:previous", "dataflow-desk:live")
+        print("docker_tag_exit", retag.returncode)
+        if retag.returncode != 0:
+            print("docker_error", (retag.stderr or retag.stdout or "").strip()[:2000])
+        else:
+            print("retag_ok", "dataflow-desk:previous -> dataflow-desk:live")
+            same = image_id("dataflow-desk:live") == image_id("dataflow-desk:previous")
+            print("live_is_previous", same, image_id("dataflow-desk:live")[:19])
 
 # %% [markdown]
 # restore the committed copy so the repo stays clean; delete this cell to keep yours

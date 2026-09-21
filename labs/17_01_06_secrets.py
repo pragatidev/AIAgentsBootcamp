@@ -81,6 +81,7 @@ print("renders_excluded", ignored("renders/out.mp4", rules))
 
 # %%
 print("cell", "docker_build_once")
+print("The first build installs the whole course into the image and can take 15 minutes; later builds reuse it.")
 build = subprocess.run(
     ["docker", "build", "-t", "dataflow-desk:secrets-lab", "."],
     cwd=str(root),

@@ -54,6 +54,7 @@ if config.stderr:
 
 # %%
 print("cell", "docker_build_and_up")
+print("A first build installs the whole course into the image and can take 15 minutes; later builds reuse it.")
 build = subprocess.run(
     ["docker", "build", "-t", "dataflow-desk:lab", "."],
     cwd=str(root),
@@ -97,8 +98,54 @@ else:
         )
         print("wrote", blocked_path.as_posix())
     else:
-        print("container_up, health and POST belong to a real run")
-        print("not writing docker_request.json from a fake client")
+        import time
+        import urllib.request
+
+        base = "http://127.0.0.1:8000"
+        health_body = None
+        print("waiting for container health ", end="", flush=True)
+        for _ in range(60):
+            try:
+                with urllib.request.urlopen(base + "/health", timeout=5) as resp:
+                    health_body = json.loads(resp.read().decode("utf-8"))
+                    break
+            except Exception:
+                print(".", end="", flush=True)
+                time.sleep(2)
+        print()
+        if health_body is None:
+            print("container health never answered at", base + "/health", "within 120 seconds")
+            print("not writing docker_request.json from a container that is not healthy")
+            print("Check docker compose logs dataflow, then run this lab again.")
+        else:
+            print("container_health", health_body)
+            request = {"ticket": "Where is order DF-1002?"}
+            req = urllib.request.Request(
+                base + "/run",
+                data=json.dumps(request).encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+            )
+            try:
+                with urllib.request.urlopen(req, timeout=300) as resp:
+                    status = resp.status
+                    reply = json.loads(resp.read().decode("utf-8"))
+            except Exception as exc:
+                print("container_post_error", type(exc).__name__ + ":", exc)
+                print("The container is healthy but POST /run failed: is Ollama running on this machine?")
+            else:
+                print("container_post_status", status)
+                print("container_reply", reply)
+                json_path.write_text(
+                    json.dumps(
+                        {"url": base + "/run", "request": request, "status": status, "response": reply},
+                        indent=2,
+                    )
+                    + "\n",
+                    encoding="utf-8",
+                )
+                print("wrote", json_path.as_posix(), "from the real container POST")
+                if blocked_path.is_file():
+                    blocked_path.unlink()
 
 # %% [markdown]
 # restore the committed copy so the repo stays clean; delete this cell to keep yours
