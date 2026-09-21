@@ -80,9 +80,13 @@ def build_pgvector_store(
         raise ValueError(
             f"embedder dimension {dimension} does not match column width {width}"
         )
+    url = connection or DEFAULT_CONNECTION
+    if url.startswith("postgresql://"):
+        # A bare postgresql:// makes SQLAlchemy reach for psycopg2; the course installs psycopg 3.
+        url = "postgresql+psycopg://" + url[len("postgresql://"):]
     store = PGVector(
         embeddings=embeddings,
-        connection=connection or DEFAULT_CONNECTION,
+        connection=url,
         collection_name=collection,
         embedding_length=width,
         use_jsonb=True,
