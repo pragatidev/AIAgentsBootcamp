@@ -441,3 +441,15 @@ def build_rag_graph(
         builder.add_edge("refuse", END)
 
     return builder.compile(checkpointer=checkpointer)
+
+
+def builder_for_server():
+    """Compile the replay graph without a checkpointer. The Agent Server injects persistence.
+
+    Same arguments labs/09_02_05_studio_replay.py builds, so a ticket run through
+    `langgraph dev` walks the same nodes the lab walks in the terminal.
+    """
+    return build_rag_graph(scope="all", grade_enabled=False, cite_node=None, checkpointer=None)
+
+
+graph = builder_for_server()

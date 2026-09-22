@@ -1,9 +1,11 @@
 # %% [markdown]
-# Replay a DataFlow miss in LangSmith Studio.
+# Replay a DataFlow run in LangSmith Studio.
 #
 # No checkpointer, so get_state_history is empty. Add InMemorySaver,
 # edit the retrieved chunk, rerun. The second answer cites the edited
-# chunk in this terminal. Then do the same edit with a mouse in Studio on port 2024.
+# chunk in this terminal. Then do the same edit with a mouse in Studio: run
+# `langgraph dev`, pick the replay graph, and run the ticket there to get a
+# thread on the server. The terminal thread below never leaves this process.
 
 # %%
 from pathlib import Path
@@ -108,7 +110,8 @@ print("studio_url", STUDIO_URL, flush=True)
 print("thread_id", THREAD_ID, flush=True)
 print(
     "studio_note",
-    "Open Studio on port 2024, pick the desk graph and thread lab-27-5, "
-    "and edit the retrieved chunk the same way the terminal just did.",
+    "Open Studio on port 2024 and pick the replay graph, the one this lab just ran. "
+    "The thread above lives in this process only, so run the same ticket in Studio to "
+    "make a thread on the server, then edit the retrieved chunk in its state and resume.",
     flush=True,
 )
