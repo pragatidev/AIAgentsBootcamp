@@ -6,6 +6,7 @@
 
 # %%
 from pathlib import Path
+import os
 import sys
 
 root = Path(__file__).resolve().parents[1] if "__file__" in globals() else Path.cwd()
@@ -25,12 +26,23 @@ print("local_model", config.CHAT_MODEL)
 print("local_reply", getattr(local_reply, "content", local_reply))
 
 # %%
-if config.has_live_key() and (config.OPENAI_CHAT_MODEL or config.ANTHROPIC_CHAT_MODEL):
+# A provider is ready when its key and its model id are both set.
+# The order is the one get_chat_model uses: OpenAI first, then Anthropic.
+providers = [
+    ("OPENAI", config.OPENAI_CHAT_MODEL),
+    ("ANTHROPIC", config.ANTHROPIC_CHAT_MODEL),
+]
+keyed = [(name, model) for name, model in providers if os.environ.get(f"{name}_API_KEY", "").strip()]
+hosted_id = next((model for _, model in keyed if model), "")
+
+if hosted_id:
     hosted = config.get_chat_model()
-    hosted_id = config.OPENAI_CHAT_MODEL or config.ANTHROPIC_CHAT_MODEL
     hosted_reply = hosted.invoke(PROMPT)
     print("hosted_model", hosted_id)
     print("hosted_reply", getattr(hosted_reply, "content", hosted_reply))
     print("ran", "hosted then local")
+elif keyed:
+    missing = " and ".join(f"{name}_API_KEY is set but {name}_CHAT_MODEL is empty" for name, _ in keyed)
+    print(f"hosted skipped: {missing}, so there is no hosted model to call. Set the model id in .env.")
 else:
     print("hosted skipped: no cloud key set")
