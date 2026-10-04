@@ -79,11 +79,12 @@ def build_notebook(cells: list[tuple[str, str]], name: str = "") -> dict:
     nb_cells = []
     if name:
         cells = [("code", BOOT.replace("{name}", name)), *cells]
-    for kind, source in cells:
+    for n, (kind, source) in enumerate(cells, 1):
         if kind == "markdown":
             nb_cells.append(
                 {
                     "cell_type": "markdown",
+                    "id": f"cell-{n}",
                     "metadata": {},
                     "source": as_source_list(markdown_source(source)),
                 }
@@ -93,6 +94,7 @@ def build_notebook(cells: list[tuple[str, str]], name: str = "") -> dict:
                 {
                     "cell_type": "code",
                     "execution_count": None,
+                    "id": f"cell-{n}",
                     "metadata": {},
                     "outputs": [],
                     "source": as_source_list(source),

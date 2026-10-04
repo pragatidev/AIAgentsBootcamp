@@ -33,3 +33,21 @@ def test_rebuilt_twin_shows_no_change_with_autocrlf_false(tmp_path):
     )
     assert (clone / TWIN).is_file()
     assert git("status", "--porcelain", cwd=clone) == ""
+
+
+def test_every_twin_is_a_valid_notebook_with_cell_ids():
+    # nbformat 4.5 notebooks need an id on every cell; without one nbformat warns that it
+    # "will become a hard error in future nbformat versions".
+    import warnings
+
+    import nbformat
+
+    twins = sorted((ROOT / "labs").glob("*.ipynb"))
+    assert twins
+    for twin in twins:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            nb = nbformat.read(twin, as_version=4)
+            nbformat.validate(nb)
+        ids = [cell["id"] for cell in nb.cells]
+        assert len(ids) == len(set(ids)), twin.name
