@@ -137,8 +137,10 @@ httpx.ConnectError: [WinError 10061] No connection could be made because the tar
 ```
 
 What it means: nothing is answering at `OLLAMA_BASE_URL` (default `http://localhost:11434`), so Ollama is not
-installed or not running. `labs/00_04_keys_and_config.py` calls the local model first, so it stops here even when a
-cloud key is set. pytest is not affected: its one live test skips with `no local model`.
+installed or not running. `labs/00_04_keys_and_config.py` does not stop on this: it prints
+`local skipped: nothing answered at http://localhost:11434. Is Ollama installed and running?` and goes on to the
+hosted call, so a cloud key with its model id set in `.env` still runs there. pytest is not affected: its one live
+test skips with `no local model`.
 
 Fix **(not tested here)**: install Ollama (on Windows, in PowerShell: `irm https://ollama.com/install.ps1 | iex`, or
 OllamaSetup.exe from ollama.com/download), make sure it is running, then `ollama pull qwen3:8b` (5.2 GB).
