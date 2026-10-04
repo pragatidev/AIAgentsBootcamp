@@ -4,7 +4,8 @@ Python 3.11. VS Code. Git. No API key.
 
 ## Python
 
-Install Python 3.11, the version in `.python-version`. The course is tested on 3.11.
+Install Python 3.11, the version in `.python-version`. The course is built on 3.11, and the tests also
+passed on 3.13 (3.13.14, 2026-10-04).
 The Python docs (Using Python on Windows, read on 2026-10-04) recommend the Python install manager, from
 python.org/downloads or the Microsoft Store, and mark the classic full installer and the classic `py` launcher as
 deprecated since Python 3.14. The full installer will not be made for 3.16 or later. Check which versions you have with

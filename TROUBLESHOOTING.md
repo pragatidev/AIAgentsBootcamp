@@ -148,6 +148,12 @@ What it means: Ollama is running but does not have the model `config.py` asked f
 Fix **(not tested here)**: `ollama pull <the model named in the error>`, for example `ollama pull qwen3:8b`. Check
 what you have with `ollama list`.
 
+### I have Python 3.13, not 3.11
+
+There is no error. On 2026-10-04 a Python 3.13.14 venv installed `requirements.txt` with exit 0 and the full suite
+passed: 281 passed, 6 skipped, 1 xfailed. The course is built on 3.11, so if a lab behaves differently from the
+lecture, try 3.11 first.
+
 ### No `.env` file
 
 There is no error. With `.env` missing, the labs behave exactly as with the sample copied in, because every value in
