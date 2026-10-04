@@ -125,9 +125,13 @@ def _write(path: str, content: str) -> dict:
 
 
 def _run_tests() -> dict:
+    # -B: no .pyc. A .pyc is trusted when the source's size and whole-second
+    # mtime match, so an edit of the same length in the same second (a - b to
+    # a + b) would run the old code and report a stale fail.
     proc = subprocess.run(
         [
             sys.executable,
+            "-B",
             "-m",
             "pytest",
             str(SANDBOX_ROOT / "test_fixture.py"),
