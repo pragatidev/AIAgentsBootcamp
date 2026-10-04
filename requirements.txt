@@ -19,7 +19,7 @@ jupyter>=1.0
 nbformat>=5.10
 pydantic>=2.0
 langgraph-cli[inmem]>=0.4
-langsmith>=0.4
+langsmith>=0.8.18
 deepagents>=0.7
 
 openai>=1.0
