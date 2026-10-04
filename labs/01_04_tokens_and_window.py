@@ -4,8 +4,8 @@
 # Count a short prompt and a stuffed one two ways: tiktoken cl100k_base
 # as an approximation, and the model's own usage_metadata from a real
 # call. Print the model card context length and the window this server
-# actually applied. Then set a small num_ctx on purpose and print what
-# spills.
+# actually applied. Then set a small num_ctx on purpose, count what
+# does not fit, and test which end of the prompt the server keeps.
 
 # %%
 from pathlib import Path
@@ -171,11 +171,42 @@ print("usage_small_ctx", tiny_usage)
 print("tiktoken_stuffed", tiktoken_stuffed)
 spill_count = max(0, tiktoken_stuffed - SMALL_CTX)
 print("tokens_that_do_not_fit", spill_count)
-kept = enc.decode(ids[:SMALL_CTX])
-spilled = enc.decode(ids[SMALL_CTX:]) if len(ids) > SMALL_CTX else ""
-print("kept_head", kept[:240].replace("\n", " "))
-print("spilled_head", spilled[:240].replace("\n", " "))
+
+# %%
+# Which end did the server keep? Send numbered lines into the same 512
+# window and let the model continue the text raw: it can only write the
+# next number if the end of the prompt survived.
+def ollama_generate_raw(prompt: str, num_ctx: int, num_predict: int) -> dict:
+    url = config.OLLAMA_BASE_URL.rstrip("/") + "/api/generate"
+    body = {
+        "model": config.CHAT_MODEL,
+        "prompt": prompt,
+        "raw": True,
+        "stream": False,
+        "options": {"num_ctx": num_ctx, "num_predict": num_predict, "temperature": 0},
+    }
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(body).encode("utf-8"),
+        method="POST",
+        headers={"Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+
+LINES = 400
+probe = "".join(f"line {n}\n" for n in range(1, LINES + 1)) + "line"
+probe_out = ollama_generate_raw(probe, SMALL_CTX, 8)
+continuation = probe_out.get("response") or ""
+print("probe_lines", LINES)
+print("probe_tiktoken", len(enc.encode(probe)))
+print("probe_prompt_tokens_kept", probe_out.get("prompt_eval_count"))
+print("probe_continuation", repr(continuation))
+end_kept = continuation.strip().startswith(str(LINES + 1))
 print(
     "spill_means",
-    "the stuffed dump is larger than num_ctx; the tail of the knowledge base never reaches the model",
+    "the server kept the end of the prompt and cut the start; no error was raised"
+    if end_kept
+    else "the model did not continue from the last line, so this run does not show which end was kept",
 )
