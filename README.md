@@ -17,13 +17,13 @@ Four files a clone needs: README (this file), smoke (`deploy/smoke.py`), golden 
 ```
 git clone https://github.com/pragatidev/AIAgentsBootcamp.git
 cd AIAgentsBootcamp
-py -3.11 -m venv .venv
+py -3.13 -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 pytest -q
 ```
 
-You need Python 3.11; the Python docs (read 2026-10-04) recommend the Python install manager and mark the classic installer and the classic `py` launcher as deprecated since 3.14. If PowerShell says `Activate.ps1 cannot be loaded because running scripts is disabled on this system`, run `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` once (the fix the Python venv docs give) and activate again, or use cmd. The install is about 1.9 GB and took 278.8 seconds on our test machine with a warm pip cache; PyTorch comes in through `sentence-transformers`. macOS / Linux: `python -m venv .venv` and `source .venv/bin/activate`. `pytest -q` must exit 0 with no cloud key and print the `N passed` line. Copy `.env.sample` to `.env` (`copy` on Windows, `cp` on macOS / Linux) when you add a key or change a model. Live model calls skip without a key or Ollama. The browser labs (Playwright) need a browser that pip does not install: run `playwright install chromium` once; until then their two tests skip and say so. Full steps: `INSTALL.md`. Errors and fixes: `TROUBLESHOOTING.md`.
+Use Python 3.13 from python.org's standalone installer; 3.11 and 3.12 also work, but python.org no longer gives them regular bug fixes or binary installers. The Python docs (read 2026-10-04) recommend the Python install manager and mark the classic installer and the classic `py` launcher as deprecated since 3.14. If PowerShell says `Activate.ps1 cannot be loaded because running scripts is disabled on this system`, run `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` once (the fix the Python venv docs give) and activate again, or use cmd. The install is about 1.9 GB and took 278.8 seconds on our test machine with a warm pip cache; PyTorch comes in through `sentence-transformers`. macOS / Linux: `python -m venv .venv` and `source .venv/bin/activate`. `pytest -q` must exit 0 with no cloud key and print the `N passed` line. Copy `.env.sample` to `.env` (`copy` on Windows, `cp` on macOS / Linux) when you add a key or change a model. Live model calls skip without a key or Ollama. The browser labs (Playwright) need a browser that pip does not install: run `playwright install chromium` once; until then their two tests skip and say so. Full steps: `INSTALL.md`. Errors and fixes: `TROUBLESHOOTING.md`.
 
 ## What the desk refuses
 

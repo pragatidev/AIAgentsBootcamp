@@ -1,11 +1,17 @@
 # Install
 
-Python 3.11. VS Code. Git. No API key.
+Python 3.13. VS Code. Git. No API key.
 
 ## Python
 
-Install Python 3.11, the version in `.python-version`. The course is built on 3.11, and the tests also
-passed on 3.13 (3.13.14, 2026-10-04).
+Install Python 3.13, the version in `.python-version`, with the standalone installer from python.org. On
+python.org/downloads/windows/ that is "Python 3.13.16 - Sept. 30, 2026" with "Download Windows installer (64-bit)", and
+on python.org/downloads/macos/ the same release has "Download macOS installer" (both read on 2026-10-04). The tests pass
+on 3.13.
+
+Python 3.11 and 3.12 also work. For a new install, pick 3.13: python.org says 3.11 and 3.12 each "isn't receiving
+regular bug fixes anymore, and binary installers are no longer provided for it".
+
 The Python docs (Using Python on Windows, read on 2026-10-04) recommend the Python install manager, from
 python.org/downloads or the Microsoft Store, and mark the classic full installer and the classic `py` launcher as
 deprecated since Python 3.14. The full installer will not be made for 3.16 or later. Check which versions you have with
@@ -23,7 +29,7 @@ cd AIAgentsBootcamp
 Windows (PowerShell or cmd):
 
 ```
-py -3.11 -m venv .venv
+py -3.13 -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 copy .env.sample .env
