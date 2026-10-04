@@ -51,25 +51,36 @@ def test_tool_call_shape_parsed():
     assert parsed["id"]
 
 
+class FixtureModel:
+    def __init__(self, name: str, content: str = "an agent is a model in a loop with tools", usage=True) -> None:
+        self.model = name
+        self.content = content
+        self.usage = usage
+
+    def invoke(self, prompt: str):
+        usage = {"input_tokens": 8, "output_tokens": 12, "total_tokens": 20}
+        return AIMessage(content=self.content, usage_metadata=usage if self.usage else None)
+
+
 def test_model_swap_keeps_shape():
-    class FixtureModel:
-        def __init__(self, name: str) -> None:
-            self.model = name
-
-        def invoke(self, prompt: str):
-            return AIMessage(
-                content="an agent is a model in a loop with tools",
-                usage_metadata={
-                    "input_tokens": 8,
-                    "output_tokens": 12,
-                    "total_tokens": 20,
-                },
-            )
-
     one = run_desk(FixtureModel("qwen3:8b"), "what is an AI agent?")
     two = run_desk(FixtureModel("llama3.2:3b"), "what is an AI agent?")
     assert one["keys"] == two["keys"]
-    assert one["keys"] == ["model", "content", "usage"]
+    assert one["keys"] == [
+        "model",
+        "content",
+        "usage",
+        "usage.input_tokens",
+        "usage.output_tokens",
+        "usage.total_tokens",
+    ]
     assert one["model"] != two["model"]
-    assert one["content"]
-    assert two["content"]
+
+
+def test_model_swap_check_fails_when_the_shape_differs():
+    # The same_shape check is read from each run, so a model that sends no usage
+    # and an empty reply is caught.
+    one = run_desk(FixtureModel("qwen3:8b"), "what is an AI agent?")
+    two = run_desk(FixtureModel("tiny:1b", content="", usage=False), "what is an AI agent?")
+    assert two["keys"] == ["model"]
+    assert (one["keys"] == two["keys"]) is False

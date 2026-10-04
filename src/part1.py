@@ -61,15 +61,20 @@ def parse_tool_call_entry(entry: Any) -> dict:
     }
 
 
+def filled_keys(run: dict) -> list[str]:
+    """What a run really returned: each field that holds a value, and each usage count the server sent."""
+    keys = [key for key in ("model", "content", "usage") if run.get(key)]
+    usage = run.get("usage") or {}
+    keys += ["usage." + key for key in sorted(usage)]
+    return keys
+
+
 def run_desk(model: Any, prompt: str) -> dict:
-    """Same agent code for every model. Returns a fixed set of keys."""
+    """Same agent code for every model. `keys` is read from what this run returned."""
     reply = model.invoke(prompt)
     content = getattr(reply, "content", "")
     usage = getattr(reply, "usage_metadata", None)
     model_id = getattr(model, "model", None) or getattr(model, "model_name", None)
-    return {
-        "model": model_id,
-        "content": content,
-        "usage": usage,
-        "keys": ["model", "content", "usage"],
-    }
+    run = {"model": model_id, "content": content, "usage": usage}
+    run["keys"] = filled_keys(run)
+    return run

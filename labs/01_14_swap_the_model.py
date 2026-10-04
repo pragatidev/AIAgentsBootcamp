@@ -2,8 +2,8 @@
 # Swap the model with one line.
 #
 # The same agent function runs twice. Only the model id changes.
-# The output shape stays the same. Local path uses qwen3:8b and
-# llama3.2:3b.
+# The lab checks whether both runs filled the same fields; the words
+# will differ. Local path uses qwen3:8b and llama3.2:3b.
 
 # %%
 from pathlib import Path
@@ -47,4 +47,4 @@ print("run_two_keys", two["keys"])
 print("run_two_content", two["content"])
 print("run_two_usage", two["usage"])
 print("same_shape", one["keys"] == two["keys"])
-print("agent_code_changed", False)
+print("same_content", one["content"] == two["content"])
