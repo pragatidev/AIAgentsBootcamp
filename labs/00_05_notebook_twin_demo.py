@@ -1,7 +1,7 @@
 # %% [markdown]
 # Notebooks and lab files.
 #
-# Every lab ships as a `.py` with `# %%` cells and a notebook twin
+# A lab is a `.py` with `# %%` cells, and most have a notebook twin
 # from `python scripts/make_twins.py`. Run this file cell by cell, or
 # as a script. The twin has four code cells: a boot cell that finds
 # the repo root, then these three, and each of them prints.
