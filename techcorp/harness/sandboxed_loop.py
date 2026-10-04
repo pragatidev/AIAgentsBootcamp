@@ -82,9 +82,13 @@ def run_tests_in_root(root: Path | None = None) -> dict:
     box = Path(root) if root is not None else SANDBOX
     box = box.resolve()
     test_file = box / "test_fixture.py"
+    # -B: no .pyc. A .pyc is trusted when the source's size and whole-second
+    # mtime match, so an edit of the same length in the same second (a - b to
+    # a + b) would run the old code and report a stale fail.
     proc = subprocess.run(
         [
             sys.executable,
+            "-B",
             "-m",
             "pytest",
             str(test_file),

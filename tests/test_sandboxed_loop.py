@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 from langchain_core.messages import AIMessage
@@ -125,6 +126,21 @@ def test_scripted_fix_makes_sandbox_test_pass(tmp_path):
     assert writes
     assert tests
     assert tests[-1]["passed"] is True
+    assert run_tests_in_root(box)["passed"] is True
+
+
+def test_same_size_edit_in_the_same_second_is_not_stale(tmp_path):
+    # The flaky case, pinned: FIXED has BROKEN's length, and the mtime is set
+    # back to BROKEN's so a cached .pyc would still look current.
+    box = tmp_path / "sandbox"
+    box.mkdir()
+    fixture = box / "fixture.py"
+    fixture.write_text(BROKEN, encoding="utf-8")
+    (box / "test_fixture.py").write_text(TEST_SRC, encoding="utf-8")
+    broken_mtime = fixture.stat().st_mtime
+    assert run_tests_in_root(box)["passed"] is False
+    fixture.write_text(FIXED, encoding="utf-8")
+    os.utime(fixture, (broken_mtime, broken_mtime))
     assert run_tests_in_root(box)["passed"] is True
 
 
