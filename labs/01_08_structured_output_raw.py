@@ -2,9 +2,10 @@
 # Get structured output with Pydantic, and watch it break.
 #
 # Ask for JSON matching TicketClass, parse it, print the object.
-# Then a schema with a Literal the model cannot satisfy. Print the
-# validation error verbatim, retry once with the error fed back, print
-# the outcome.
+# Then check that same reply against ImpossibleTicket, a schema whose
+# planet field the model was never shown. Print Pydantic's error
+# verbatim. Only if it failed, retry once with that exact error fed
+# back, and print what the model does with it.
 
 # %%
 from __future__ import annotations
@@ -92,7 +93,7 @@ ok_resp = client.chat.completions.create(
     messages=[{"role": "user", "content": ask}],
     temperature=0,
     max_tokens=1024,
-    extra_body={"think": False},
+    reasoning_effort="none",
 )
 ok_text = ok_resp.choices[0].message.content or ""
 print("raw_json", ok_text)
@@ -111,72 +112,49 @@ print("parsed_dict", parsed.model_dump())
 
 # %%
 print("break_schema", "ImpossibleTicket requires planet Literal must_be_pluto_office_wing")
+print("checking", "the model's reply above against ImpossibleTicket")
 try:
-    ImpossibleTicket.model_validate(parsed.model_dump())
-    print("impossible_parsed", "unexpected success")
+    impossible = parse_ticket(ok_text, ImpossibleTicket)
     validation_error = None
+    print("impossible_parsed", impossible)
 except ValidationError as exc:
     validation_error = str(exc)
     print("validation_error")
     print(validation_error)
-bad_schema = ImpossibleTicket.model_json_schema()
-bad_ask = (
-    "Classify this TechCorp ticket as JSON matching this schema. "
-    "You must fill every field with a value from its Literal list. "
-    "No extra keys. No prose.\n"
-    + json.dumps(bad_schema)
-    + "\n\nTicket:\n"
-    + TICKET
-)
-bad_resp = client.chat.completions.create(
-    model=config.CHAT_MODEL,
-    messages=[{"role": "user", "content": bad_ask}],
-    temperature=0,
-    max_tokens=1024,
-    extra_body={"think": False},
-)
-bad_text = bad_resp.choices[0].message.content or ""
-if not bad_text.strip():
-    chat = config.get_local_chat_model(
-        reasoning=False, num_predict=256, format="json"
-    )
-    bad_text = str(chat.invoke(bad_ask).content or "")
-print("impossible_raw_json", bad_text)
 
 # %%
-retry_messages = [
-    {"role": "user", "content": bad_ask},
-    {"role": "assistant", "content": bad_text},
-    {
-        "role": "user",
-        "content": (
-            "That JSON failed Pydantic validation. Error:\n"
-            + (validation_error or "unknown")
-            + "\nReturn JSON that matches the schema, still filling planet "
-            "from its Literal list. If you cannot, return JSON with planet "
-            "set to must_be_pluto_office_wing anyway."
-        ),
-    },
-]
-retry_resp = client.chat.completions.create(
-    model=config.CHAT_MODEL,
-    messages=retry_messages,
-    temperature=0,
-    max_tokens=1024,
-    extra_body={"think": False},
-)
-retry_text = retry_resp.choices[0].message.content or ""
-if not retry_text.strip():
-    chat = config.get_local_chat_model(
-        reasoning=False, num_predict=256, format="json"
+if validation_error is None:
+    print("retry_sent", False)
+else:
+    # The retry carries the model's own reply and Pydantic's exact error,
+    # nothing else: no schema, no allowed value.
+    retry_messages = [
+        {"role": "user", "content": ask},
+        {"role": "assistant", "content": ok_text},
+        {
+            "role": "user",
+            "content": (
+                "That JSON failed Pydantic validation. Error:\n"
+                + validation_error
+                + "\nReturn the corrected JSON only."
+            ),
+        },
+    ]
+    print("retry_sent", True)
+    retry_resp = client.chat.completions.create(
+        model=config.CHAT_MODEL,
+        messages=retry_messages,
+        temperature=0,
+        max_tokens=1024,
+        reasoning_effort="none",
     )
-    retry_text = str(chat.invoke(retry_messages).content or "")
-print("retry_raw_json", retry_text)
-try:
-    retry_obj = parse_ticket(retry_text, ImpossibleTicket)
-    print("retry_outcome", "parsed")
-    print("retry_object", retry_obj)
-except ValidationError as exc:
-    print("retry_outcome", "still_invalid")
-    print("retry_validation_error")
-    print(str(exc))
+    retry_text = retry_resp.choices[0].message.content or ""
+    print("retry_raw_json", retry_text)
+    try:
+        retry_obj = parse_ticket(retry_text, ImpossibleTicket)
+        print("retry_outcome", "parsed")
+        print("retry_object", retry_obj)
+    except ValidationError as exc:
+        print("retry_outcome", "still_invalid")
+        print("retry_validation_error")
+        print(str(exc))

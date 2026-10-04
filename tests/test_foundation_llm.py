@@ -2,9 +2,17 @@
 
 from pathlib import Path
 
+import pytest
 from langchain_core.messages import AIMessage
+from pydantic import ValidationError
 
-from src.part1 import TicketClass, parse_ticket, parse_tool_call_entry, run_desk
+from src.part1 import (
+    ImpossibleTicket,
+    TicketClass,
+    parse_ticket,
+    parse_tool_call_entry,
+    run_desk,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "tests" / "fixtures" / "raw_tool_calls.json"
@@ -19,6 +27,18 @@ def test_structured_output_parses_with_fixture():
     assert obj.user_id == "E-4101"
     assert obj.category == "password"
     assert obj.priority == "high"
+
+
+def test_ticket_reply_fails_the_impossible_schema():
+    # Lab 2.8's break: a valid TicketClass reply checked against ImpossibleTicket.
+    raw = (
+        '{"category": "password", "priority": "high", '
+        '"user_id": "E-4101", "summary": "reset laptop password"}'
+    )
+    with pytest.raises(ValidationError) as caught:
+        parse_ticket(raw, ImpossibleTicket)
+    errors = caught.value.errors()
+    assert [(e["loc"], e["type"]) for e in errors] == [(("planet",), "missing")]
 
 
 def test_tool_call_shape_parsed():
