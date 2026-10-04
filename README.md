@@ -2,7 +2,7 @@
 
 Companion repo for the Udemy course AI Agents Bootcamp (listing 6521157).
 
-**Which branch do I need?** The course was rebuilt in September 2026 and this branch, `master`, is the rebuilt course: every lecture names a file under `labs/`, and each lab comes as a plain `.py` script and an `.ipynb` twin, so you can work in an editor or in a notebook. It is written as a real repo on purpose, because that is how agent products are built at work: modules, tests, config, evals and a deploy door, not one long notebook. Took the 2025 edition? Your notebooks are on the branch `original-2025`, exactly as you had them: `git fetch && git checkout original-2025`. That branch is archived and no longer updated.
+**Which branch do I need?** The course was rebuilt in September 2026, and the branch you are reading is the rebuilt course: every lecture names a file under `labs/`, and each lab comes as a plain `.py` script and an `.ipynb` twin, so you can work in an editor or in a notebook. It is written as a real repo on purpose, because that is how agent products are built at work: modules, tests, config, evals and a deploy door, not one long notebook. Took the 2025 edition? Your notebooks are on the branch `original-2025`, exactly as you had them: `git fetch && git checkout original-2025`. That branch is archived and no longer updated.
 
 Three builds:
 
