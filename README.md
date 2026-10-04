@@ -14,15 +14,25 @@ Four files a clone needs: README (this file), smoke (`deploy/smoke.py`), golden 
 
 ## Clone and test (no key)
 
+You need Python 3.11. The Python docs (read 2026-10-04) recommend the Python install manager and mark the classic
+installer and the classic `py` launcher as deprecated since 3.14. The full steps are in `INSTALL.md`.
+
 ```
-python -m venv .venv
+git clone https://github.com/pragatidev/AIAgentsBootcamp.git
+cd AIAgentsBootcamp
+py -3.11 -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 copy .env.sample .env
 pytest -q
 ```
 
-macOS / Linux: `source .venv/bin/activate` then `cp .env.sample .env`. `pytest -q` must exit 0 with no cloud key. Live model calls skip without a key or Ollama. The browser labs (Playwright) need a browser that pip does not install: run `playwright install chromium` once; until then their two tests skip and say so.
+If PowerShell says `Activate.ps1 cannot be loaded because running scripts is disabled on this system`, run
+`Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` once (the fix the Python venv docs give), then
+activate again. The install is about 1.9 GB and took 278.8 seconds on our test machine with a warm pip cache; PyTorch
+comes in through `sentence-transformers`. Errors and their fixes: `TROUBLESHOOTING.md`.
+
+macOS / Linux: `python -m venv .venv`, `source .venv/bin/activate`, then `cp .env.sample .env`. `pytest -q` must exit 0 with no cloud key and print the `N passed` line. Live model calls skip without a key or Ollama. The browser labs (Playwright) need a browser that pip does not install: run `playwright install chromium` once; until then their two tests skip and say so.
 
 ## What the desk refuses
 
