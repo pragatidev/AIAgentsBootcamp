@@ -3,6 +3,7 @@
 import runpy
 from pathlib import Path
 
+import httpx
 import pytest
 
 import config
@@ -77,3 +78,68 @@ def test_a_model_id_under_the_other_key_does_not_count(lab):
     lab.monkeypatch.setattr(config, "OPENAI_CHAT_MODEL", "gpt-fake")
     out = lab()
     assert out[-1].startswith("hosted skipped: ANTHROPIC_API_KEY is set but ANTHROPIC_CHAT_MODEL is empty")
+
+
+# What a closed port raises. ChatOllama's streaming path lets httpx's error out
+# (captures_313/10); the ollama client's other paths wrap it in ConnectionError.
+UNREACHABLE = [
+    httpx.ConnectError("[WinError 10061] No connection could be made"),
+    ConnectionError("Failed to connect to Ollama."),
+]
+
+
+class _UnreachableLocal:
+    def __init__(self, error):
+        self.error = error
+
+    def invoke(self, prompt):
+        raise self.error
+
+
+class _StubHosted:
+    def invoke(self, prompt):
+        return "a stub hosted reply"
+
+
+def _local_skipped_line() -> str:
+    return (
+        f"local skipped: nothing answered at {config.OLLAMA_BASE_URL}. Is Ollama installed and running? "
+        'See TROUBLESHOOTING.md, "The local model cannot be reached".'
+    )
+
+
+@pytest.mark.parametrize("error", UNREACHABLE, ids=["httpx_ConnectError", "ConnectionError"])
+def test_unreachable_local_model_skips_to_the_hosted_cell(lab, error):
+    lab.monkeypatch.setattr(config, "get_local_chat_model", lambda **kwargs: _UnreachableLocal(error))
+    lab.monkeypatch.setenv("OPENAI_API_KEY", FAKE_OPENAI_KEY)
+    lab.monkeypatch.setattr(config, "OPENAI_CHAT_MODEL", "gpt-fake")
+    lab.monkeypatch.setattr(config, "get_chat_model", lambda **kwargs: _StubHosted())
+    out = lab()
+    assert out == [
+        f"chat_model_id {config.CHAT_MODEL}",
+        "ids_live_in config.py",
+        _local_skipped_line(),
+        "hosted_model gpt-fake",
+        "hosted_reply a stub hosted reply",
+        "ran hosted, local skipped",
+    ]
+    assert not any(FAKE_OPENAI_KEY in line for line in out)
+
+
+def test_unreachable_local_model_with_no_key_ends_cleanly(lab):
+    lab.monkeypatch.setattr(config, "get_local_chat_model", lambda **kwargs: _UnreachableLocal(UNREACHABLE[0]))
+    out = lab()
+    assert out == [
+        f"chat_model_id {config.CHAT_MODEL}",
+        "ids_live_in config.py",
+        _local_skipped_line(),
+        "hosted skipped: no cloud key set",
+    ]
+
+
+def test_other_local_errors_are_not_swallowed(lab):
+    # Only "nothing answered" is caught. A model that is not pulled, or any
+    # other fault, still stops the lab with its own error.
+    lab.monkeypatch.setattr(config, "get_local_chat_model", lambda **kwargs: _UnreachableLocal(ValueError("boom")))
+    with pytest.raises(ValueError, match="boom"):
+        lab()
