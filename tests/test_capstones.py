@@ -94,8 +94,11 @@ def test_each_solution_passes_in_temp_copy(tmp_path):
             dest,
             ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
         )
+        # --rootdir: without it pytest walks from the drive root to the temp
+        # copy and lists every folder in TEMP, which fails if another program
+        # deletes one of them mid-walk.
         proc = subprocess.run(
-            [PY, "-m", "pytest", "-q", str(dest / "check")],
+            [PY, "-m", "pytest", "-q", "--rootdir", str(dest), str(dest / "check")],
             cwd=str(ROOT),
             env=env,
             capture_output=True,
