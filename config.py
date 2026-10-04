@@ -8,6 +8,7 @@ A missing key is not an error. Pytest stays green.
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -81,6 +82,43 @@ def get_local_chat_model(**kwargs):
     return ChatOllama(**params)
 
 
+def _anthropic_chat(model: str):
+    """ChatAnthropic at temperature 0, or at the model's default if the library refuses 0.
+
+    Some Claude models only take the default temperature. langchain-anthropic
+    knows which, and raises before any request, so ask it here.
+    """
+    from langchain_anthropic import ChatAnthropic
+
+    chat = ChatAnthropic(model=model, temperature=0)
+    check = getattr(chat, "_assert_valid_model_configuration", None)
+    if check is None:
+        return chat
+    try:
+        check({})
+    except ValueError as err:
+        if "temperature" not in str(err):
+            raise
+        return ChatAnthropic(model=model)
+    return chat
+
+
+_warned_no_model_id: set[str] = set()
+
+
+def _warn_key_without_model_id(provider: str) -> None:
+    """One plain line, once per provider, when a key is set but its model id is not."""
+    if provider in _warned_no_model_id:
+        return
+    _warned_no_model_id.add(provider)
+    print(
+        f"warning: {provider}_API_KEY is set but {provider}_CHAT_MODEL is empty, "
+        f"so this run uses the local model {CHAT_MODEL}. "
+        f"Set {provider}_CHAT_MODEL in .env to use the hosted model.",
+        file=sys.stderr,
+    )
+
+
 def get_chat_model(**kwargs):
     """Return a LangChain chat model for the configured provider.
 
@@ -89,14 +127,17 @@ def get_chat_model(**kwargs):
     """
     openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    if not kwargs.get("force_local"):
+        if openai_key and not OPENAI_CHAT_MODEL:
+            _warn_key_without_model_id("OPENAI")
+        if anthropic_key and not ANTHROPIC_CHAT_MODEL:
+            _warn_key_without_model_id("ANTHROPIC")
     if openai_key and OPENAI_CHAT_MODEL and not kwargs.get("force_local"):
         from langchain_openai import ChatOpenAI
 
         return ChatOpenAI(model=OPENAI_CHAT_MODEL, temperature=0)
     if anthropic_key and ANTHROPIC_CHAT_MODEL and not kwargs.get("force_local"):
-        from langchain_anthropic import ChatAnthropic
-
-        return ChatAnthropic(model=ANTHROPIC_CHAT_MODEL, temperature=0)
+        return _anthropic_chat(ANTHROPIC_CHAT_MODEL)
     kwargs.pop("force_local", None)
     return get_local_chat_model(**kwargs)
 
