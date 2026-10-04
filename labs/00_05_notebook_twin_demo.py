@@ -3,7 +3,8 @@
 #
 # Every lab ships as a `.py` with `# %%` cells and a notebook twin
 # from `python scripts/make_twins.py`. Run this file cell by cell, or
-# as a script. Each cell prints so the twin shows three code cells.
+# as a script. The twin has four code cells: a boot cell that finds
+# the repo root, then these three, and each of them prints.
 
 # %%
 print("cell", 1)
