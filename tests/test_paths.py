@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from src.paths import find_repo_root
+from src.paths import NESTED_HINTS, find_repo_root
 
 
 def test_root_from_package():
@@ -18,9 +18,11 @@ def test_root_from_lab_hint():
     assert (root / "config.py").is_file()
 
 
-def test_root_from_viralloom_nest():
-    viralloom = Path(__file__).resolve().parents[6]
-    if viralloom.name.lower() != "viralloom" and (viralloom / "data").is_dir() is False:
-        return
-    root = find_repo_root(viralloom)
-    assert (root / "config.py").is_file()
+def test_root_from_viralloom_nest(tmp_path, monkeypatch):
+    # Build the nest in a temp folder so the test does not depend on where the clone sits.
+    monkeypatch.delenv("BOOTCAMP_ROOT", raising=False)
+    nest = tmp_path / NESTED_HINTS[0]
+    (nest / "dataflow").mkdir(parents=True)
+    (nest / "config.py").write_text("", encoding="utf-8")
+    root = find_repo_root(tmp_path)
+    assert root == nest.resolve()
