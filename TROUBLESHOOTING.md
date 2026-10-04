@@ -224,3 +224,277 @@ right, then View course Q&A, then Ask a new question. Put three things in it:
 
 Never paste your API key. Delete the key line from the output before you post. Udemy's help page says Q&A is not
 available in free course enrollments.
+
+## More setup errors
+
+These entries were added after the first setup lessons; each one says whether its error was caused on our Windows 11 test machine on 2026-10-04 or quoted from the tool's own documentation or source code.
+
+### `git clone` says the folder already exists
+
+Caused on the test machine.
+
+```
+fatal: destination path 'AIAgentsBootcamp' already exists and is not an empty directory.
+```
+
+What it means: you already cloned the repo into this folder, and Git will not clone over a folder that has files in it.
+
+Fix **(tested)**: do not clone again. Go into the folder you have and update it: `cd AIAgentsBootcamp`, then
+`git pull`. It answers `Already up to date.` or brings the newest files.
+
+### `No suitable Python runtime found`
+
+Caused on the test machine.
+
+```
+No suitable Python runtime found
+Pass --list (-0) to see all detected environments on your machine
+or set environment variable PYLAUNCHER_ALLOW_INSTALL to use winget
+or open the Microsoft Store to the requested version.
+```
+
+What it means: you asked the `py` launcher for a Python version that is not installed, for example `py -3.13` on a
+machine with no 3.13.
+
+Fix **(tested)**: run `py --list` to see the versions you have. Install Python 3.13 from python.org (see
+`INSTALL.md`), open a new terminal, and run the command again. If the list shows 3.11 or 3.12, you can use that
+instead (see "I have Python 3.11 or 3.12, not 3.13" above), for example `py -3.11 -m venv .venv`. On the test machine
+the message came from `py -3.12`, the version it does not have; the message names no version, so it reads the same
+for a missing 3.13. After that, `py -3.13 --version` answered `Python 3.13.14`.
+
+### `code` is not recognized
+
+Caused on the test machine; the fix is quoted from the VS Code docs.
+
+In cmd:
+
+```
+'code' is not recognized as an internal or external command,
+operable program or batch file.
+```
+
+In PowerShell:
+
+```
+code : The term 'code' is not recognized as the name of a cmdlet, function, script file, or operable program. Check
+the spelling of the name, or if a path was included, verify that the path is correct and try again.
+```
+
+What it means: the terminal cannot find VS Code on its PATH. Most often the terminal was open before VS Code was
+installed, and a terminal reads PATH only when it starts.
+
+Fix **(tested)**: close the terminal, open a new one, and run `code .` again. The VS Code docs
+(https://code.visualstudio.com/docs/setup/windows) say: "Setup adds Visual Studio Code to your %PATH% environment
+variable. Restart your console after installation". If it is still not found, the docs say to reinstall VS Code; the
+folder that must be on PATH is `AppData\Local\Programs\Microsoft VS Code\bin` in your user folder. You can also skip
+the command: open VS Code and use File, Open Folder. To confirm, `code --version` prints a version number.
+
+### I ran `pip install` and the labs still say `No module named ...`
+
+Caused on the test machine.
+
+There is no error at install time. The sign is a prompt with no `(.venv)` at the start, and `pip --version` naming
+the machine's Python instead of the venv. On the test machine it printed:
+
+```
+pip 24.0 from C:\Users\Admin\AppData\Local\Programs\Python\Python311\Lib\site-packages\pip (python 3.11)
+```
+
+Your path will show your own user folder. The error comes later, when a lab runs; it is the one in
+"`No module named 'langgraph'`" above, with the name of whichever package the lab needs first.
+
+What it means: the venv was not active, so `pip` was the machine's own pip and the packages went to the machine's
+Python, not to the course venv.
+
+Fix **(tested)**: activate the venv (`.venv\Scripts\activate`), check the prompt starts with `(.venv)`, then run
+`pip install -r requirements.txt` again. To confirm, run `python -m pip --version` and read the path: inside the venv
+it ends in `AIAgentsBootcamp\.venv\Lib\site-packages\pip`.
+
+### The setup check says `NOT GREEN` and `No module named pytest`
+
+Caused on the test machine.
+
+```
+pytest_exit 1
+NOT GREEN: read the FAILED or ERROR lines above, look them up in TROUBLESHOOTING.md, fix, and run this check again.
+```
+
+and, on the error stream, a line ending in
+
+```
+python.exe: No module named pytest
+```
+
+The `venv` line the check prints above them names the machine's Python, not your `AIAgentsBootcamp\.venv` folder.
+
+What it means: you ran `labs\00_03_setup_check.py` with the machine's Python, not the course venv, so pytest and the
+course packages are not there. It is the same cause as "`No module named 'langgraph'`" above.
+
+Fix **(tested)**: activate the venv (`.venv\Scripts\activate`) or run the venv's Python directly:
+`.venv\Scripts\python labs\00_03_setup_check.py`. To confirm, the `venv` line ends in `.venv` and the check no
+longer says `NOT GREEN`.
+
+### `pip install` fails with a hint about Windows Long Path support
+
+Quoted from pip's source code (pip 26.1.2, `src/pip/_internal/commands/install.py`,
+https://raw.githubusercontent.com/pypa/pip/26.1.2/src/pip/_internal/commands/install.py) and Microsoft's docs; not
+caused on the test machine, which already had long paths on.
+
+pip builds the message from these two fixed pieces:
+
+```
+Could not install packages due to an OSError: <the Windows error and the long file path>
+HINT: This error might have occurred since this system does not have Windows Long Path support enabled. You can find information on how to enable this at https://pip.pypa.io/warnings/enable-long-paths
+```
+
+The part after `OSError: ` is the Windows error and the file path, so it differs per machine. Look for the `HINT:`
+line; pip adds it when the full path is longer than 260 characters.
+
+What it means: the repo sits in a deep folder, so a file the install writes gets a full path longer than 260
+characters, and Windows refuses it.
+
+Fix **(not tested here)**: move or clone the repo into a short folder near the drive root, for example
+`C:\code\AIAgentsBootcamp`, make the venv there and install again. Or turn long paths on. Microsoft's page
+(https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation) gives this command for a
+PowerShell run as Administrator, and says "a reboot might be required":
+
+```
+New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
+```
+
+To confirm, `pip install -r requirements.txt` finishes with no `HINT:` line.
+
+### `ollama pull` says `file does not exist`
+
+Caused on the test machine.
+
+```
+pulling manifest
+Error: pull model manifest: file does not exist
+```
+
+What it means: Ollama has no model with that exact name and tag. On the test machine `qwen3:9b` (no such size) and
+`qwen3-8b` (a dash where the colon goes) both gave this.
+
+Fix **(tested)**: copy the exact tag: `ollama pull qwen3:8b`, with a colon. https://ollama.com/library/qwen3/tags
+lists every tag. To confirm, `ollama list` shows the model.
+
+### `ollama serve` says the address is already in use
+
+Caused on the test machine, on a spare port.
+
+```
+Error: listen tcp 127.0.0.1:11434: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.
+```
+
+The line above is written with Ollama's default port, 11434, the one you will see. On the test machine the error was
+caused on a spare port, so the captured line named `127.0.0.1:11435`; the 11434 line was not captured.
+
+What it means: Ollama is already running. On Windows the installed app starts it in the background, so a second
+`ollama serve` cannot take the same port.
+
+Fix **(tested)**: nothing to fix, and you do not need `ollama serve`. Use the one that is running. To confirm,
+`ollama list` answers with a `NAME    ID    SIZE    MODIFIED` header.
+
+### `ollama list` says `timed out waiting for server to start`
+
+Caused on the test machine.
+
+```
+Error: timed out waiting for server to start
+```
+
+A few log lines may print above it; the line to look for is the last one.
+
+What it means: the `ollama` command found no Ollama server answering, tried to start one, and gave up waiting. On
+the test machine it was caused by pointing `OLLAMA_HOST` at a port where nothing runs. It is the command line's
+version of "The local model cannot be reached" above.
+
+Fix **(not tested here)**: start Ollama from the Start menu and wait a few seconds, then run `ollama list` again. If
+you set `OLLAMA_HOST` yourself, remove it or set it to `127.0.0.1:11434`, and open a new terminal. If Ollama is not
+installed, see "The local model cannot be reached" above. To confirm, `ollama list` answers with a
+`NAME    ID    SIZE    MODIFIED` header.
+
+### `ollama pull` cannot reach the registry
+
+Caused on the test machine, with a deliberately broken proxy.
+
+```
+pulling manifest
+Error: pull model manifest: Get "https://registry.ollama.ai/v2/library/qwen3/manifests/8b": proxyconnect tcp: dial tcp 127.0.0.1:9: connectex: No connection could be made because the target machine actively refused it.
+```
+
+The line above is written with the course model's tag, `8b`. On the test machine the pull was for `qwen3:0.6b`, so
+the captured line ended in `manifests/0.6b`; the `8b` line was not captured. `127.0.0.1:9` was the broken proxy used
+for the test. Your line will name your own model and your own proxy or network address; the part to look for is
+`Error: pull model manifest: Get "https://registry.ollama.ai/`.
+
+What it means: Ollama could not reach its registry over the internet. A proxy setting is wrong, or a company network,
+VPN or firewall is in the way.
+
+Fix **(tested for a wrong proxy)**: if you set a proxy by mistake, remove it and restart Ollama; the pull then
+reaches the registry. Fix **(not tested here)** for a company network: the Ollama FAQ (https://docs.ollama.com/faq)
+says "Use HTTPS_PROXY to redirect outbound requests through the proxy" and "Avoid setting HTTP_PROXY". Set
+`HTTPS_PROXY` to your company's proxy and restart Ollama, or pull the model on a home network. To confirm, the pull
+shows download progress instead of the error.
+
+### The model needs more memory than the machine has
+
+Quoted from Ollama's source code and FAQ; not caused on the test machine, which has plenty of memory.
+
+The exact line differs by Ollama version. In versions 0.12.0 and 0.20.0 the source
+(https://raw.githubusercontent.com/ollama/ollama/v0.20.0/llm/server.go) builds it from this, with the two `%s` filled
+in by sizes:
+
+```
+model requires more system memory (%s) than is available (%s)
+```
+
+Version 0.35.1 no longer has that sentence. Its source treats a load error as out of memory when it contains words
+such as `out of memory`, `not enough memory`, `insufficient memory`, `failed to allocate` or `allocation failed`, so
+look for those words, or for `memory` and `available` together, in the error. Run `ollama --version` to see which
+version you have.
+
+What it means: the model needs more free memory than your machine has right now.
+
+Fix **(not tested here)**: close other heavy apps and try again. The Ollama FAQ says: "Use the ollama ps command to
+see what models are currently loaded into memory." Unload one with `ollama stop <model>`. If it still does not fit,
+pull a smaller tag (on 2026-10-04 https://ollama.com/library/qwen3/tags lists `qwen3:4b` at 2.5GB against
+`qwen3:8b` at 5.2GB) and set it in `.env`, or use a cloud key. To confirm, `ollama ps` lists the model after a lab
+calls it.
+
+### VS Code's Run button gives `No module named ...`
+
+Quoted from the VS Code docs; it is a screen, so it was not captured.
+
+The error is the one in "`No module named 'langgraph'`" above, while the same lab works in a terminal with `(.venv)`
+active. The Status Bar at the bottom of VS Code shows a Python that is not `.venv`.
+
+What it means: VS Code picked the machine's Python and not the course venv.
+
+Fix **(not tested here)**: open the `AIAgentsBootcamp` folder itself with File, Open Folder, not a single file and
+not the folder above it. Then, as the docs (https://code.visualstudio.com/docs/python/environments) put it: "Status
+Bar: select the Python version shown at the bottom of the window", or "Command Palette: run Python: Select
+Interpreter and choose from the list". Pick the entry that shows `.venv`. To confirm, the Status Bar shows `.venv`.
+
+### A notebook says `Running cells with '...' requires the ipykernel package.`
+
+Quoted from the VS Code Jupyter extension's source code and docs; it is a screen, so it was not captured.
+
+The extension's source
+(https://raw.githubusercontent.com/microsoft/vscode-jupyter/main/src/platform/common/utils/localize.ts) builds the
+prompt from this, with `{0}` filled in by the Python environment's name and `{1}` by the package name:
+
+```
+Running cells with '{0}' requires the {1} package.
+```
+
+What it means: the notebook's kernel is a Python that has no `ipykernel`, the package a notebook needs to run a
+cell. The course install puts `ipykernel` into `.venv`, so this almost always means the notebook is on the wrong
+Python.
+
+Fix **(not tested here)**: look at the name inside the quotes. If it is not `.venv`, do not click Install: click the
+kernel name at the top right of the notebook, choose Select Another Kernel, then Python Environments, then `.venv`.
+If the name is `.venv`, the install did not finish: activate the venv and run `pip install -r requirements.txt`
+again. The docs (https://code.visualstudio.com/docs/datascience/jupyter-kernel-management) say: "Only the IPyKernel
+package is required to launch a Python process as a kernel". To confirm, a cell runs and prints its output.
