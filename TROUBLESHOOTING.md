@@ -1,7 +1,9 @@
 # Troubleshooting
 
 Every error below was really produced on a Windows 11 machine while setting up this repo from a fresh clone on
-2026-10-04. Each entry gives the error as it was printed, what it means, and the fix. A fix marked **(tested)** was run
+2026-10-04. Most of them were caused on purpose so we could capture them for this page (a blocked script policy, a
+PATH with no Python or Git, a venv with no course packages, a fake key); the failing tests came up on their own.
+Each entry gives the error as it was printed, what it means, and the fix. A fix marked **(tested)** was run
 and worked; a fix marked **(not tested here)** comes from the official docs or the error itself and was not run on that
 machine.
 
