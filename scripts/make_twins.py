@@ -132,7 +132,8 @@ def convert_file(py_path: Path) -> Path | None:
     if out.is_file() and out.read_text(encoding="utf-8") == payload:
         print("unchanged", out.relative_to(ROOT).as_posix())
         return out
-    out.write_text(payload, encoding="utf-8")
+    # LF on every OS, as git stores it, so a rebuilt twin on Windows is not a 59-line change
+    out.write_text(payload, encoding="utf-8", newline="\n")
     print("wrote", out.relative_to(ROOT).as_posix(), "cells", len(cells))
     return out
 
