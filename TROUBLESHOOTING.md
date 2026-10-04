@@ -41,7 +41,7 @@ Check the spelling of the name, or if a path was included, verify that the path 
 
 What it means: Windows cannot find Python on your PATH, usually because it is not installed.
 
-Fix **(not tested here)**: install Python 3.11. The Python docs recommend the Python install manager from
+Fix **(not tested here)**: install Python 3.13 with the standalone installer from python.org (see `INSTALL.md`). The Python docs recommend the Python install manager from
 python.org/downloads or the Microsoft Store. Their troubleshooting list for this error also says to check
 "Manage app execution aliases" for "Python (default)" and that your PATH has
 `%UserProfile%\AppData\Local\Microsoft\WindowsApps`. Open a new terminal afterwards.
@@ -71,11 +71,11 @@ Fix **(tested)**: activate the venv (`.venv\Scripts\activate`, the prompt then s
 Python directly: `.venv\Scripts\python labs\00_03_setup_check.py`. In VS Code, pick the `.venv` interpreter with
 `Python: Select Interpreter`. If you have not installed yet, run `pip install -r requirements.txt` inside the venv.
 
-### I have Python 3.13, not 3.11
+### I have Python 3.11 or 3.12, not 3.13
 
-There is no error. On 2026-10-04 a Python 3.13.14 venv installed `requirements.txt` with exit 0 and the full suite
-passed: 281 passed, 6 skipped, 1 xfailed. The course is built on 3.11, so if a lab behaves differently from the
-lecture, try 3.11 first.
+There is no error, and you do not need to reinstall. The course recommends 3.13 because python.org still ships its
+installers; 3.11 and 3.12 also work. On 2026-10-04 the full suite passed on a fresh clone with Python 3.11.9 (281
+passed, 6 skipped, 1 xfailed) and with Python 3.13.14 (the same count). 3.12 was not run here.
 
 ## Running the tests
 
