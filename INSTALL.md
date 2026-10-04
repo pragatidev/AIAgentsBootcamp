@@ -61,8 +61,9 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 Or use cmd, where `.venv\Scripts\activate` runs `activate.bat` and needs no policy change.
 
-The install is big and slow. On our Windows test machine `pip install -r requirements.txt` took 278.8 seconds (about
-4.6 minutes) with most packages already in pip's cache, and `.venv` came to 1.9 GB. A first install downloads
+The install is big and slow. On our Windows test machine, with most packages already in pip's cache,
+`pip install -r requirements.txt` took 247.2 seconds (about 4.1 minutes) on Python 3.13 and `.venv` came to 1.82 GB;
+on Python 3.11 it took 278.8 seconds (about 4.6 minutes) and came to 1.9 GB. A first install downloads
 everything, so expect it to take longer. It includes PyTorch (the CPU build, a 118 MiB wheel), which you do not
 install by name: it arrives because `sentence-transformers` needs it.
 
