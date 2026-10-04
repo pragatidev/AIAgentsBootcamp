@@ -10,7 +10,7 @@ from dataflow.llm import ping_hosted
 import config
 
 # %%
-print("model_from_config", config.OPENAI_CHAT_MODEL or "(empty until record time)")
+print("model_from_config", config.OPENAI_CHAT_MODEL or "(empty: no OPENAI_CHAT_MODEL set)")
 out = ping_hosted("ping")
 print("skipped", out.get("skipped"))
 print("reason", out.get("reason"))

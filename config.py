@@ -1,6 +1,6 @@
 """The only place a model id lives.
 
-Verify ids at record time. See docs/CURRENCY.md.
+Model ids change. Copy a live id from the provider's page. See docs/CURRENCY.md.
 Never put a model name in a lecture title.
 A missing key is not an error. Pytest stays green.
 """
@@ -32,7 +32,7 @@ def _load_dotenv() -> None:
 
 _load_dotenv()
 
-# Local default. Free. No key. Verify the tag at record time.
+# Local default. No key and no per-token price; it runs on your own machine.
 # qwen3:8b is the student chat model: tool calling works on a 16 GB laptop.
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 CHAT_MODEL = os.environ.get("OLLAMA_CHAT_MODEL", "qwen3:8b")
@@ -42,7 +42,7 @@ CHAT_MODEL = os.environ.get("OLLAMA_CHAT_MODEL", "qwen3:8b")
 NUM_PREDICT = int(os.environ.get("OLLAMA_NUM_PREDICT", "4096"))
 NO_TOOLS_MODEL = os.environ.get("OLLAMA_NO_TOOLS_MODEL", "llama3.2:3b")
 
-# Cloud ids stay empty until a live key is set. Verify at record time. Do not guess.
+# Cloud ids stay empty until you set a key. Copy the exact id from the provider's page. Do not guess.
 OPENAI_CHAT_MODEL = os.environ.get("OPENAI_CHAT_MODEL", "")
 ANTHROPIC_CHAT_MODEL = os.environ.get("ANTHROPIC_CHAT_MODEL", "")
 
