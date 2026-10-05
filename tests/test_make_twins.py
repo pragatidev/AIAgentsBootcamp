@@ -35,6 +35,24 @@ def test_rebuilt_twin_shows_no_change_with_autocrlf_false(tmp_path):
     assert git("status", "--porcelain", cwd=clone) == ""
 
 
+@pytest.mark.skipif(
+    shutil.which("git") is None or not (ROOT / ".git").exists(),
+    reason="needs git and a git clone of this repo",
+)
+def test_rebuilt_twin_shows_no_change_with_autocrlf_true(tmp_path):
+    # core.autocrlf=true is Git for Windows' default. Without the .gitattributes rule it checks the
+    # twin out with CRLF; the rebuilt twin is LF, a different size, and git status lists it as " M"
+    # even though git diff shows no changed line.
+    clone = tmp_path / "clone"
+    git("clone", "-q", "-c", "core.autocrlf=true", str(ROOT), str(clone), cwd=tmp_path)
+    (clone / TWIN).unlink()
+    subprocess.run(
+        [sys.executable, "scripts/make_twins.py"], cwd=clone, capture_output=True, check=True
+    )
+    assert (clone / TWIN).is_file()
+    assert git("status", "--porcelain", cwd=clone) == ""
+
+
 def test_every_twin_is_a_valid_notebook_with_cell_ids():
     # nbformat 4.5 notebooks need an id on every cell; without one nbformat warns that it
     # "will become a hard error in future nbformat versions".

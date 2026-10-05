@@ -1,0 +1,4 @@
+# Notebook twins are written by scripts/make_twins.py with LF on every OS. Checking them out with LF
+# under any core.autocrlf setting keeps a rebuilt twin byte for byte the same as the checked-out one,
+# so git status shows nothing after a rebuild on Windows too.
+*.ipynb text eol=lf
