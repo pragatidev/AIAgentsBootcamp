@@ -1,6 +1,7 @@
 """Clone contract. No API key."""
 
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import config
 from dataflow.agent.loop import run_loop
@@ -21,7 +22,8 @@ def test_wiki_and_orders_exist():
 
 def test_config_has_local_default_and_import_does_not_need_a_key():
     assert config.CHAT_MODEL
-    assert "localhost" in config.OLLAMA_BASE_URL
+    # Any name for this machine: http://localhost:11434 and http://127.0.0.1:11434 reach the same Ollama
+    assert urlsplit(config.OLLAMA_BASE_URL).hostname in ("localhost", "127.0.0.1", "::1")
     assert hasattr(config, "has_live_key")
 
 

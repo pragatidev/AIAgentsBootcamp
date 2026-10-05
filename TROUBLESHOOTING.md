@@ -633,6 +633,9 @@ What it means: this test checks that `OLLAMA_BASE_URL` contains the word `localh
 Fix **(tested)**: write the address with `localhost`, in `.env` or in your terminal, for example
 `OLLAMA_BASE_URL=http://localhost:11434`, and run pytest again.
 
+Since 2026-10-05 the test accepts `127.0.0.1` too, so a clone made after that does not stop here; in an older clone,
+`git pull` brings the change.
+
 ### pytest stops on 5 errors during collection
 
 Caused on the test machine on 2026-10-05, from the folder above the repo, with Ollama not running.
