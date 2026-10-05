@@ -122,10 +122,11 @@ def test_review_template_has_five_rows():
     assert "one miss" in lower
 
 
-def test_readme_is_under_sixty_lines_and_names_the_four_files():
+def test_readme_is_under_seventy_five_lines_and_names_the_four_files():
+    # 60 until 2026-10-05, when the Layout block grew one line for each top-level folder the Explorer shows
     text = (ROOT / "README.md").read_text(encoding="utf-8")
     lines = text.splitlines()
-    assert len(lines) < 60, len(lines)
+    assert len(lines) < 75, len(lines)
     lower = text.lower()
     for word in FOUR_FILES:
         assert word in lower, word

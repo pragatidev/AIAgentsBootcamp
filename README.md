@@ -44,6 +44,19 @@ deploy/smoke.py     clone smoke
 labs/               teaching scripts plus .ipynb twins
 tests/              green without a key
 config.py           the only place a model id lives
+src/                the model door (llm.py), the repo finder (paths.py), helpers the Section 2 labs use
+harness/            the DataFlow harness: guides, sensors, permissions, and recorded runs
+scripts/            repo tools, such as make_twins.py, which rebuilds the notebook twins
+evals/              one line that points to eval/harness.py
+exercises/          a starter for one coding exercise (an unknown order id)
+solutions/          the solution to that exercise
+prompts/            the DataFlow system prompt
+business/           a DataFlow offer and price, and TalentFlow versus a recruiting ATS
+career/             PM pages (spec, metrics, cost model) and a QA test plan for DataFlow
+docs/               CURRENCY.md: check that a model id is live before you use it
+ops/                tracing/runs/, where the DataFlow service writes its request log
+.github/            a workflow that runs the eval gate on every pull request
+conftest.py         keeps pytest out of the lab scripts
 ```
 
 ## RAG (Part 8)
