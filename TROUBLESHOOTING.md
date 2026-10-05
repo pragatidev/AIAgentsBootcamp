@@ -498,3 +498,137 @@ kernel name at the top right of the notebook, choose Select Another Kernel, then
 If the name is `.venv`, the install did not finish: activate the venv and run `pip install -r requirements.txt`
 again. The docs (https://code.visualstudio.com/docs/datascience/jupyter-kernel-management) say: "Only the IPyKernel
 package is required to launch a Python process as a kernel". To confirm, a cell runs and prints its output.
+
+### A raw lab ends in `openai.APIConnectionError: Connection error.`
+
+Caused on the test machine on 2026-10-05, with `OLLAMA_BASE_URL` pointed at a port where nothing runs.
+
+```
+openai.APIConnectionError: Connection error.
+```
+
+That is the last line. `labs/01_06_first_raw_api_call.py`, `labs/01_08_structured_output_raw.py` and
+`labs/01_10_raw_tool_call.py` call Ollama through the OpenAI Python SDK, which tries again before it gives up, so the
+terminal sat quiet for about 14 seconds and then printed a traceback of about 90 lines. Higher up in it, twice, is the
+same Windows sentence as in "The local model cannot be reached" above:
+
+```
+[WinError 10061] No connection could be made because the target machine actively refused it
+```
+
+`labs/01_04_tokens_and_window.py` asks Ollama directly. It prints its first four lines and then stops with:
+
+```
+urllib.error.URLError: <urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>
+```
+
+What it means: nothing is answering at `OLLAMA_BASE_URL`, so Ollama is not installed or not running. It is the cause
+of "The local model cannot be reached" above, printed by a different library.
+
+Fix **(not tested here)**: start Ollama as that entry says, then run the lab again. Fix **(tested)**: on the test
+machine, with an Ollama server answering at `OLLAMA_BASE_URL`, the same four labs ran to the end. To confirm,
+`ollama list` answers with a `NAME    ID    SIZE    MODIFIED` header.
+
+### A raw lab ends in `openai.NotFoundError: Error code: 404`
+
+Caused on the test machine on 2026-10-05, with Ollama running and `OLLAMA_CHAT_MODEL` set to `qwen3:4b`, a tag that
+was not pulled there.
+
+```
+openai.NotFoundError: Error code: 404 - {'error': {'message': "model 'qwen3:4b' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+```
+
+The three raw labs print this within a few seconds. `labs/01_04_tokens_and_window.py` prints its first four lines and
+then this, which does not name the model:
+
+```
+urllib.error.HTTPError: HTTP Error 404: Not Found
+```
+
+What it means: Ollama is running but does not have the model `config.py` asked for. It is the cause of "The model is
+not pulled" above, printed by a different library. The model asked for is the one in `OLLAMA_CHAT_MODEL` in `.env`,
+or `qwen3:8b` when that line is not set.
+
+Fix **(tested for a wrong name)**: compare `OLLAMA_CHAT_MODEL` in `.env` with what `ollama list` shows; with it back on
+a model that was pulled, the labs ran. Fix **(not tested here)** for a model you never pulled: `ollama pull` and the
+model's name, for example `ollama pull qwen3:8b`.
+
+### A hosted call says the account has no credit
+
+Caused on the test machine on 2026-10-05 with real keys from accounts that have no API credit, running
+`labs/00_04_keys_and_config.py`.
+
+OpenAI, with `OPENAI_CHAT_MODEL=gpt-6-luna`:
+
+```
+langchain_openai.chat_models.base.OpenAIRateLimitError: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+```
+
+Anthropic, with `ANTHROPIC_CHAT_MODEL=claude-haiku-4-5-20251001`:
+
+```
+langchain_anthropic.chat_models.AnthropicInvalidRequestError: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CfiSBaBG2aFUAktkkiJZX'}
+```
+
+Your `request_id` will be different. The lab prints its local lines first (`local_model` and `local_reply` when
+Ollama is running), then the traceback, and never prints `hosted_model`. OpenAI's error says `RateLimitError` and 429,
+but its message and its `insufficient_quota` type are about credit, not about sending too fast.
+
+What it means: the key is real and the provider read it, but the account has no API credit to spend.
+
+Fix **(not tested here, no credit was added)**: add credit on the provider's billing page. OpenAI's error gives the
+address; Anthropic's names Plans & Billing. Fix **(tested)** to go on at no cost: empty the key line in `.env` (and
+remove the key from your terminal if you set it there). The lab then ends with `hosted skipped: no cloud key set` and
+the labs run on the local model.
+
+### A hosted call says the model does not exist
+
+Caused on the test machine on 2026-10-05 with a real OpenAI key and `OPENAI_CHAT_MODEL=gpt6-luna`, the id
+`gpt-6-luna` with its first dash dropped.
+
+```
+langchain_openai.chat_models.base.OpenAIModelNotFoundError: Error code: 404 - {'error': {'message': 'The model `gpt6-luna` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'param': None, 'code': 'model_not_found'}}
+```
+
+OpenAI checked the model id before the credit: the same key with no credit gave this 404, not the 429 in the entry
+above. Anthropic checked the credit first: with `ANTHROPIC_CHAT_MODEL=claude-haiku-4-5-2025101` (one digit dropped)
+the same kind of key gave the credit error above, so Anthropic's wrong-model message was not captured.
+
+What it means: the model id in `.env` is mistyped, retired, or not open to your account.
+
+Fix **(not tested here)**: copy the id exactly as the provider's models page writes it into `OPENAI_CHAT_MODEL` (or
+`ANTHROPIC_CHAT_MODEL`), save `.env`, and run the lab again.
+
+### After `make_twins.py`, `git status` lists the twin as changed
+
+Caused on the test machine on 2026-10-05, in a clone made before the fix below.
+
+```
+ M labs/00_05_notebook_twin_demo.ipynb
+```
+
+`git diff` on the file shows no changed line, only
+`warning: in the working copy of 'labs/00_05_notebook_twin_demo.ipynb', LF will be replaced by CRLF the next time Git touches it`.
+
+What it means: the test machine's Git for Windows has the system setting `core.autocrlf=true`, so Git checked the
+twin out with CRLF line endings. `make_twins.py` writes LF, so the rebuilt twin had a different size from the one Git
+checked out and `git status` listed it, though its content is the same. Since 2026-10-05 the repo's `.gitattributes`
+checks every `.ipynb` out with LF, and a clone made after that prints nothing here.
+
+Fix **(tested)**: run `git pull`, then `git checkout -- labs/00_05_notebook_twin_demo.ipynb`, which checks the twin
+out again with LF. After that, delete it, run `python scripts/make_twins.py`, and `git status --short` prints nothing.
+
+### `test_config_has_local_default_and_import_does_not_need_a_key` fails
+
+Caused on the test machine on 2026-10-05, with `OLLAMA_BASE_URL=http://127.0.0.1:11435`.
+
+```
+FAILED tests/test_smoke.py::test_config_has_local_default_and_import_does_not_need_a_key
+E       AssertionError: assert 'localhost' in 'http://127.0.0.1:11435'
+```
+
+What it means: this test checks that `OLLAMA_BASE_URL` contains the word `localhost`. An address written as
+`127.0.0.1` reaches the same machine but fails the check. Your setup is fine.
+
+Fix **(tested)**: write the address with `localhost`, in `.env` or in your terminal, for example
+`OLLAMA_BASE_URL=http://localhost:11434`, and run pytest again.
