@@ -632,3 +632,20 @@ What it means: this test checks that `OLLAMA_BASE_URL` contains the word `localh
 
 Fix **(tested)**: write the address with `localhost`, in `.env` or in your terminal, for example
 `OLLAMA_BASE_URL=http://localhost:11434`, and run pytest again.
+
+### pytest stops on 5 errors during collection
+
+Caused on the test machine on 2026-10-05, from the folder above the repo, with Ollama not running.
+
+```
+ERROR AIAgentsBootcamp/labs/19_dataflow/starter/check/test_desk.py
+ERROR AIAgentsBootcamp/labs/19_research/starter/check/test_agent.py
+ERROR AIAgentsBootcamp/labs/19_talentflow/solution/check/test_pipeline.py
+ERROR AIAgentsBootcamp/labs/19_talentflow/starter/check/test_pipeline.py
+ERROR AIAgentsBootcamp/tests/test_foundation_llm.py - FileNotFoundError: Cann...
+!!!!!!!!!!!!!!!!!!! Interrupted: 5 errors during collection !!!!!!!!!!!!!!!!!!!
+```
+
+What it means: the same mistake as pytest stops on 6 errors during collection. Since 2026-10-05 the repo's `conftest.py` keeps pytest out of the scripts in `labs/`, so the `06_01_04` line is gone, no lab calls your model, and the run stops in seconds. The `E   FileNotFoundError: Cannot find the AI Agents Bootcamp repo` line is still among the five.
+
+Fix **(tested)**: `cd AIAgentsBootcamp` and run `pytest -q` there.
