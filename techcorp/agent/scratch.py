@@ -78,10 +78,12 @@ def _call_tool(fn: Callable, args: dict) -> str:
     try:
         out = fn(**args) if args else fn()
     except TypeError:
-        if "user_id" in args:
-            out = fn(args["user_id"])
-        else:
-            out = fn()
+        try:
+            out = fn(args["user_id"]) if "user_id" in args else fn()
+        except TypeError as exc:
+            return json.dumps(
+                {"ok": False, "reason": "bad arguments", "arguments": args, "error": str(exc)}
+            )
     return out if isinstance(out, str) else json.dumps(out)
 
 

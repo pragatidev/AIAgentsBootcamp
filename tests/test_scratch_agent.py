@@ -153,6 +153,35 @@ def test_unknown_tool_becomes_a_result():
     assert out["stop"] == "final"
 
 
+def test_bad_arguments_become_a_result():
+    # The model names the right tool under the wrong key. The loop hands that back instead of a traceback.
+    script = [
+        {
+            "content": "",
+            "tool_calls": [
+                {
+                    "id": "b1",
+                    "name": "reset_password",
+                    "arguments": {"employee_id": "E-4101"},
+                    "arguments_json": '{"employee_id": "E-4101"}',
+                }
+            ],
+        },
+        {"content": "I need the user id to reset it.", "tool_calls": []},
+    ]
+
+    out = run_loop(
+        lambda _messages: script.pop(0),
+        {"reset_password": reset_password},
+        "TC-1001 user E-4101: please reset my laptop password.",
+    )
+    tool_rows = [row for row in out["rounds"] if row["kind"] == "tool"]
+    assert len(tool_rows) == 1
+    assert '"bad arguments"' in tool_rows[0]["result"]
+    assert '"employee_id"' in tool_rows[0]["result"]
+    assert out["stop"] == "final"
+
+
 def test_class_runs_the_same_loop():
     def scripted():
         script = [
