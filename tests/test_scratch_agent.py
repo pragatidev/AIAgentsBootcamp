@@ -85,6 +85,43 @@ def test_gate_refuses_write():
     assert tool_rows == []
 
 
+def test_gate_yes_runs_write():
+    # Lab 3.6's restore: the same gate, and the person says yes.
+    script = [
+        {
+            "content": "",
+            "tool_calls": [
+                {
+                    "id": "r1",
+                    "name": "reset_password",
+                    "arguments": {"user_id": "E-4101"},
+                    "arguments_json": '{"user_id": "E-4101"}',
+                }
+            ],
+        },
+        {"content": "Reset done. Your temporary password is Tmp-4101.", "tool_calls": []},
+    ]
+    asked = []
+
+    def approve(name, args):
+        asked.append((name, args))
+        return " Yes "
+
+    out = run_loop(
+        lambda _messages: script.pop(0),
+        {"reset_password": reset_password},
+        "reset the password for E-4101",
+        cap=8,
+        gate_writes=True,
+        approve=approve,
+    )
+    assert asked == [("reset_password", {"user_id": "E-4101"})]
+    tool_rows = [row for row in out["rounds"] if row["kind"] == "tool"]
+    assert [row["name"] for row in tool_rows] == ["reset_password"]
+    assert '"reset": true' in tool_rows[0]["result"]
+    assert out["stop"] == "final"
+
+
 def test_unknown_tool_becomes_a_result():
     # Lab 3.4's break: the model is told about lookup_user, the dict the loop runs is not.
     script = [

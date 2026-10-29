@@ -155,7 +155,7 @@ def run_loop(
             if gate_writes and name in WRITE_TOOLS:
                 decision = approve
                 if callable(decision):
-                    decision = decision()
+                    decision = decision(name, args)
                 decision_text = str(decision).strip().lower()
                 if decision_text != "yes":
                     rounds.append(
