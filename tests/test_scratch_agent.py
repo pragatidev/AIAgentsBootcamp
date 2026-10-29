@@ -85,6 +85,37 @@ def test_gate_refuses_write():
     assert tool_rows == []
 
 
+def test_unknown_tool_becomes_a_result():
+    # Lab 3.4's break: the model is told about lookup_user, the dict the loop runs is not.
+    script = [
+        {
+            "content": "",
+            "tool_calls": [
+                {
+                    "id": "l1",
+                    "name": "lookup_user",
+                    "arguments": {"user_id": "E-4102"},
+                    "arguments_json": '{"user_id": "E-4102"}',
+                }
+            ],
+        },
+        {"content": "I could not look that account up.", "tool_calls": []},
+    ]
+    seen = []
+
+    def call(messages):
+        seen.append(list(messages))
+        return script.pop(0)
+
+    out = run_loop(call, {"reset_password": reset_password}, "TC-1002 user E-4102: what is on this account?")
+    tool_rows = [row for row in out["rounds"] if row["kind"] == "tool"]
+    assert len(tool_rows) == 1
+    assert '"unknown tool"' in tool_rows[0]["result"]
+    assert '"lookup_user"' in tool_rows[0]["result"]
+    assert seen[1][-1] == {"role": "tool", "tool_call_id": "l1", "content": tool_rows[0]["result"]}
+    assert out["stop"] == "final"
+
+
 def test_class_runs_the_same_loop():
     def scripted():
         script = [

@@ -1,8 +1,9 @@
 # %% [markdown]
 # Give it a second tool and watch it choose.
 #
-# lookup_user plus reset_password. TC-1001 should lookup then reset.
-# A VPN question should only lookup. Print the choices.
+# Two tools on offer. Watch which one the model picks for each ticket.
+# lookup_user reads a record, reset_password changes one. Then a break:
+# the model is told about a tool the loop cannot run. Then the restore.
 
 # %%
 from pathlib import Path
@@ -13,10 +14,10 @@ root = Path(__file__).resolve().parents[1] if "__file__" in globals() else Path.
 sys.path.insert(0, str(root))
 
 from techcorp.agent.scratch import (
-    ScratchAgent,
     lookup_user,
     openai_caller,
     reset_password,
+    run_loop,
     tool_schema,
 )
 
@@ -43,15 +44,15 @@ VPN = (
 )
 
 
-def print_run(label: str, ticket: str) -> None:
-    agent = ScratchAgent(caller, tools, cap=8)
-    out = agent.run(ticket)
+def print_run(label: str, ticket: str, tools: dict) -> None:
+    out = run_loop(caller, tools, ticket, cap=8)
     names = [row["name"] for row in out["rounds"] if row["kind"] == "tool"]
     print("ticket", label)
     print("choices", names)
     for row in out["rounds"]:
         if row["kind"] == "tool":
             print("round", row["round"], "tool", row["name"], json.dumps(row["arguments"]))
+            print("result", row["result"])
         elif row["kind"] == "final":
             print("round", row["round"], "final", row["content"])
     print("stop", out["stop"])
@@ -59,7 +60,18 @@ def print_run(label: str, ticket: str) -> None:
 
 
 # %%
-print_run("password_TC-1001", PASSWORD)
+print_run("password_TC-1001", PASSWORD, tools)
 
 # %%
-print_run("vpn_TC-1002", VPN)
+print_run("vpn_TC-1002", VPN, tools)
+
+# %%
+# Break: the model is still told about lookup_user, but the dict the loop
+# runs no longer has it. Nothing crashes: the loop hands the model an
+# "unknown tool" result instead.
+drifted = {"reset_password": reset_password}
+print_run("vpn_TC-1002_drifted", VPN, drifted)
+
+# %%
+# Restore: both names back in the dict, the same VPN ticket again.
+print_run("vpn_TC-1002_restored", VPN, tools)
