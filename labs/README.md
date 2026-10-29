@@ -13,10 +13,10 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 01_08_structured_output_raw.py   Pydantic TicketClass, one failure, one retry
 01_10_raw_tool_call.py           tools list, raw tool_calls, run, blank description
 01_14_swap_the_model.py          same agent code, two model ids, same shape
-02_03_scratch_agent.py           plain loop, cap 8, TC-1001
-02_04_second_tool.py             lookup then reset, VPN only lookup
-02_06_break_the_loop.py          runaway, blank description, write gate
-02_13_loop_as_a_class.py         ScratchAgent.run, pytest
+02_03_scratch_agent.py           the loop typed as a function, CAP 8, TC-1001
+02_04_second_tool.py             two tools, the model's choices, unknown-tool break
+02_06_break_the_loop.py          runaway, blank description, gate you answer; each restored
+02_13_loop_as_a_class.py         ScratchAgent wraps run_loop, two tickets, pytest
 03_02_context_rot.py             constraint at turn 4, needed at turn 30
 03_03_measure_tokens.py          tokens before and after the death
 03_05_map_file.py                FAT and MAP constants, written to disk
@@ -158,7 +158,6 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 19_03_research_capstone.py     empty-source report, citation check, sourced report
 19_04_talentflow_capstone.py   score collision, reducer, N resumes, summary
 01_setup.py          clone, pytest green, no key
-02_read_a_loop.py    the loop before a framework
 03_tokens.py         short vs stuffed prompt
 04_walk_package.py   dataflow folders
 05_call_hosted.py    SKIPPED without a key
