@@ -1,6 +1,6 @@
-"""ScratchAgent. Scripted fixture model. No Ollama."""
+"""run_loop and ScratchAgent. Scripted fixture model. No Ollama."""
 
-from techcorp.agent.scratch import ScratchAgent, lookup_user, reset_password
+from techcorp.agent.scratch import ScratchAgent, lookup_user, reset_password, run_loop
 
 
 def test_stops_on_final_answer():
@@ -22,12 +22,12 @@ def test_stops_on_final_answer():
     def call(_messages):
         return script.pop(0)
 
-    agent = ScratchAgent(
+    out = run_loop(
         call,
         {"lookup_user": lookup_user, "reset_password": reset_password},
+        "TC-1001 user E-4101 forgot the laptop password.",
         cap=8,
     )
-    out = agent.run("TC-1001 user E-4101 forgot the laptop password.")
     assert out["stop"] == "final"
     assert "E-4101" in out["final"]
     names = [row["name"] for row in out["rounds"] if row["kind"] == "tool"]
@@ -51,8 +51,7 @@ def test_cap_stops_runaway():
             ],
         }
 
-    agent = ScratchAgent(call, {"nudge": lambda: "try again"}, cap=3)
-    out = agent.run("keep going")
+    out = run_loop(call, {"nudge": lambda: "try again"}, "keep going", cap=3)
     assert out["stop"] == "cap"
     assert calls["n"] == 3
     assert out["final"] == "desk could not finish"
@@ -72,15 +71,44 @@ def test_gate_refuses_write():
             ],
         }
 
-    agent = ScratchAgent(
+    out = run_loop(
         call,
         {"reset_password": reset_password},
+        "reset the password for E-4101",
         cap=8,
         gate_writes=True,
         approve="no",
     )
-    out = agent.run("reset the password for E-4101")
     assert out["stop"] == "gate"
     assert out["final"] == "write refused"
     tool_rows = [row for row in out["rounds"] if row["kind"] == "tool"]
     assert tool_rows == []
+
+
+def test_class_runs_the_same_loop():
+    def scripted():
+        script = [
+            {
+                "content": "",
+                "tool_calls": [
+                    {
+                        "id": "r1",
+                        "name": "reset_password",
+                        "arguments": {"user_id": "E-4101"},
+                        "arguments_json": '{"user_id": "E-4101"}',
+                    }
+                ],
+            },
+            {"content": "Reset done. Your temporary password is Tmp-4101.", "tool_calls": []},
+        ]
+        return lambda _messages: script.pop(0)
+
+    tools = {"reset_password": reset_password}
+    ticket = "TC-1001 user E-4101: please reset my laptop password."
+    by_function = run_loop(scripted(), tools, ticket, cap=8)
+    agent = ScratchAgent(scripted(), tools, cap=8)
+    by_class = agent.run(ticket)
+    assert by_class["stop"] == by_function["stop"] == "final"
+    assert by_class["final"] == by_function["final"]
+    assert [r["kind"] for r in by_class["rounds"]] == [r["kind"] for r in by_function["rounds"]]
+    assert agent.rounds == by_class["rounds"]

@@ -85,8 +85,120 @@ def _call_tool(fn: Callable, args: dict) -> str:
     return out if isinstance(out, str) else json.dumps(out)
 
 
-class ScratchAgent:
+def run_loop(
+    call_model: Callable[[list], dict],
+    tools: dict[str, Callable],
+    ticket: str,
+    *,
+    cap: int = 8,
+    gate_writes: bool = False,
+    approve: Any = "yes",
+    system: str = SYSTEM,
+) -> dict:
     """Model, tools, loop, stop. Cap is checked before every model call."""
+    rounds: list[dict] = []
+    messages: list[dict] = [
+        {"role": "system", "content": system},
+        {"role": "user", "content": ticket},
+    ]
+    n = 0
+    while True:
+        n += 1
+        if n > cap:
+            rounds.append({"round": n, "kind": "cap", "cap": cap})
+            return {
+                "final": "desk could not finish",
+                "stop": "cap",
+                "cap": cap,
+                "rounds": list(rounds),
+                "messages": messages,
+            }
+        reply = call_model(messages)
+        tool_calls = list(reply.get("tool_calls") or [])
+        content = reply.get("content") or ""
+        if not tool_calls:
+            rounds.append({"round": n, "kind": "final", "content": content})
+            messages.append({"role": "assistant", "content": content})
+            return {
+                "final": content,
+                "stop": "final",
+                "rounds": list(rounds),
+                "messages": messages,
+            }
+        raw = reply.get("raw_tool_calls")
+        if not raw:
+            raw = []
+            for tc in tool_calls:
+                raw.append(
+                    {
+                        "id": tc.get("id"),
+                        "type": "function",
+                        "function": {
+                            "name": tc.get("name"),
+                            "arguments": tc.get("arguments_json")
+                            or json.dumps(tc.get("arguments") or {}),
+                        },
+                    }
+                )
+        messages.append(
+            {
+                "role": "assistant",
+                "content": content,
+                "tool_calls": raw,
+            }
+        )
+        for tc in tool_calls:
+            name = str(tc.get("name") or "")
+            args = tc.get("arguments") or {}
+            if isinstance(args, str):
+                args = json.loads(args) if args else {}
+            if gate_writes and name in WRITE_TOOLS:
+                decision = approve
+                if callable(decision):
+                    decision = decision()
+                decision_text = str(decision).strip().lower()
+                if decision_text != "yes":
+                    rounds.append(
+                        {
+                            "round": n,
+                            "kind": "gate",
+                            "tool": name,
+                            "decision": decision_text,
+                        }
+                    )
+                    return {
+                        "final": "write refused",
+                        "stop": "gate",
+                        "rounds": list(rounds),
+                        "messages": messages,
+                    }
+            fn = tools.get(name)
+            if fn is None:
+                result = json.dumps(
+                    {"ok": False, "reason": "unknown tool", "name": name}
+                )
+            else:
+                result = _call_tool(fn, args)
+            rounds.append(
+                {
+                    "round": n,
+                    "kind": "tool",
+                    "name": name,
+                    "arguments": args,
+                    "result": result,
+                }
+            )
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tc.get("id"),
+                    "content": str(result),
+                }
+            )
+
+
+class ScratchAgent:
+    """run_loop, built once. The model, tools, cap and gate are settings; run takes a ticket."""
 
     def __init__(
         self,
@@ -107,107 +219,17 @@ class ScratchAgent:
         self.rounds: list[dict] = []
 
     def run(self, ticket: str) -> dict:
-        self.rounds = []
-        messages: list[dict] = [
-            {"role": "system", "content": self.system},
-            {"role": "user", "content": ticket},
-        ]
-        n = 0
-        while True:
-            n += 1
-            if n > self.cap:
-                self.rounds.append({"round": n, "kind": "cap", "cap": self.cap})
-                return {
-                    "final": "desk could not finish",
-                    "stop": "cap",
-                    "cap": self.cap,
-                    "rounds": list(self.rounds),
-                    "messages": messages,
-                }
-            reply = self.call_model(messages)
-            tool_calls = list(reply.get("tool_calls") or [])
-            content = reply.get("content") or ""
-            if not tool_calls:
-                self.rounds.append(
-                    {"round": n, "kind": "final", "content": content}
-                )
-                messages.append({"role": "assistant", "content": content})
-                return {
-                    "final": content,
-                    "stop": "final",
-                    "rounds": list(self.rounds),
-                    "messages": messages,
-                }
-            raw = reply.get("raw_tool_calls")
-            if not raw:
-                raw = []
-                for tc in tool_calls:
-                    raw.append(
-                        {
-                            "id": tc.get("id"),
-                            "type": "function",
-                            "function": {
-                                "name": tc.get("name"),
-                                "arguments": tc.get("arguments_json")
-                                or json.dumps(tc.get("arguments") or {}),
-                            },
-                        }
-                    )
-            messages.append(
-                {
-                    "role": "assistant",
-                    "content": content,
-                    "tool_calls": raw,
-                }
-            )
-            for tc in tool_calls:
-                name = str(tc.get("name") or "")
-                args = tc.get("arguments") or {}
-                if isinstance(args, str):
-                    args = json.loads(args) if args else {}
-                if self.gate_writes and name in WRITE_TOOLS:
-                    decision = self.approve
-                    if callable(decision):
-                        decision = decision()
-                    decision_text = str(decision).strip().lower()
-                    if decision_text != "yes":
-                        self.rounds.append(
-                            {
-                                "round": n,
-                                "kind": "gate",
-                                "tool": name,
-                                "decision": decision_text,
-                            }
-                        )
-                        return {
-                            "final": "write refused",
-                            "stop": "gate",
-                            "rounds": list(self.rounds),
-                            "messages": messages,
-                        }
-                fn = self.tools.get(name)
-                if fn is None:
-                    result = json.dumps(
-                        {"ok": False, "reason": "unknown tool", "name": name}
-                    )
-                else:
-                    result = _call_tool(fn, args)
-                self.rounds.append(
-                    {
-                        "round": n,
-                        "kind": "tool",
-                        "name": name,
-                        "arguments": args,
-                        "result": result,
-                    }
-                )
-                messages.append(
-                    {
-                        "role": "tool",
-                        "tool_call_id": tc.get("id"),
-                        "content": str(result),
-                    }
-                )
+        out = run_loop(
+            self.call_model,
+            self.tools,
+            ticket,
+            cap=self.cap,
+            gate_writes=self.gate_writes,
+            approve=self.approve,
+            system=self.system,
+        )
+        self.rounds = out["rounds"]
+        return out
 
 
 def openai_caller(tools_schema: list[dict], model_id: str | None = None):
