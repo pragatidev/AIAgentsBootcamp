@@ -145,7 +145,7 @@ hosted call, so a cloud key with its model id set in `.env` still runs there. py
 test skips with `no local model`.
 
 Fix **(not tested here)**: install Ollama (on Windows, in PowerShell: `irm https://ollama.com/install.ps1 | iex`, or
-OllamaSetup.exe from ollama.com/download), make sure it is running, then `ollama pull qwen3:8b` (5.2 GB).
+OllamaSetup.exe from ollama.com/download), make sure it is running, then `ollama pull qwen3:8b` (5.2 GB). If you set `OLLAMA_BASE_URL` in the terminal yourself, for example `$env:OLLAMA_BASE_URL = "http://127.0.0.1:1"` in PowerShell to break a lab on purpose, that value wins over the line in `.env` (`config.py` reads `.env` only for names that are not set already), so undo it when you are done: `Remove-Item Env:OLLAMA_BASE_URL`, or open a new terminal.
 
 ### The model is not pulled
 
@@ -527,7 +527,7 @@ of "The local model cannot be reached" above, printed by a different library.
 
 Fix **(not tested here)**: start Ollama as that entry says, then run the lab again. Fix **(tested)**: on the test
 machine, with an Ollama server answering at `OLLAMA_BASE_URL`, the same four labs ran to the end. To confirm,
-`ollama list` answers with a `NAME    ID    SIZE    MODIFIED` header.
+`ollama list` answers with a `NAME    ID    SIZE    MODIFIED` header. The Section 3 labs `labs/02_03_scratch_agent.py`, `labs/02_04_second_tool.py`, `labs/02_06_break_the_loop.py` and `labs/02_13_loop_as_a_class.py` call Ollama through the same SDK and end on the same last line (caused on the test machine on 2026-10-29, all four, with nothing answering at `OLLAMA_BASE_URL`); like the raw labs, they always call your local Ollama, so a cloud key does not help here.
 
 ### A raw lab ends in `openai.NotFoundError: Error code: 404`
 
@@ -551,7 +551,7 @@ or `qwen3:8b` when that line is not set.
 
 Fix **(tested for a wrong name)**: compare `OLLAMA_CHAT_MODEL` in `.env` with what `ollama list` shows; with it back on
 a model that was pulled, the labs ran. Fix **(not tested here)** for a model you never pulled: `ollama pull` and the
-model's name, for example `ollama pull qwen3:8b`.
+model's name, for example `ollama pull qwen3:8b`. The Section 3 labs `labs/02_03_scratch_agent.py`, `labs/02_04_second_tool.py`, `labs/02_06_break_the_loop.py` and `labs/02_13_loop_as_a_class.py` end on the same line within a few seconds (caused on the test machine on 2026-10-29, all four, with `OLLAMA_CHAT_MODEL` set to `qwen3:4b`).
 
 ### A hosted call says the account has no credit
 
