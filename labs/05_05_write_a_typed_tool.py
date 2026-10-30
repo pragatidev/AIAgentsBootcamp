@@ -23,9 +23,9 @@ print("args_schema_json", reset_password.tool_call_schema.model_json_schema())
 print("args", reset_password.args)
 
 # %%
-known = reset_password.func("E-4101", runtime=dummy_runtime())
+known = reset_password.func("E-4101", runtime=dummy_runtime("E-4101"))
 print("known", known)
-unknown = reset_password.func("E-0000", runtime=dummy_runtime())
+unknown = reset_password.func("E-0000", runtime=dummy_runtime("E-0000"))
 print("unknown", unknown)
 
 # %%

@@ -71,7 +71,7 @@ if ai.tool_calls:
     if name == "reset_password":
         result = reset_password.func(
             str(args.get("user_id") or ticket["customer_id"]),
-            runtime=dummy_runtime(),
+            runtime=dummy_runtime(ticket["customer_id"]),
         )
     else:
         result = tool_by_name[name].invoke(args)
@@ -97,7 +97,7 @@ if ai.tool_calls:
         if nxt_name == "reset_password":
             nxt_result = reset_password.func(
                 str(nxt_args.get("user_id") or ticket["customer_id"]),
-                runtime=dummy_runtime(),
+                runtime=dummy_runtime(ticket["customer_id"]),
             )
         else:
             nxt_result = tool_by_name[nxt_name].invoke(nxt_args)

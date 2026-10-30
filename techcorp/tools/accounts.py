@@ -65,6 +65,20 @@ def _context_user_id(runtime: Any) -> str | None:
     return text or None
 
 
+def acting_user(runtime: Any, requested: str | None = None) -> dict[str, Any]:
+    """Decide whose account a write tool acts on. Only the request envelope names the caller.
+
+    The id the model typed (requested) never chooses the account; it is kept only to say
+    whether it disagreed with the envelope. An empty envelope is a typed miss.
+    """
+    envelope = _context_user_id(runtime)
+    asked = (requested or "").strip() or None
+    if envelope is None:
+        return {"ok": False, "reason": "no acting user in the request envelope"}
+    mismatch = asked is not None and asked.lower() != envelope.lower()
+    return {"ok": True, "user_id": envelope, "requested": asked, "mismatch": mismatch}
+
+
 def _find_user(query: str) -> dict[str, Any] | None:
     needle = (query or "").strip()
     if not needle:
@@ -106,6 +120,21 @@ def _context_value(runtime: Any, key: str) -> Any:
     return getattr(ctx, key, None)
 
 
+def reset_outcome(acting: str) -> dict[str, Any]:
+    """The miss shape, found False and a reason, for an empty or unknown id; the hit shape for a known one. Never invent a user."""
+    if not acting:
+        return {"found": False, "reason": "no user id"}
+    row = _find_user(acting)
+    if not row:
+        return {"found": False, "reason": f"unknown user {acting}"}
+    return {
+        "found": True,
+        "user_id": row["user_id"],
+        "temporary_password": _temporary_password(),
+        "expires_in_hours": 24,
+    }
+
+
 def _audit(event: dict[str, Any], runtime: Any = None) -> None:
     payload = {key: value for key, value in event.items() if key not in SECRET_KEYS}
     for key in ("ticket_id", "request_id"):
@@ -144,28 +173,22 @@ def lookup_user(query: str) -> dict:
 
 @tool
 def reset_password(user_id: str, runtime: ToolRuntime) -> dict:
-    """Reset an employee's password and return a pretend temporary password. The runtime context user_id wins over this argument when the context carries one. Never invent a user. Look up the user before you reset. Passwords are pretend."""
-    acting = _context_user_id(runtime) or (user_id or "").strip()
-    if not acting:
-        return {"found": False, "reason": "unknown user "}
-    row = _find_user(acting)
-    if not row:
-        return {"found": False, "reason": f"unknown user {acting}"}
-    token = _temporary_password()
-    result = {
-        "found": True,
-        "user_id": acting,
-        "temporary_password": token,
-        "expires_in_hours": 24,
+    """Reset an employee's password and return a pretend temporary password. The employee in the request envelope is the one reset, whatever user_id says; with no id in the envelope the reset is a miss. Never invent a user. Look up the user before you reset. Passwords are pretend."""
+    who = acting_user(runtime, user_id)
+    if not who["ok"]:
+        return {"found": False, "reason": who["reason"]}
+    result = reset_outcome(who["user_id"])
+    if not result["found"]:
+        return result
+    event = {
+        "action": "reset_password",
+        "user_id": result["user_id"],
+        "requested_user_id": user_id,
     }
-    _audit(
-        {
-            "action": "reset_password",
-            "user_id": acting,
-            "requested_user_id": user_id,
-        },
-        runtime,
-    )
+    if who["mismatch"]:
+        event["mismatch"] = True
+        result["requested_user_id_ignored"] = who["requested"]
+    _audit(event, runtime)
     return result
 
 
