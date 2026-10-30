@@ -172,7 +172,7 @@ def lookup_user(query: str) -> dict:
 
 
 @tool
-def reset_password(user_id: str, runtime: ToolRuntime) -> dict:
+def reset_password(user_id: str, runtime: ToolRuntime[Any]) -> dict:
     """Reset an employee's password and return a pretend temporary password. The employee in the request envelope is the one reset, whatever user_id says; with no id in the envelope the reset is a miss. Never invent a user. Look up the user before you reset. Passwords are pretend."""
     who = acting_user(runtime, user_id)
     if not who["ok"]:

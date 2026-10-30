@@ -178,3 +178,23 @@ def test_classifier_schema():
     assert obj.priority in {"low", "normal", "high"}
     assert isinstance(obj.needs_human, bool)
     assert obj.reason
+
+
+def test_desk_context_new_fields_have_defaults():
+    ctx = DeskContext(user_id="E-4101")
+    assert (ctx.user_id, ctx.region, ctx.role) == ("E-4101", "US", "employee")
+    assert ctx.approver is None and ctx.ticket_id is None and ctx.request_id is None
+
+
+def test_reset_run_prints_no_serializer_warning(tmp_path, monkeypatch):
+    # The runtime parameter is ToolRuntime[Any]; a bare ToolRuntime made pydantic warn about the
+    # context field on every reset ("PydanticSerializationUnexpectedValue ... field_name='context'").
+    import warnings
+
+    _audit(tmp_path, monkeypatch)
+    accounts_mod.reload_users()
+    desk = build_techcorp_desk(model=FakeToolModel(script=_reset_script("E-4101")), middleware=[])
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", UserWarning)
+        out = run_ticket(desk, "Ticket TC-1001: please reset my password.", user_id="E-4101")
+    assert any(row.get("found") for row in _tool_payloads(out))
