@@ -14,7 +14,10 @@ class TicketClass(BaseModel):
         description="Which desk owns this ticket"
     )
     priority: Literal["low", "normal", "high"] = Field(
-        description="How urgent the ticket is"
+        description=(
+            "high: many people are blocked or it is a security risk; "
+            "normal: one person is blocked; low: it can wait a day"
+        )
     )
     needs_human: bool = Field(
         description="True when a person must take the ticket"

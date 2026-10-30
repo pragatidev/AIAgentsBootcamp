@@ -10,6 +10,7 @@ from langchain.agents import create_agent
 from langchain.agents.middleware import (
     HumanInTheLoopMiddleware,
     InterruptOnConfig,
+    SummarizationMiddleware,
     ToolCallLimitMiddleware,
 )
 from langchain_core.messages import HumanMessage
@@ -18,7 +19,7 @@ from langgraph.types import Command
 
 from config import get_chat_model
 from techcorp.agent.context import DeskContext
-from techcorp.agent.prompts import DESK_SYSTEM_PROMPT
+from techcorp.agent.prompts import DESK_SYSTEM_PROMPT, SUMMARY_PROMPT
 from techcorp.tools.accounts import grant_access, lookup_user, reset_password
 
 DEFAULT_TOOLS = [lookup_user, reset_password, grant_access]
@@ -54,6 +55,16 @@ def write_gate() -> HumanInTheLoopMiddleware:
             )
             for name in WRITE_TOOLS
         }
+    )
+
+
+def desk_summarizer(model=None, trigger=("messages", 4), keep=("messages", 2)) -> SummarizationMiddleware:
+    """Fold old turns into the desk's four-slot summary once the thread passes the trigger, keeping the newest turns."""
+    return SummarizationMiddleware(
+        model if model is not None else get_chat_model(),
+        trigger=trigger,
+        keep=keep,
+        summary_prompt=SUMMARY_PROMPT,
     )
 
 

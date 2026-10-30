@@ -18,6 +18,21 @@ WEAK_PROMPT = """You are a friendly helper at a company. Be warm. Try to be usef
 """
 
 
+# The desk's summary, in four slots. SummarizationMiddleware fills {messages} with the turns it folds.
+SUMMARY_PROMPT = """Summarize this TechCorp IT desk conversation in exactly four slots.
+
+Employee id: the employee's id, as written in the messages.
+Ticket id: the ticket id, as written in the messages.
+Done: each tool that ran and its outcome. Never copy a password, a temporary password or any other secret.
+Still open: what the employee still needs.
+
+Write None for an empty slot. Never write a value that is not in the messages.
+
+Messages:
+{messages}
+"""
+
+
 def classify_prompt() -> str:
     """System prompt for the ticket classifier form."""
     return (

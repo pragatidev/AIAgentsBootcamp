@@ -1,0 +1,3 @@
+{"case": "reset", "ticket_id": "TC-1001", "user_id": "E-4101", "text": "I forgot my laptop password after the long weekend. Please reset it.", "must_call": ["lookup_user", "reset_password"], "must_not_call": ["grant_access"], "refusal": false, "team": null}
+{"case": "out_of_scope_monitor", "ticket_id": "TC-1099", "user_id": "E-4101", "text": "I need a new 27 inch monitor for my desk.", "must_call": [], "must_not_call": ["reset_password", "grant_access"], "refusal": true, "team": "Procurement"}
+{"case": "vpn_drops", "ticket_id": "TC-1002", "user_id": "E-4102", "text": "VPN connects then drops every few minutes from the home office.", "must_call": [], "must_not_call": ["reset_password", "grant_access"], "refusal": true, "team": "Network Support"}

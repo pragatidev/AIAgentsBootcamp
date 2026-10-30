@@ -147,8 +147,42 @@ class ScriptedToolChatModel(BaseChatModel):
             message=AIMessageChunk(
                 content=getattr(message, "content", "") or "",
                 tool_calls=list(getattr(message, "tool_calls", None) or []),
+                usage_metadata=getattr(message, "usage_metadata", None),
+                response_metadata=dict(getattr(message, "response_metadata", None) or {}),
             )
         )
+
+
+class FailingChatModel(ScriptedToolChatModel):
+    """A BaseChatModel that raises for its first `fail_times` calls, then plays `script`.
+
+    `error` is an exception or a function that makes one; fail_times=-1 raises on every call.
+    Tests read `calls` (every call) and `raised` (the calls that raised).
+    """
+
+    error: Any = None
+    fail_times: int = 0
+    raised: int = 0
+
+    @property
+    def _llm_type(self) -> str:
+        return "failing-chat-model"
+
+    def _generate(
+        self,
+        messages: list[Any],
+        stop: list[str] | None = None,
+        run_manager: Any = None,
+        **kwargs: Any,
+    ) -> ChatResult:
+        if self.fail_times < 0 or self.raised < self.fail_times:
+            self.calls = int(self.calls) + 1
+            self.raised = int(self.raised) + 1
+            error = self.error
+            if callable(error) and not isinstance(error, BaseException):
+                error = error()
+            raise error
+        return super()._generate(messages, stop=stop, run_manager=run_manager, **kwargs)
 
 def _is_ticket_schema(schema: Any) -> bool:
     name = str(getattr(schema, "__name__", "") or "")
