@@ -1,11 +1,14 @@
-"""TechCorp agent lands here in Part 5."""
+"""The TechCorp IT desk, built in Section 4."""
 
 from techcorp.agent.context import DeskContext
 from techcorp.agent.desk import (
     DEFAULT_MIDDLEWARE,
     WRITE_TOOLS,
+    answer_ticket,
     build_techcorp_desk,
     describe_write,
+    handle_ticket,
+    reply_text,
     run_ticket,
     write_gate,
 )
@@ -19,9 +22,12 @@ __all__ = [
     "TicketClass",
     "WEAK_PROMPT",
     "WRITE_TOOLS",
+    "answer_ticket",
     "build_techcorp_desk",
     "classify_prompt",
     "describe_write",
+    "handle_ticket",
+    "reply_text",
     "run_ticket",
     "write_gate",
 ]

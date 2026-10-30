@@ -278,3 +278,68 @@ def test_approve_runs_reset_once_and_audits(tmp_path, monkeypatch):
     assert "temporary_password" not in row
     token = [p for p in _tool_payloads(out) if p.get("found")][0]["temporary_password"]
     assert token in _last_text(out)
+
+
+def test_reply_text_joins_text_blocks():
+    from techcorp.agent.desk import reply_text
+
+    blocks = [{"type": "reasoning", "reasoning": "thinking"}, {"type": "text", "text": "Done. "}, {"type": "text", "text": "TC-1001"}]
+    assert reply_text({"messages": [AIMessage(content=blocks)]}) == "Done. TC-1001"
+    assert reply_text({"messages": [AIMessage(content="plain")]}) == "plain"
+    assert reply_text({"messages": []}) == ""
+
+
+def test_run_ticket_puts_request_and_ticket_ids_on_the_audit_line(tmp_path, monkeypatch):
+    path = _audit(tmp_path, monkeypatch)
+    desk = build_techcorp_desk(model=FakeToolModel(script=_reset_script("E-4101")), middleware=[])
+    run_ticket(desk, "Ticket TC-1001: reset it.", user_id="E-4101", ticket_id="TC-1001", request_id="req-1")
+    row = json.loads(path.read_text(encoding="utf-8").splitlines()[0])
+    assert row["ticket_id"] == "TC-1001" and row["request_id"] == "req-1"
+
+
+def test_answer_ticket_reports_a_parked_write(tmp_path, monkeypatch):
+    from techcorp.agent.desk import answer_ticket
+
+    path = _audit(tmp_path, monkeypatch)
+    reply = answer_ticket("Ticket TC-1001: reset it.", "E-4101", model=FakeToolModel(script=_reset_script("E-4101")))
+    assert reply.startswith("Waiting for a person to approve: reset_password will act on E-4101.")
+    assert not path.exists()
+
+
+def test_answer_ticket_returns_the_reply():
+    from techcorp.agent.desk import answer_ticket
+
+    model = FakeToolModel(script=[AIMessage(content="I cannot help with that from the IT desk: no. Please contact Network Support. TC-1002")])
+    assert answer_ticket("Ticket TC-1002: VPN drops.", "E-4102", model=model).endswith("TC-1002")
+
+
+def test_handle_ticket_parks_then_approves(tmp_path, monkeypatch):
+    from techcorp.agent.desk import handle_ticket
+
+    path = _audit(tmp_path, monkeypatch)
+    desk = build_techcorp_desk(model=FakeToolModel(script=_reset_script("E-4101")))
+    parked = handle_ticket(desk, "Ticket TC-1001: reset it.", user_id="E-4101", thread_id="h-1")
+    assert parked["parked"] is True and parked["action_requests"][0]["name"] == "reset_password"
+    assert not path.exists()
+    desk = build_techcorp_desk(model=FakeToolModel(script=_reset_script("E-4101")))
+    done = handle_ticket(
+        desk, "Ticket TC-1001: reset it.", user_id="E-4101", thread_id="h-2",
+        decision={"decisions": [{"type": "approve"}]},
+    )
+    assert done["parked"] is True
+    assert len(path.read_text(encoding="utf-8").splitlines()) == 1
+    assert '"temporary_password"' in done["reply"]
+
+
+def test_reject_decision_writes_no_audit(tmp_path, monkeypatch):
+    from techcorp.agent.desk import handle_ticket
+
+    path = _audit(tmp_path, monkeypatch)
+    desk = build_techcorp_desk(model=FakeToolModel(script=_reset_script("E-4101")))
+    out = handle_ticket(
+        desk, "Ticket TC-1001: reset it.", user_id="E-4101", thread_id="h-3",
+        decision={"decisions": [{"type": "reject", "message": "not today"}]},
+    )
+    assert out["parked"] is True
+    assert "not today" in out["reply"]
+    assert not path.exists()

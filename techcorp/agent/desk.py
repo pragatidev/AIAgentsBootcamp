@@ -14,6 +14,7 @@ from langchain.agents.middleware import (
 )
 from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.types import Command
 
 from config import get_chat_model
 from techcorp.agent.context import DeskContext
@@ -98,12 +99,76 @@ def run_ticket(
     user_id: str | None = None,
     thread_id: str | None = None,
     region: str = "US",
+    *,
+    role: str = "employee",
+    approver: str | None = None,
+    ticket_id: str | None = None,
+    request_id: str | None = None,
 ) -> dict:
     """Invoke the desk with a ticket and a DeskContext envelope.
 
-    Every run gets a thread id (a new one when none is passed), so a gated desk can park it.
+    Every run gets a thread id (a new one when none is passed), so a gated desk can park it,
+    and a request id (a new one when none is passed), so its audit lines can be found again.
     """
     payload = {"messages": [HumanMessage(content=text)]}
-    ctx = DeskContext(user_id=user_id, region=region)
+    ctx = DeskContext(
+        user_id=user_id,
+        region=region,
+        role=role,
+        approver=approver,
+        ticket_id=ticket_id,
+        request_id=request_id or uuid4().hex,
+    )
     config: dict[str, Any] = {"configurable": {"thread_id": thread_id or f"ticket-{uuid4().hex}"}}
     return desk.invoke(payload, config=config, context=ctx)
+
+
+def reply_text(state: dict) -> str:
+    """The desk's last message as plain text: a string as it is, a list of blocks joined from their text."""
+    messages = state.get("messages") or []
+    if not messages:
+        return ""
+    content = getattr(messages[-1], "content", "") or ""
+    if isinstance(content, str):
+        return content
+    parts = []
+    for block in content:
+        if isinstance(block, dict):
+            if block.get("type", "text") == "text":
+                parts.append(str(block.get("text") or ""))
+        else:
+            parts.append(str(block))
+    return "".join(parts)
+
+
+def answer_ticket(text: str, user_id: str, *, model=None, thread_id: str | None = None) -> str:
+    """The one call a service makes. Build the desk inside the call, never at import; run the ticket with
+    the acting id in the envelope; return the reply as plain text, or say which write waits for a person."""
+    desk = build_techcorp_desk(model=model)
+    state = run_ticket(desk, text, user_id=user_id, thread_id=thread_id)
+    if state.get("__interrupt__"):
+        return "Waiting for a person to approve: " + state["__interrupt__"][0].value["action_requests"][0]["description"]
+    return reply_text(state)
+
+
+def handle_ticket(
+    desk,
+    text: str,
+    *,
+    user_id: str,
+    thread_id: str,
+    decision: dict | None = None,
+    approver: str | None = None,
+) -> dict:
+    """Run one ticket with the acting id in the envelope. If the human gate parks it, keep the action
+    requests, and resume with `decision` when one is given. Return parked, action_requests and the reply."""
+    state = run_ticket(desk, text, user_id=user_id, thread_id=thread_id)
+    parked = state.get("__interrupt__") or []
+    requests = parked[0].value["action_requests"] if parked else []
+    if parked and decision is not None:
+        state = desk.invoke(
+            Command(resume=decision),
+            config={"configurable": {"thread_id": thread_id}},
+            context=DeskContext(user_id=user_id, approver=approver),
+        )
+    return {"parked": bool(parked), "action_requests": requests, "reply": reply_text(state)}
