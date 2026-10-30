@@ -173,13 +173,14 @@ def handle_ticket(
 ) -> dict:
     """Run one ticket with the acting id in the envelope. If the human gate parks it, keep the action
     requests, and resume with `decision` when one is given. Return parked, action_requests and the reply."""
-    state = run_ticket(desk, text, user_id=user_id, thread_id=thread_id)
+    request_id = uuid4().hex
+    state = run_ticket(desk, text, user_id=user_id, thread_id=thread_id, request_id=request_id)
     parked = state.get("__interrupt__") or []
     requests = parked[0].value["action_requests"] if parked else []
     if parked and decision is not None:
         state = desk.invoke(
             Command(resume=decision),
             config={"configurable": {"thread_id": thread_id}},
-            context=DeskContext(user_id=user_id, approver=approver),
+            context=DeskContext(user_id=user_id, approver=approver, request_id=request_id),
         )
     return {"parked": bool(parked), "action_requests": requests, "reply": reply_text(state)}
