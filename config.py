@@ -171,3 +171,8 @@ def get_embeddings():
     model = os.environ.get("OLLAMA_EMBED_MODEL", EMBED_MODEL)
     return OllamaEmbeddings(model=model, base_url=_ollama_base())
 
+
+
+# A per-run token budget for the TechCorp desk (lecture 4.28). Unset means no budget: measure one
+# ticket first, then set DESK_TOKEN_BUDGET in .env from what your own run used.
+DESK_TOKEN_BUDGET = int(os.environ["DESK_TOKEN_BUDGET"]) if os.environ.get("DESK_TOKEN_BUDGET", "").strip() else None

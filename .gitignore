@@ -87,6 +87,8 @@ dataflow/context/_last_rot.json
 
 # TechCorp password-reset audit. Created at run time, not committed.
 techcorp/data/audit.jsonl
+techcorp/data/run_audit.jsonl
+techcorp/data/traces/
 
 # Part 16 framework caches. Created at run time, not committed.
 .n8n/
