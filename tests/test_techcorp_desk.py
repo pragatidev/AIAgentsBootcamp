@@ -344,3 +344,19 @@ def test_reject_decision_writes_no_audit(tmp_path, monkeypatch):
     assert out["parked"] is True
     assert "not today" in out["reply"]
     assert not path.exists()
+
+
+def test_tool_limit_per_tool_name(tmp_path, monkeypatch):
+    from langchain.agents.middleware import ToolCallLimitMiddleware
+
+    _audit(tmp_path, monkeypatch)
+    calls = [
+        {"name": "lookup_user", "args": {"query": f"E-410{i}"}, "id": f"l{i}", "type": "tool_call"}
+        for i in (1, 2, 3)
+    ]
+    model = FakeToolModel(script=[AIMessage(content="", tool_calls=calls), AIMessage(content="two of three")])
+    desk = build_techcorp_desk(model=model, tools=[accounts_mod.lookup_user], middleware=[ToolCallLimitMiddleware(tool_name="lookup_user", run_limit=2)])
+    out = run_ticket(desk, "Ticket TC-1102: look up three people.", user_id="E-4101")
+    refused = [m for m in out["messages"] if m.type == "tool" and m.status == "error"]
+    assert len(refused) == 1
+    assert "Do not call 'lookup_user' again." in refused[0].content
