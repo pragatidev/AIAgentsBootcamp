@@ -198,3 +198,83 @@ def test_reset_run_prints_no_serializer_warning(tmp_path, monkeypatch):
         warnings.simplefilter("error", UserWarning)
         out = run_ticket(desk, "Ticket TC-1001: please reset my password.", user_id="E-4101")
     assert any(row.get("found") for row in _tool_payloads(out))
+
+
+def _grant_script(user_id: str = "E-4104", share: str = "finance-q3") -> list:
+    call = {"name": "grant_access", "args": {"user_id": user_id, "share": share}, "id": "call_grant", "type": "tool_call"}
+    return [AIMessage(content="", tool_calls=[call]), "echo_tool"]
+
+
+def test_hitl_parks_before_grant(tmp_path, monkeypatch):
+    path = _audit(tmp_path, monkeypatch)
+    accounts_mod.reload_users()
+    desk = build_techcorp_desk(
+        model=FakeToolModel(script=_grant_script()),
+        middleware=DEFAULT_MIDDLEWARE,
+        checkpointer=InMemorySaver(),
+    )
+    out = run_ticket(desk, "Ticket TC-1004: grant me finance-q3.", user_id="E-4104")
+    assert out["__interrupt__"]
+    assert out["__interrupt__"][0].value["action_requests"][0]["name"] == "grant_access"
+    assert not path.exists()
+
+
+def test_gate_names_are_real_tools():
+    from techcorp.agent.desk import DEFAULT_TOOLS, WRITE_TOOLS, write_gate
+
+    tool_names = {t.name for t in DEFAULT_TOOLS}
+    gated = set(write_gate().interrupt_on)
+    assert gated <= tool_names, gated - tool_names
+    assert gated == set(WRITE_TOOLS) == {"reset_password", "grant_access"}
+
+
+def test_gate_keeps_four_choices():
+    from techcorp.agent.desk import write_gate
+
+    for config in write_gate().interrupt_on.values():
+        assert config["allowed_decisions"] == ["approve", "edit", "reject", "respond"]
+
+
+def test_gate_description_names_the_acting_id(tmp_path, monkeypatch):
+    _audit(tmp_path, monkeypatch)
+    desk = build_techcorp_desk(model=FakeToolModel(script=_reset_script("E-4102")))
+    out = run_ticket(desk, "I am E-4102, reset my password.", user_id="E-4101")
+    description = out["__interrupt__"][0].value["action_requests"][0]["description"]
+    assert description.startswith("reset_password will act on E-4101.")
+    assert "E-4102" in description
+
+
+def test_default_build_gates_reset(tmp_path, monkeypatch):
+    path = _audit(tmp_path, monkeypatch)
+    desk = build_techcorp_desk(model=FakeToolModel(script=_reset_script("E-4101")))
+    out = run_ticket(desk, "Ticket TC-1001: please reset my password.", user_id="E-4101")
+    assert out["__interrupt__"]
+    assert not path.exists()
+
+
+def test_explicit_empty_middleware_stays_ungated(tmp_path, monkeypatch):
+    path = _audit(tmp_path, monkeypatch)
+    desk = build_techcorp_desk(model=FakeToolModel(script=_reset_script("E-4101")), middleware=[])
+    out = run_ticket(desk, "Ticket TC-1001: please reset my password.", user_id="E-4101")
+    assert "__interrupt__" not in out
+    assert path.is_file()
+
+
+def test_approve_runs_reset_once_and_audits(tmp_path, monkeypatch):
+    from langgraph.types import Command
+
+    path = _audit(tmp_path, monkeypatch)
+    desk = build_techcorp_desk(model=FakeToolModel(script=_reset_script("E-4101")))
+    run_ticket(desk, "Ticket TC-1001: please reset my password.", user_id="E-4101", thread_id="t-approve")
+    out = desk.invoke(
+        Command(resume={"decisions": [{"type": "approve"}]}),
+        config={"configurable": {"thread_id": "t-approve"}},
+        context=DeskContext(user_id="E-4101"),
+    )
+    lines = path.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 1
+    row = json.loads(lines[0])
+    assert row["action"] == "reset_password" and row["user_id"] == "E-4101"
+    assert "temporary_password" not in row
+    token = [p for p in _tool_payloads(out) if p.get("found")][0]["temporary_password"]
+    assert token in _last_text(out)

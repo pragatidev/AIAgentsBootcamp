@@ -1,7 +1,14 @@
 """TechCorp agent lands here in Part 5."""
 
 from techcorp.agent.context import DeskContext
-from techcorp.agent.desk import DEFAULT_MIDDLEWARE, build_techcorp_desk, run_ticket
+from techcorp.agent.desk import (
+    DEFAULT_MIDDLEWARE,
+    WRITE_TOOLS,
+    build_techcorp_desk,
+    describe_write,
+    run_ticket,
+    write_gate,
+)
 from techcorp.agent.prompts import DESK_SYSTEM_PROMPT, WEAK_PROMPT, classify_prompt
 from techcorp.agent.schemas import TicketClass
 
@@ -11,8 +18,11 @@ __all__ = [
     "DeskContext",
     "TicketClass",
     "WEAK_PROMPT",
+    "WRITE_TOOLS",
     "build_techcorp_desk",
     "classify_prompt",
+    "describe_write",
     "run_ticket",
+    "write_gate",
 ]
 
