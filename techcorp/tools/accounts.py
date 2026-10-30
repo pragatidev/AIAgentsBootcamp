@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
+import secrets
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -17,7 +17,10 @@ from langchain.tools import ToolRuntime, tool
 USERS_PATH = Path(__file__).resolve().parents[1] / "data" / "users.json"
 AUDIT_PATH = Path(__file__).resolve().parents[1] / "data" / "audit.jsonl"
 
-_reset_counts: dict[str, int] = {}
+# Keys that never reach an audit line. The employee gets the temporary password in the
+# tool result; the audit file, which a whole team can read, never carries it.
+SECRET_KEYS = frozenset({"temporary_password"})
+
 _USERS: dict[str, dict[str, Any]] | None = None
 
 
@@ -89,15 +92,26 @@ def _public_user(row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _temporary_password(user_id: str) -> str:
-    n = _reset_counts.get(user_id, 0) + 1
-    _reset_counts[user_id] = n
-    digest = hashlib.sha256(f"{user_id}:{n}".encode("utf-8")).hexdigest()
-    return digest[:10]
+def _temporary_password() -> str:
+    """Ten random hex characters. Pretend, but nobody can work it out from the employee id."""
+    return secrets.token_hex(5)
 
 
-def _audit(event: dict[str, Any]) -> None:
-    payload = dict(event)
+def _context_value(runtime: Any, key: str) -> Any:
+    ctx = getattr(runtime, "context", None) if runtime is not None else None
+    if ctx is None:
+        return None
+    if isinstance(ctx, dict):
+        return ctx.get(key)
+    return getattr(ctx, key, None)
+
+
+def _audit(event: dict[str, Any], runtime: Any = None) -> None:
+    payload = {key: value for key, value in event.items() if key not in SECRET_KEYS}
+    for key in ("ticket_id", "request_id"):
+        value = _context_value(runtime, key)
+        if value:
+            payload[key] = value
     payload["at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     AUDIT_PATH.parent.mkdir(parents=True, exist_ok=True)
     line = json.dumps(payload, ensure_ascii=True) + "\n"
@@ -137,7 +151,7 @@ def reset_password(user_id: str, runtime: ToolRuntime) -> dict:
     row = _find_user(acting)
     if not row:
         return {"found": False, "reason": f"unknown user {acting}"}
-    token = _temporary_password(acting)
+    token = _temporary_password()
     result = {
         "found": True,
         "user_id": acting,
@@ -149,8 +163,8 @@ def reset_password(user_id: str, runtime: ToolRuntime) -> dict:
             "action": "reset_password",
             "user_id": acting,
             "requested_user_id": user_id,
-            "temporary_password": token,
-        }
+        },
+        runtime,
     )
     return result
 

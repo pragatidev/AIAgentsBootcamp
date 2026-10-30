@@ -1,5 +1,6 @@
 """TechCorp account tools. One happy path, one miss. No model."""
 
+import json
 from types import SimpleNamespace
 
 import pytest
@@ -67,3 +68,21 @@ def test_context_id_wins():
     assert out["found"] is True
     assert out["user_id"] == "E-4101"
     assert out["user_id"] != "E-4102"
+
+
+def test_audit_line_has_no_secret(audit_path):
+    out = reset_password.func("E-4101", runtime=dummy_runtime("E-4101"))
+    lines = audit_path.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 1
+    row = json.loads(lines[0])
+    assert row["action"] == "reset_password" and row["user_id"] == "E-4101"
+    assert "temporary_password" not in row
+    assert out["temporary_password"] not in lines[0]
+
+
+def test_temporary_password_is_not_derivable():
+    first = reset_password.func("E-4101", runtime=dummy_runtime("E-4101"))
+    second = reset_password.func("E-4101", runtime=dummy_runtime("E-4101"))
+    assert first["temporary_password"] != second["temporary_password"]
+    # The old formula: the first 10 hex of sha256("E-4101:1"). Anyone who knew the id knew it.
+    assert first["temporary_password"] != "581cd31c70"
