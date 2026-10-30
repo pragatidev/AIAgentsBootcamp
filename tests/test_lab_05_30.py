@@ -76,6 +76,7 @@ def test_three_ways_and_the_empty_envelope_on_the_desk(run_lab):
     ("lookup_user", {"query": "Amina Cole"}, DeskContext(user_id="E-4101")),
     ("lookup_user", {"query": "E-0000"}, DeskContext(user_id="E-4101", role="it_agent")),
     ("reset_password", {"user_id": "E-4102"}, DeskContext()),
+    ("reset_password", {"user_id": "E-0000"}, DeskContext(user_id="E-0000")),
     ("delete_user", {}, DeskContext(user_id="E-4101")),
 ])
 def test_typed_check_matches_package(run_lab, tool, args, ctx):

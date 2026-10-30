@@ -109,3 +109,7 @@ def test_mixed_turn_runs_only_the_allowed_call(audit):
     assert json.loads(answers["l1"].content)["reason"] == "an employee may act on their own account only"
     assert json.loads(answers["r1"].content)["found"] is True
     assert len(audit.read_text(encoding="utf-8").splitlines()) == 1
+
+
+def test_a_caller_not_in_the_directory_is_refused():
+    assert check("reset_password", {"user_id": "E-0000"}, DeskContext(user_id="E-0000"))["reason"] == "unknown caller E-0000"

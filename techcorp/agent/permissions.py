@@ -38,6 +38,8 @@ def check(tool_name: str, args: dict, ctx: Any) -> dict | None:
         return _miss(role, tool_name, f"no rule allows {tool_name}")
     if not caller:
         return _miss(role, tool_name, "no acting user in the request envelope")
+    if _find_user(caller) is None:
+        return _miss(role, tool_name, f"unknown caller {caller}")
     if role not in rule["roles"]:
         return _miss(role, tool_name, f"role {role} may not call {tool_name}")
     target = caller if rule["target"] == "caller" else str(args.get(rule["target"]) or "")
