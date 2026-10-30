@@ -1,110 +1,78 @@
-# %% [markdown]
-# Return a typed miss and test both paths.
-#
-# When this works, a known id resets, an unknown id is a miss, and
-# pytest tests/test_techcorp_tools.py is green. The break plants
-# reset_password_inventing, which returns a password for any id, and
-# the unknown_user test goes red.
-
 # %%
+"""Lab 4.8: return a typed miss and test both paths.
+
+What we build: you write the few lines inside the reset tool that decide between "here is the
+password" and "I could not do that", run them on a real employee, on a ghost and on an empty id, test
+both paths, and then hand a ghost ticket to the real desk and read what the model says.
+
+What you learn: a miss is data, found False and a reason, not an exception and not a sentence. A tool
+that cannot find a user never invents one, and the model reads the miss as a tool message and tells the
+employee.
+
+What will be true on your screen: known with found True and a pretend temporary password, unknown with
+found False and the reason "unknown user E-9999", empty with "no user id"; then the desk's tool messages
+for ticket TC-1099 and its reply. Run python -m pytest tests/test_lab_05_08.py -q to test both paths.
+"""
+
 from pathlib import Path
-import subprocess
+from typing import Any
 import sys
 
 root = Path(__file__).resolve().parents[1] if "__file__" in globals() else Path.cwd()
 sys.path.insert(0, str(root))
 
-import tempfile
+from langchain.messages import ToolMessage
+from langchain.tools import ToolRuntime, tool
 
-from techcorp.tools import accounts as accounts_mod
-from techcorp.tools.accounts import dummy_runtime, reset_password
+import config
+from techcorp.agent.desk import build_techcorp_desk, reply_text, run_ticket
+from techcorp.tools.accounts import _context_user_id, _find_user, _temporary_password, lookup_user, reset_password
 
-# The run writes its audit lines to a temporary file, never to techcorp/data/audit.jsonl.
-accounts_mod.AUDIT_PATH = Path(tempfile.mkdtemp()) / "audit.jsonl"
-
-known = reset_password.func("E-4101", runtime=dummy_runtime("E-4101"))
-unknown = reset_password.func("E-9999", runtime=dummy_runtime("E-9999"))
-print("known", known)
-print("unknown", unknown)
 
 # %%
-proc = subprocess.run(
-    [
-        sys.executable,
-        "-m",
-        "pytest",
-        "tests/test_techcorp_tools.py",
-        "-q",
-        "--override-ini",
-        "addopts=",
-    ],
-    cwd=root,
-    capture_output=True,
-    text=True,
-    encoding="utf-8",
-)
-print("pytest_stdout")
-print(proc.stdout)
-print("pytest_stderr")
-print(proc.stderr)
-print("exit_code", proc.returncode)
-
-# %%
-print("BREAK: reset_password_inventing returns a password for any id")
-
-
-def reset_password_inventing(user_id: str, runtime=None) -> dict:
+# TYPE THIS: reset_outcome. The signature and docstring are given; you type the body.
+# Its finished copy is in techcorp/tools/accounts.py, where reset_password calls it.
+def reset_outcome(acting: str) -> dict:
+    """The miss shape, found False and a reason, for an empty or unknown id; the hit shape for a known one. Never invent a user."""
+    if not acting:
+        return {"found": False, "reason": "no user id"}
+    row = _find_user(acting)
+    if not row:
+        return {"found": False, "reason": f"unknown user {acting}"}
     return {
         "found": True,
-        "user_id": user_id,
-        "temporary_password": "invented01",
+        "user_id": row["user_id"],
+        "temporary_password": _temporary_password(),
         "expires_in_hours": 24,
     }
 
 
-print("inventing_unknown", reset_password_inventing("E-9999"))
+# BREAK: in the unknown-id branch above, return
+# {"found": True, "user_id": acting, "temporary_password": "invented01", "expires_in_hours": 24}
+# instead of the miss, then run python -m pytest tests/test_lab_05_08.py -q and read the red line.
+# Put the miss back and run the test again.
 
-plant = root / "_plant_inventing.py"
-plant.write_text(
-    "def pytest_runtest_setup(item):\n"
-    "    from techcorp.tools.accounts import reset_password\n"
-    "    def reset_password_inventing(user_id, runtime=None):\n"
-    "        return {\n"
-    '            "found": True,\n'
-    '            "user_id": user_id,\n'
-    '            "temporary_password": "invented01",\n'
-    '            "expires_in_hours": 24,\n'
-    "        }\n"
-    "    reset_password.func = reset_password_inventing\n",
-    encoding="utf-8",
-)
-planted = subprocess.run(
-    [
-        sys.executable,
-        "-m",
-        "pytest",
-        "tests/test_techcorp_tools.py",
-        "-q",
-        "-k",
-        "unknown_user",
-        "-p",
-        "_plant_inventing",
-        "--override-ini",
-        "addopts=",
-    ],
-    cwd=root,
-    capture_output=True,
-    text=True,
-    encoding="utf-8",
-)
-print("planted_stdout")
-print(planted.stdout)
-print("planted_stderr")
-print(planted.stderr)
-print("planted_exit_code", planted.returncode)
-for line in (planted.stdout + "\n" + planted.stderr).splitlines():
-    lowered = line.lower()
-    if "assert" in lowered or "fail" in lowered or "error" in lowered:
-        print("failure_line", line)
-plant.unlink(missing_ok=True)
-print("plant_removed", not plant.exists())
+print("known", reset_outcome("E-4101"))
+print("unknown", reset_outcome("E-9999"))
+print("empty", reset_outcome(""))
+
+
+# %%
+# Given, not typed: the desk's reset tool with your reset_outcome inside. It reads the account from
+# the request envelope, never from the id the model typed, and writes no audit line.
+@tool("reset_password", description=reset_password.description)
+def lab_reset_password(user_id: str, runtime: ToolRuntime[Any]) -> dict:
+    return reset_outcome(_context_user_id(runtime) or "")
+
+
+# %%
+# The real model reads your miss. The ghost id rides in the envelope, so the miss does not depend on
+# the id the model types. No grant tool here, and nothing a ghost asks for can be written.
+chat = config.get_chat_model()
+print("model", type(chat).__name__, getattr(chat, "model", None) or getattr(chat, "model_name", None))
+desk = build_techcorp_desk(model=chat, middleware=[], tools=[lookup_user, lab_reset_password])
+state = run_ticket(desk, "Ticket TC-1099: please reset the password for E-9999.", user_id="E-9999")
+for message in state["messages"]:
+    if isinstance(message, ToolMessage):
+        print("tool", message.name, message.content)
+print("reply", reply_text(state).strip())
