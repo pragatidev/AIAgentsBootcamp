@@ -373,3 +373,12 @@ def test_scope_band_says_what_the_tools_can_do():
     assert "software install questions" not in scope
     # Section 39's browser desk is built on this prompt and keeps VPN in scope through its status tool.
     assert scope in BROWSER_SYSTEM and "or from a tool you have" in scope
+
+
+def test_tool_rules_do_not_contradict_each_other():
+    from techcorp.agent.prompts import DESK_SYSTEM_PROMPT
+
+    rules = [line for line in DESK_SYSTEM_PROMPT.splitlines() if line.startswith("Tool rules:")][0]
+    assert rules.startswith("Tool rules: look up the user before you reset.")
+    assert "Never reset without a user id" not in rules
+    assert "resets the employee in the request envelope" in rules
