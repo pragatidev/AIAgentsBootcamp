@@ -38,8 +38,10 @@ print("ticket_id", ticket["ticket_id"])
 print("text", ticket["text"])
 print("DEFAULT_MIDDLEWARE", DEFAULT_MIDDLEWARE)
 
-if accounts_mod.AUDIT_PATH.exists():
-    accounts_mod.AUDIT_PATH.unlink()
+import tempfile
+
+# The run writes its audit lines to a temporary file, never to techcorp/data/audit.jsonl.
+accounts_mod.AUDIT_PATH = Path(tempfile.mkdtemp()) / "audit.jsonl"
 print("audit_path", accounts_mod.AUDIT_PATH.as_posix())
 
 text = (

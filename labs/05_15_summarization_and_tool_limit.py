@@ -17,6 +17,12 @@ from langgraph.checkpoint.memory import InMemorySaver
 import config
 from techcorp.agent.context import DeskContext
 from techcorp.agent.desk import build_techcorp_desk, run_ticket
+import tempfile
+
+from techcorp.tools import accounts as accounts_mod
+
+# The run writes its audit lines to a temporary file, never to techcorp/data/audit.jsonl.
+accounts_mod.AUDIT_PATH = Path(tempfile.mkdtemp()) / "audit.jsonl"
 
 print("model", config.CHAT_MODEL)
 

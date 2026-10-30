@@ -2,6 +2,9 @@
 
 from types import SimpleNamespace
 
+import pytest
+
+from techcorp.tools import accounts as accounts_mod
 from techcorp.tools.accounts import (
     dummy_runtime,
     grant_access,
@@ -9,6 +12,14 @@ from techcorp.tools.accounts import (
     reload_users,
     reset_password,
 )
+
+
+@pytest.fixture(autouse=True)
+def audit_path(tmp_path, monkeypatch):
+    # Every test here writes its audit lines to a temporary file, never to techcorp/data/audit.jsonl.
+    path = tmp_path / "audit.jsonl"
+    monkeypatch.setattr(accounts_mod, "AUDIT_PATH", path)
+    return path
 
 
 def test_unknown_user_is_a_miss():

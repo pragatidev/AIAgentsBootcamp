@@ -22,8 +22,10 @@ from techcorp.agent.context import DeskContext
 from techcorp.agent.desk import DEFAULT_MIDDLEWARE, build_techcorp_desk
 from techcorp.tools import accounts as a
 
-if a.AUDIT_PATH.exists():
-    a.AUDIT_PATH.unlink()
+import tempfile
+
+# The run writes its audit lines to a temporary file, never to techcorp/data/audit.jsonl.
+a.AUDIT_PATH = Path(tempfile.mkdtemp()) / "audit.jsonl"
 
 desk = build_techcorp_desk(middleware=DEFAULT_MIDDLEWARE, checkpointer=InMemorySaver())
 ctx = DeskContext(user_id="E-4101")

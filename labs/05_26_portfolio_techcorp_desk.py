@@ -26,8 +26,10 @@ print("model", config.CHAT_MODEL)
 print("readme", (root / "techcorp" / "README.md").is_file())
 print( (root / "techcorp" / "README.md").read_text(encoding="utf-8")[:400] )
 
-if accounts_mod.AUDIT_PATH.exists():
-    accounts_mod.AUDIT_PATH.unlink()
+import tempfile
+
+# The run writes its audit lines to a temporary file, never to techcorp/data/audit.jsonl.
+accounts_mod.AUDIT_PATH = Path(tempfile.mkdtemp()) / "audit.jsonl"
 
 tickets_path = root / "techcorp" / "data" / "tickets.jsonl"
 by_id = {}

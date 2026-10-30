@@ -14,7 +14,13 @@ import sys
 root = Path(__file__).resolve().parents[1] if "__file__" in globals() else Path.cwd()
 sys.path.insert(0, str(root))
 
+import tempfile
+
+from techcorp.tools import accounts as accounts_mod
 from techcorp.tools.accounts import dummy_runtime, reset_password
+
+# The run writes its audit lines to a temporary file, never to techcorp/data/audit.jsonl.
+accounts_mod.AUDIT_PATH = Path(tempfile.mkdtemp()) / "audit.jsonl"
 
 known = reset_password.func("E-4101", runtime=dummy_runtime())
 unknown = reset_password.func("E-9999", runtime=dummy_runtime())
