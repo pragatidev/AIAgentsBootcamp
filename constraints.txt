@@ -1,0 +1,14 @@
+# Pins for the LangChain family every Section 4 lab and capture ran on, read from the installed
+# packages on 2026-10-30. Install with: pip install -r requirements.txt -c constraints.txt
+# requirements.txt keeps the lower bounds; this file holds the exact versions, so a clone made next
+# month installs what the lectures show. Change a pin only after the suite and the labs run on the new one.
+langchain==1.4.0
+langchain-core==1.6.2
+langgraph==1.2.11
+langgraph-prebuilt==1.1.0
+langgraph-checkpoint==4.2.0
+langchain-ollama==1.1.0
+langchain-openai==1.6.2
+langchain-anthropic==1.7.1
+pydantic==2.12.5
+pytest==9.1.1

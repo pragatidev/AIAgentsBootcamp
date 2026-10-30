@@ -51,7 +51,7 @@ def handle_ticket(desk, text: str, *, user_id: str, thread_id: str, decision: di
 
 
 REFUSAL = "I cannot help with that from the IT desk:"
-TESTS = ["tests/test_techcorp_tools.py", "tests/test_techcorp_desk.py", "tests/test_lab_05_24.py", "tests/test_lab_05_26.py"]
+TESTS = ["tests/test_techcorp_tools.py", "tests/test_techcorp_desk.py", "tests/test_lab_05_24.py", "tests/test_lab_05_26.py", "tests/test_techcorp_readme.py"]
 
 
 def audit_lines() -> list[str]:

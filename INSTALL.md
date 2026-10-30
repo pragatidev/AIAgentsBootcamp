@@ -31,7 +31,7 @@ Windows (PowerShell or cmd):
 ```
 py -3.13 -m venv .venv
 .venv\Scripts\activate
-pip install -r requirements.txt
+pip install -r requirements.txt -c constraints.txt
 copy .env.sample .env
 pytest -q
 ```
@@ -41,7 +41,7 @@ macOS / Linux:
 ```
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt -c constraints.txt
 cp .env.sample .env
 pytest -q
 ```

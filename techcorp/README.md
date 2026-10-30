@@ -1,47 +1,90 @@
 # TechCorp IT desk
 
-A LangChain 1.x `create_agent` desk for internal IT tickets: password resets, share access, and VPN questions. The acting employee id rides in `DeskContext`, not in the prompt. `reset_password` is a pretend reset. It writes a temporary token derived from the id and a counter, and an audit line at `techcorp/data/audit.jsonl` (gitignored). Nothing touches a real directory.
+A LangChain 1.x `create_agent` desk for internal IT tickets: password resets, shared-folder access, and VPN questions the employee's record can answer. The employee a write acts on comes from the request envelope, `DeskContext`, never from the ticket text. `reset_password` is a pretend reset: it returns a random temporary password to the employee and writes an audit line to `techcorp/data/audit.jsonl` (created at run time, gitignored) that never carries the password. Nothing touches a real directory.
 
 ## Run it
 
-From the course repo root, with Ollama serving `qwen3:8b`:
+Make and activate `.venv` as `INSTALL.md` says (Windows: `.venv\Scripts\activate`; macOS and Linux: `source .venv/bin/activate`), with Ollama serving `qwen3:8b`, then from the repo root:
 
 ```
-d:\project\viralLoom\.venv\Scripts\python.exe labs/05_26_portfolio_techcorp_desk.py
+python labs/05_26_portfolio_techcorp_desk.py
 ```
 
 Or from Python:
 
 ```
-from techcorp.agent.desk import DEFAULT_MIDDLEWARE, build_techcorp_desk, run_ticket
-from langgraph.checkpoint.memory import InMemorySaver
+from techcorp.agent.desk import build_techcorp_desk, handle_ticket
 
-desk = build_techcorp_desk(middleware=DEFAULT_MIDDLEWARE, checkpointer=InMemorySaver())
-print(run_ticket(desk, "Ticket TC-1002: VPN drops.", user_id="E-4102", thread_id="demo"))
+desk = build_techcorp_desk()
+out = handle_ticket(
+    desk,
+    "Ticket TC-1001: I forgot my laptop password. Please reset it.",
+    user_id="E-4101",
+    thread_id="demo",
+    decision={"decisions": [{"type": "approve"}]},
+)
+print(out["parked"], out["reply"])
 ```
 
-A password reset parks until you resume with `Command(resume={"decisions": [{"type": "approve"}]})`. Look at `labs/05_14_hitl_middleware_on_reset.py` for the exact shape.
+`build_techcorp_desk()` with no middleware argument is the gated desk: a reset or a grant parks until a person decides, and `handle_ticket` resumes it with the decision you pass.
 
 ## Tests
 
-No live model. The fixture in `tests/fixtures/fake_model.py` proposes tool calls.
+No live model and no key: the fixtures in `tests/fixtures/fake_model.py` play the model.
 
 ```
-d:\project\viralLoom\.venv\Scripts\python.exe -m pytest tests/test_techcorp_tools.py tests/test_techcorp_desk.py --override-ini addopts= -q
+python -m pytest tests/test_techcorp_tools.py tests/test_techcorp_desk.py tests/test_lab_05_24.py tests/test_lab_05_26.py tests/test_techcorp_readme.py -q
 ```
 
-`pytest.ini` already sets `pythonpath = .` so the package imports.
+`pytest.ini` sets `pythonpath = .`, so the package imports from the repo root without an install step.
 
-## Why the DataFlow desk is a graph
+## Design decisions
 
-`create_agent` builds one shape: a model node, a tools node, and the cycle between them. Middleware changes behaviour around that shape. Three things it cannot do, which is why Part 6 draws DataFlow as a graph:
+1. The acting employee comes from the envelope. `acting_user` in `techcorp/tools/accounts.py` reads `DeskContext.user_id`; an empty envelope is a typed miss, and an id typed into the ticket that disagrees is ignored, marked `"mismatch": true` on the audit line and returned as `requested_user_id_ignored`. Tests: `test_context_id_beats_text`, `test_empty_envelope_is_a_typed_miss`, `test_mismatch_is_marked_in_the_audit`.
+2. Every write tool parks for a person. `WRITE_TOOLS` in `techcorp/agent/desk.py` names `reset_password` and `grant_access`; `write_gate()` parks before each with four choices (approve, edit, reject, respond) and a description that names the employee the tool will act on. Test: `test_gate_names_are_real_tools`.
+3. The desk is gated by default. `build_techcorp_desk()` with no middleware argument uses `DEFAULT_MIDDLEWARE` and an in-memory saver; an explicit list, even an empty one, is used as given. Test: `test_default_build_gates_reset`.
+4. A run is capped at six tool calls (`ToolCallLimitMiddleware(run_limit=6)` in `DEFAULT_MIDDLEWARE`).
+5. Refusals have one shape, written in `techcorp/agent/prompts.py`: `I cannot help with that from the IT desk: <reason>. Please contact <team>.`
+6. The audit line never carries a secret. `SECRET_KEYS` in `techcorp/tools/accounts.py` drops the temporary password before a line is written; the line carries the action, the acting id, the id the model asked for, and the ticket and request ids when the envelope has them. Test: `test_audit_line_has_no_secret`.
+7. Nothing builds a model at import. Test: `test_importing_the_package_builds_no_model`.
 
-1. No branch on a value you chose. A refund path that must hit a person is an edge you can point at, not a paragraph in a system prompt.
-2. No step of your own. A named classify or trim node, with its own state keys and retry, is not a `before_model` hook.
-3. No test of one step alone. TechCorp tests run the whole desk. DataFlow tests call `classify` with one ticket and assert one field.
+## Known limits
 
-The tools, schemas, prompt, and middleware from this package drop into that graph unchanged. The shape changes. The pieces do not.
+1. VPN: the desk answers what the employee's record holds (`lookup_user` returns `vpn_enabled` and groups). It has no tool for connection faults, so those go to Network Support in the refusal shape.
+2. Software installs are not done here; they go to a person in the refusal shape.
+3. The temporary password reaches the employee in the model's reply, and nothing filters what the model writes.
+4. The audit line does not yet say who approved a write.
+5. `grant_access` takes any share name the model writes, and nothing checks the employee's role or region.
+6. A parked run lives in an in-memory saver; it is gone when the process ends.
+7. One company, one in-memory directory for everyone.
+8. The local model: see the last section.
+
+## Sample run
+
+What `python labs/05_26_portfolio_techcorp_desk.py` printed on 2026-10-30 on `qwen3:8b` (local Ollama), check lines only; the model's sentences differ from run to run:
+
+```
+gated reset_password ['approve', 'edit', 'reject', 'respond']
+gated grant_access ['approve', 'edit', 'reject', 'respond']
+reset_parked True
+reset_reply_has_token True
+vpn_refused_in_shape True
+oos_refused_in_shape True
+audit_lines_added 1
+```
+
+## What create_agent cannot do here, and why the DataFlow desk is a graph
+
+`create_agent` (in `langchain/agents/factory.py`, LangChain 1.4.0) builds one loop: a model node, a tools node, and the cycle between them. Middleware adds to it more than it looks: each `before_agent`, `before_model`, `after_model` and `after_agent` hook becomes a named node in the graph, a middleware can add its own state keys through `state_schema`, and a hook declared with `can_jump_to` can send the run to the model, the tools or the end. This desk's gate already works that way: it parks the run on a named tool.
+
+What it still cannot do:
+
+1. A path of your own. A refund route with several steps of its own, or a supervisor that hands work between desks, is not one of the three jump targets.
+2. A step anywhere else. Hooks sit at those four fixed points, and the only retries are for model calls and tool calls.
+3. The model's own choice inside the loop has no name you can test alone; this repo's desk tests run the whole desk.
+
+The DataFlow desk needs routes, a parked refund path and a supervisor, so the course draws it as a LangGraph graph. The tools, schemas, prompt and middleware from this package drop into that graph unchanged.
 
 ## Local model quality
 
-Labs call `qwen3:8b` on Ollama for real. A small local model will skip a tool, invent a user id, or refuse in the wrong shape on some tickets. That is a property of the weights, not of the package. The pytest suite is the clone contract: it stays green with the fixture model and no key. Treat a live lab transcript as a screen, not as a guarantee.
+Labs call `qwen3:8b` on Ollama for real. A small local model will skip a tool, think until it runs out of room and return an empty reply, or refuse in the wrong shape on some tickets. That is a property of the weights, not of the package. The pytest suite is the clone contract: it stays green with the fixture models and no key. Treat a live lab transcript as one run, not as a guarantee.
