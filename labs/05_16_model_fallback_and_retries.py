@@ -1,100 +1,159 @@
-# %% [markdown]
-# Model fallback and retries.
-#
-# When this works, a missing Ollama tag fails for real and the
-# fallback model answers. Then a planted wrapper raises once and
-# ModelRetryMiddleware retries it. The retry count is printed.
-
 # %%
+"""Lab 4.16: model fallback and retries.
+
+What we build: we make the desk keep answering when the world fails it. You type a two-piece guard:
+retry the same model when a failure might not repeat, and switch to a model you trust when it will.
+Then a flaky directory gets the same treatment at the tool.
+
+What you learn: the built-in middlewares for failure, and the rule from lecture 4.7 in practice: a
+fault the world causes is retried or handled, a miss the tool returns is an answer and never retried.
+Plus the one setting that decides whether retry and fallback work together at all.
+
+What will be true on your screen: the real 404 from a model that does not exist; the fallback list with
+one model in it; which model answered each run and how long it took; a planted fault counted as one
+retry; the flaky lookup retried once and answered; and the unknown employee answered as a typed miss
+with no retry at all.
+"""
+
 from pathlib import Path
 import sys
+import time
 
 root = Path(__file__).resolve().parents[1] if "__file__" in globals() else Path.cwd()
 sys.path.insert(0, str(root))
 
-from langchain.agents.middleware import ModelFallbackMiddleware, ModelRetryMiddleware
-from langchain_ollama import ChatOllama
+from langchain.agents.middleware import (
+    ModelFallbackMiddleware,
+    ModelRetryMiddleware,
+    ToolErrorMiddleware,
+    ToolRetryMiddleware,
+)
+from langchain_core.tools import StructuredTool
 
 import config
-from techcorp.agent.desk import build_techcorp_desk, run_ticket
+from techcorp.agent.desk import build_techcorp_desk, reply_text, run_ticket
+from techcorp.tools.accounts import lookup_user
 
-print("model", config.CHAT_MODEL)
-print("ollama_base", config.OLLAMA_BASE_URL)
-
-bad = ChatOllama(
-    model="qwen3-does-not-exist-lab",
-    base_url=config.OLLAMA_BASE_URL.rstrip("/"),
-    temperature=0,
-)
 good = config.get_chat_model()
+print("model", type(good).__name__, getattr(good, "model", None) or getattr(good, "model_name", None))
 
-print("BREAK is a missing model name, not a fake exception")
-try:
-    bad.invoke("ping")
-    print("missing_model_unexpected_success")
-except Exception as err:
-    print("first_model_error_type", type(err).__name__)
-    print("first_model_error", err)
-    fallback_error_text = str(err)
-
-# ModelFallbackMiddleware(first_model, *additional_models).
-# The missing tag is the create_agent primary so the first call fails
-# for real. first_model on the middleware is the first fallback after
-# that miss; additional models follow. There is no additional_models=
-# keyword in 1.4.0.
-fallback = ModelFallbackMiddleware(bad, good)
-print("fallback_models", [getattr(item, "model", type(item).__name__) for item in fallback.models])
-
-desk = build_techcorp_desk(model=bad, middleware=[fallback])
-out = run_ticket(
-    desk,
-    "Ticket TC-1002 for employee E-4102: VPN connects then drops. What should I check?",
-    user_id="E-4102",
-    thread_id="lab-5-16-fallback",
-)
-messages = out.get("messages") or []
-last = messages[-1] if messages else None
-print("fallback_reply", getattr(last, "content", last))
 
 # %%
-print("PLANTED WORLD FAULT: wrapper raises once, then delegates")
+# TYPE THIS: is_transient and resilience. The signatures and docstrings are given; you type the bodies.
+# The finished copies are in techcorp/agent/resilience.py.
+def is_transient(exc) -> bool:
+    """True when the same call might pass if tried again; False for a status that will fail the same way."""
+    return getattr(exc, "status_code", None) not in {400, 401, 403, 404}
 
 
+def resilience(fallback_model) -> list:
+    """Retry the same model on a transient fault, then fall back to a model you trust. The fallback is the outer layer."""
+    return [
+        ModelFallbackMiddleware(fallback_model),
+        ModelRetryMiddleware(max_retries=2, retry_on=is_transient, on_failure="error", initial_delay=0.1, backoff_factor=0.0, jitter=False),
+    ]
+
+
+# BREAK: delete on_failure="error" from the retry above and run. The dead-port run's reply becomes
+# "Model call failed after 3 attempts with ...", and the fallback never runs, because nothing raised.
+# Put on_failure="error" back and run.
+
+
+def label(model) -> str:
+    return str(getattr(model, "model", None) or getattr(model, "model_name", None))
+
+
+def run(desk, text: str, user_id: str) -> dict:
+    started = time.perf_counter()
+    state = run_ticket(desk, text, user_id=user_id)
+    last = state["messages"][-1]
+    print("answered_by", last.response_metadata.get("model") or last.response_metadata.get("model_name"))
+    print("seconds", round(time.perf_counter() - started, 2))
+    print("reply", reply_text(state).strip())
+    return state
+
+
+VPN = "Ticket TC-1002 for employee E-4102: VPN connects then drops every few minutes from the home office."
+
+# %%
+# A model id the local server does not have: a real 404, called directly first.
+bad = config.get_local_chat_model(model="qwen3-does-not-exist-lab")
+try:
+    bad.invoke("ping")
+except Exception as exc:
+    print("bad_model_error", type(exc).__name__, "status_code", getattr(exc, "status_code", None), "transient", is_transient(exc))
+stack = resilience(good)
+print("fallback_models", [label(m) for m in stack[0].models])
+run(build_techcorp_desk(model=bad, tools=[lookup_user], middleware=stack), VPN, "E-4102")
+
+# %%
+# A model server that is not there: no status code, so the retry tries twice more, then the fallback answers.
+dead = config.get_local_chat_model(base_url="http://127.0.0.1:1")
+run(build_techcorp_desk(model=dead, tools=[lookup_user], middleware=resilience(good)), VPN, "E-4102")
+
+
+# %%
+# PLANTED: a model wrapper that raises on its first call and then passes every call through.
 class FailOnceThenCall:
-    """Planted world fault: the first model call raises, then it delegates."""
-
-    def __init__(self, inner, box=None):
-        self.inner = inner
-        self.box = box if box is not None else {"calls": 0, "failures_left": 1}
+    def __init__(self, inner, events: list) -> None:
+        self.inner, self.events = inner, events
 
     def bind_tools(self, tools, **kwargs):
-        bound = self.inner.bind_tools(tools, **kwargs)
-        return FailOnceThenCall(bound, box=self.box)
+        return FailOnceThenCall(self.inner.bind_tools(tools, **kwargs), self.events)
 
     def bind(self, **kwargs):
-        bound = self.inner.bind(**kwargs)
-        return FailOnceThenCall(bound, box=self.box)
+        return FailOnceThenCall(self.inner.bind(**kwargs), self.events)
 
     def invoke(self, messages, **kwargs):
-        self.box["calls"] += 1
-        if self.box["failures_left"] > 0:
-            self.box["failures_left"] -= 1
-            raise RuntimeError("planted world fault: first model call failed")
+        if "raise" not in self.events:
+            self.events.append("raise")
+            raise ConnectionError("planted: the first model call fails")
+        self.events.append("ok")
         return self.inner.invoke(messages, **kwargs)
 
 
-box = {"calls": 0, "failures_left": 1}
-wrapper = FailOnceThenCall(config.get_chat_model(), box=box)
-retry = ModelRetryMiddleware(max_retries=2, initial_delay=0.1, backoff_factor=0.0, jitter=False)
-retry_desk = build_techcorp_desk(model=wrapper, middleware=[retry])
-retried = run_ticket(
-    retry_desk,
-    "Ticket TC-1001 for employee E-4101: please look up my account. Do not reset yet.",
-    user_id="E-4101",
-    thread_id="lab-5-16-retry",
-)
-retry_messages = retried.get("messages") or []
-print("retry_calls", box["calls"])
-print("retry_count", max(0, box["calls"] - 1))
-print("retry_failures_left", box["failures_left"])
-print("retry_reply", getattr(retry_messages[-1], "content", None) if retry_messages else None)
+events: list = []
+desk = build_techcorp_desk(model=FailOnceThenCall(good, events), tools=[lookup_user], middleware=resilience(good))
+run(desk, "Ticket TC-1006 for employee E-4106: please look me up and tell me which department and groups I am in.", "E-4106")
+print("model_calls", len(events), "faults_raised", events.count("raise"))
+# A retry is a fault followed by another call to the same model.
+print("retries", events[:-1].count("raise"))
+
+# %%
+# PLANTED: a directory that is down for one call while a fault is armed. ToolError is the outer layer,
+# ToolRetry the inner, with on_failure="error" so a fault that outlasts the retries reaches the error handler.
+tool_events: list = []
+armed = {"faults": 0}
+
+
+def flaky_lookup_fn(query: str) -> dict:
+    if armed["faults"]:
+        armed["faults"] -= 1
+        tool_events.append("raise")
+        raise ConnectionError("directory service unreachable")
+    tool_events.append("ok")
+    return lookup_user.invoke({"query": query})
+
+
+flaky_lookup = StructuredTool.from_function(flaky_lookup_fn, name="lookup_user", description=lookup_user.description)
+
+
+def directory_down(exc, request) -> str:
+    # Name the kind of failure, never the raw error text, which can carry internal detail.
+    return f"The directory did not answer ({type(exc).__name__}). Try again in a few minutes."
+
+
+tool_guard = [
+    ToolErrorMiddleware(on_error=directory_down, tools=["lookup_user"]),
+    ToolRetryMiddleware(tools=["lookup_user"], max_retries=2, on_failure="error", initial_delay=0.1, backoff_factor=0.0, jitter=False),
+]
+tool_desk = build_techcorp_desk(model=good, tools=[flaky_lookup], middleware=tool_guard)
+for user_id, faults in (("E-4106", 1), ("E-9999", 0)):
+    armed["faults"] = faults
+    before = len(tool_events)
+    state = run(tool_desk, f"Ticket TC-1006 for employee {user_id}: please look me up and tell me which department and groups I am in.", user_id)
+    calls = tool_events[before:]
+    print("lookup", user_id, "tool_calls", len(calls), "tool_faults", calls.count("raise"))
+    for message in state["messages"]:
+        if message.type == "tool":
+            print("tool", message.status, message.content)
