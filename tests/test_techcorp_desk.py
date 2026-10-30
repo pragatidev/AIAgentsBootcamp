@@ -168,7 +168,8 @@ def test_context_id_beats_text(tmp_path, monkeypatch):
     assert reset_rows[0]["user_id"] == "E-4101"
 
 
-def test_classifier_schema():
+def test_fixture_classifier_fills_a_ticketclass():
+    # The fixture router, not the schema: the list of categories is pinned in tests/test_lab_05_10.py.
     model = FakeChatModel()
     obj = model.with_structured_output(TicketClass).invoke(
         "Ticket TC-1001: I forgot my laptop password. Please reset it."
