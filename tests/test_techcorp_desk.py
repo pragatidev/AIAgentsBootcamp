@@ -360,3 +360,16 @@ def test_tool_limit_per_tool_name(tmp_path, monkeypatch):
     refused = [m for m in out["messages"] if m.type == "tool" and m.status == "error"]
     assert len(refused) == 1
     assert "Do not call 'lookup_user' again." in refused[0].content
+
+
+def test_scope_band_says_what_the_tools_can_do():
+    # Ruling LC-2.3 (a): VPN answers come from the record or a tool; faults and installs go to a person.
+    from techcorp.agent.prompts import DESK_SYSTEM_PROMPT
+    from techcorp.browser.playwright_tool import BROWSER_SYSTEM
+
+    scope = [line for line in DESK_SYSTEM_PROMPT.splitlines() if line.startswith("Scope:")][0]
+    assert "vpn_enabled" in scope and "VPN questions you can answer" in scope
+    assert "you do not install software" in scope
+    assert "software install questions" not in scope
+    # Section 39's browser desk is built on this prompt and keeps VPN in scope through its status tool.
+    assert scope in BROWSER_SYSTEM and "or from a tool you have" in scope
