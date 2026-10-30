@@ -3,6 +3,8 @@
 ApproverRequired: a write runs only when a named person, not the requester, approved it.
 TokenBudget: a run that has spent its token budget ends with a refusal instead of a bigger bill.
 RunAudit: one row per run with ids, tools and tokens, never the text of a message.
+PermissionGate: a call the caller's role or region does not allow never reaches a person or a tool.
+region_prompt: the system prompt names the region the desk serves, read from the envelope.
 """
 
 from __future__ import annotations
@@ -12,10 +14,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from langchain.agents.middleware import AgentMiddleware, AgentState, hook_config
+from langchain.agents.middleware import AgentMiddleware, AgentState, dynamic_prompt, hook_config
 from langchain_core.messages import AIMessage, RemoveMessage, ToolMessage
 from typing_extensions import NotRequired
 
+from techcorp.agent import permissions
+from techcorp.agent.prompts import DESK_SYSTEM_PROMPT
 from techcorp.agent.usage import read_usage
 
 WRITES = ("reset_password", "grant_access")
@@ -125,3 +129,50 @@ class RunAudit(AgentMiddleware):
         with path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(row, ensure_ascii=True) + "\n")
         return None
+
+
+class PermissionGate(AgentMiddleware):
+    """Check every proposed tool call against the rules before a person or a tool sees it, and again when it runs.
+
+    List it after write_gate(): after_model hooks run from the last in the list to the first, so this one
+    answers a refused call with a typed miss first. When every call in the turn is refused, the run jumps
+    back to the model, past the human gate, so nothing parks and the model reads the misses. A turn that
+    mixes allowed and refused calls goes on to the gate, and only the allowed calls run. wrap_tool_call
+    checks again at execution, because an edit decision can change the arguments after the park.
+    """
+
+    def __init__(self, checker=None) -> None:
+        super().__init__()
+        self.checker = checker or permissions.check
+
+    @hook_config(can_jump_to=["model"])
+    def after_model(self, state, runtime) -> dict[str, Any] | None:
+        last = state["messages"][-1]
+        if not isinstance(last, AIMessage) or not last.tool_calls:
+            return None
+        refused = []
+        for call in last.tool_calls:
+            miss = self.checker(call["name"], call.get("args") or {}, runtime.context)
+            if miss is not None:
+                refused.append(ToolMessage(content=json.dumps(miss), tool_call_id=call["id"], name=call["name"], status="error"))
+        if not refused:
+            return None
+        # The calls stay on the AI message and each refused one gets its answer, so the pairing holds.
+        update: dict[str, Any] = {"messages": refused}
+        if len(refused) == len(last.tool_calls):
+            update["jump_to"] = "model"
+        return update
+
+    def wrap_tool_call(self, request, handler):
+        call = request.tool_call
+        miss = self.checker(call["name"], call.get("args") or {}, request.runtime.context)
+        if miss is not None:
+            return ToolMessage(content=json.dumps(miss), tool_call_id=call["id"], name=call["name"], status="error")
+        return handler(request)
+
+
+@dynamic_prompt
+def region_prompt(request) -> str:
+    """The desk's prompt plus one line naming the region the envelope says this desk serves."""
+    region = getattr(request.runtime.context, "region", None) or "US"
+    return DESK_SYSTEM_PROMPT + f"\nTenant rules: this desk serves the {region} region only. Employees in another region use their own region's desk.\n"

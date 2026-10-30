@@ -49,14 +49,15 @@ def test_lookup_by_name():
     assert miss["reason"] == "unknown user nobody here"
 
 
-def test_grant_access_appends():
+def test_grant_access_appends(audit_path):
     reload_users()
-    out = grant_access.invoke({"user_id": "E-4104", "share": "finance-q3"})
+    out = grant_access.func("E-4104", "finance-q3", runtime=dummy_runtime("E-4106"))
     assert out["found"] is True
     assert "finance-q3" in out["groups"]
-    again = grant_access.invoke({"user_id": "E-4104", "share": "finance-q3"})
+    again = grant_access.func("E-4104", "finance-q3", runtime=dummy_runtime("E-4106"))
     assert again["groups"].count("finance-q3") == 1
-    miss = grant_access.invoke({"user_id": "E-0000", "share": "finance-q3"})
+    assert json.loads(audit_path.read_text(encoding="utf-8").splitlines()[0])["by"] == "E-4106"
+    miss = grant_access.func("E-0000", "finance-q3", runtime=dummy_runtime("E-4106"))
     assert miss["found"] is False
     assert miss["reason"] == "unknown user E-0000"
     reload_users()

@@ -193,7 +193,7 @@ def reset_password(user_id: str, runtime: ToolRuntime[Any]) -> dict:
 
 
 @tool
-def grant_access(user_id: str, share: str) -> dict:
+def grant_access(user_id: str, share: str, runtime: ToolRuntime[Any] = None) -> dict:
     """Grant an employee access to a named share by adding it to their groups. Returns the new group list or a typed miss."""
     row = _find_user(user_id)
     if not row:
@@ -217,6 +217,8 @@ def grant_access(user_id: str, share: str) -> dict:
             "user_id": row["user_id"],
             "share": name,
             "groups": list(groups),
-        }
+            "by": _context_user_id(runtime),
+        },
+        runtime,
     )
     return result

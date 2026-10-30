@@ -1,0 +1,6 @@
+{
+  "finance-q3": ["Finance"],
+  "eng-tools": ["Engineering"],
+  "sales-crm": ["Sales"],
+  "support-kb": ["Support", "Operations"]
+}

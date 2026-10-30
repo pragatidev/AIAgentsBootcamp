@@ -53,8 +53,8 @@ python -m pytest tests/test_techcorp_tools.py tests/test_techcorp_desk.py tests/
 1. VPN: the desk answers what the employee's record holds (`lookup_user` returns `vpn_enabled` and groups). It has no tool for connection faults, so those go to Network Support in the refusal shape.
 2. Software installs are not done here; they go to a person in the refusal shape.
 3. The temporary password reaches the employee in the model's reply, and nothing filters what the model writes.
-4. The audit line does not yet say who approved a write.
-5. `grant_access` takes any share name the model writes, and nothing checks the employee's role or region.
+4. The tool's audit line says who asked (`by` on a grant), not who approved. The approver is on the run audit row in `techcorp/data/run_audit.jsonl` only when `RunAudit` and `ApproverRequired` from `techcorp/agent/middleware.py` are in the middleware list (lab `labs/05_28_custom_middleware.py`); `DEFAULT_MIDDLEWARE` does not include them.
+5. The rules for who may call what live in `techcorp/agent/permissions.py` (roles, region, the share list in `techcorp/data/shares.json`) and run as `PermissionGate` (lab `labs/05_30_permissions_and_tenants.py`). `DEFAULT_MIDDLEWARE` does not include it, so the default desk grants any share the model names once a person approves.
 6. A parked run lives in an in-memory saver; it is gone when the process ends.
 7. One company, one in-memory directory for everyone.
 8. The local model: see the last section.
