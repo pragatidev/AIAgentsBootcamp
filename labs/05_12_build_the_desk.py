@@ -1,11 +1,20 @@
-# %% [markdown]
-# Build the TechCorp IT desk with create_agent.
-#
-# When this works, three tickets run through the desk with no human
-# gate, and each transcript is printed message by message. The break
-# returns a desk whose tool list is missing reset_password.
-
 # %%
+"""Lab 4.12: build the TechCorp IT desk with create_agent.
+
+What we build: you turn the three TechCorp tools and the five-band prompt into a working IT desk with
+one call you type yourself, run three real tickets through it, read every hop, then take the reset tool
+away and put it back.
+
+What you learn: create_agent is the loop you wrote in Section 3, in one call, handed back as a compiled
+graph with a model node, a tools node and the cycle between them. The tool list is the desk's abilities:
+a missing tool is a missing ability, not a missing word in the prompt.
+
+What will be true on your screen: the graph's nodes; for each ticket every message with its type, the
+tool calls the model asked for, and on each AI message why the model stopped (done_reason) and its
+tokens; then whether the reply is in the desk's refusal shape. This desk has no gate yet, so a reset
+runs at once; lecture 4.14 puts a person in front of it.
+"""
+
 from pathlib import Path
 import json
 import sys
@@ -13,80 +22,60 @@ import sys
 root = Path(__file__).resolve().parents[1] if "__file__" in globals() else Path.cwd()
 sys.path.insert(0, str(root))
 
+from langchain.agents import create_agent
+
 import config
-from techcorp.agent.desk import build_techcorp_desk, run_ticket
-from techcorp.tools.accounts import grant_access, lookup_user
+from techcorp.agent.context import DeskContext
+from techcorp.agent.desk import reply_text, run_ticket
+from techcorp.agent.prompts import DESK_SYSTEM_PROMPT
+from techcorp.tools.accounts import grant_access, lookup_user, reset_password
 
-tickets_path = root / "techcorp" / "data" / "tickets.jsonl"
-wanted = {"TC-1001", "TC-1002", "TC-1003"}
-tickets = []
-for line in tickets_path.read_text(encoding="utf-8").splitlines():
-    if not line.strip():
-        continue
-    row = json.loads(line)
-    if row["ticket_id"] in wanted:
-        tickets.append(row)
-tickets.sort(key=lambda row: row["ticket_id"])
+# %%
+# TYPE THIS: the tool list and build_desk. The signature and docstring are given; you type the rest.
+# The package's own builder is build_techcorp_desk in techcorp/agent/desk.py.
+TOOLS = [lookup_user, reset_password, grant_access]
 
-print("model", config.CHAT_MODEL)
-desk = build_techcorp_desk(middleware=[])
+
+def build_desk(model, tools, system_prompt):
+    """create_agent with the TechCorp envelope; returns the compiled graph."""
+    return create_agent(model=model, tools=list(tools), system_prompt=system_prompt, context_schema=DeskContext)
+
+
+# BREAK: delete reset_password from TOOLS and run. TC-1001 gets no password, because the desk cannot
+# do it any more; read its done_reason and reply. Put reset_password back and run.
+
+chat = config.get_chat_model()
+print("model", type(chat).__name__, getattr(chat, "model", None) or getattr(chat, "model_name", None))
+desk = build_desk(chat, TOOLS, DESK_SYSTEM_PROMPT)
 print("desk_type", type(desk).__name__)
-
-
-def content_text(msg) -> str:
-    content = getattr(msg, "content", "") or ""
-    if isinstance(content, list):
-        parts = []
-        for block in content:
-            if isinstance(block, dict):
-                parts.append(str(block.get("text") or block.get("content") or ""))
-            else:
-                parts.append(str(block))
-        return "\n".join(parts)
-    return str(content)
-
-
-def print_transcript(label: str, state: dict) -> None:
-    print("TICKET", label)
-    messages = state.get("messages") or []
-    print("message_count", len(messages))
-    for index, msg in enumerate(messages):
-        kind = getattr(msg, "type", type(msg).__name__)
-        print("hop", index, "type", kind)
-        name = getattr(msg, "name", None)
-        if name:
-            print("name", name)
-        tool_calls = getattr(msg, "tool_calls", None) or []
-        if tool_calls:
-            print("tool_calls", tool_calls)
-        print("content", content_text(msg))
-        print("---")
-    print("final_reply", content_text(messages[-1]) if messages else "")
+print("nodes", list(desk.get_graph().nodes))
 
 
 # %%
-for row in tickets:
-    text = (
-        f"Ticket {row['ticket_id']} for employee {row['customer_id']}: "
-        f"{row['text']}"
-    )
-    print("running", row["ticket_id"])
-    out = run_ticket(desk, text, user_id=row["customer_id"], thread_id=row["ticket_id"])
-    print_transcript(row["ticket_id"], out)
+def print_transcript(state: dict) -> None:
+    for n, message in enumerate(state["messages"]):
+        line = [str(n), message.type]
+        if message.type == "tool":
+            line += [message.name, str(message.content)]
+        elif message.type == "ai":
+            line += ["calls", json.dumps([(c["name"], c["args"]) for c in message.tool_calls])]
+            line += ["done_reason", str(message.response_metadata.get("done_reason"))]
+            line += ["tokens", str((message.usage_metadata or {}).get("total_tokens"))]
+            line += ["text", message.text.strip()]
+        else:
+            line += [message.text.strip()]
+        print(" ".join(line))
 
-# %%
-print("BREAK: desk with no reset_password tool")
-broken = build_techcorp_desk(middleware=[], tools=[lookup_user, grant_access])
-row = next(item for item in tickets if item["ticket_id"] == "TC-1001")
-text = (
-    f"Ticket {row['ticket_id']} for employee {row['customer_id']}: "
-    f"{row['text']}"
-)
-out = run_ticket(
-    broken,
-    text,
-    user_id=row["customer_id"],
-    thread_id="break-no-reset",
-)
-print_transcript("TC-1001-no-reset", out)
-print("returned_desk", type(broken).__name__)
+
+tickets = (root / "techcorp" / "data" / "tickets.jsonl").read_text(encoding="utf-8").splitlines()
+by_id = {row["ticket_id"]: row for row in map(json.loads, tickets)}
+for ticket_id in ("TC-1001", "TC-1002", "TC-1003"):
+    ticket = by_id[ticket_id]
+    text = f"Ticket {ticket_id} for employee {ticket['customer_id']}: {ticket['text']}"
+    state = run_ticket(desk, text, user_id=ticket["customer_id"])
+    print("ticket", ticket_id, "message_count", len(state["messages"]))
+    print_transcript(state)
+    reply = reply_text(state).strip()
+    if not reply:
+        print("EMPTY_REPLY")
+    print("refusal_shape", reply.startswith("I cannot help with that from the IT desk:"))
