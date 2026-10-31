@@ -59,7 +59,8 @@ class TokenCounter(BaseCallbackHandler):
 # LangChain has no on_chat_model_end callback: chat models end on on_llm_end too. Rename it back and run.
 
 # %%
-chat = config.get_chat_model()
+# reasoning=False: with thinking on, this ticket thought until the 4096-token cap; off, the reply itself streams.
+chat = config.get_chat_model(reasoning=False)
 print("model", type(chat).__name__, getattr(chat, "model", None) or getattr(chat, "model_name", None))
 desk = build_techcorp_desk(model=chat)
 counter, builtin = TokenCounter(), UsageMetadataCallbackHandler()
