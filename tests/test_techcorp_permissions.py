@@ -113,3 +113,19 @@ def test_mixed_turn_runs_only_the_allowed_call(audit):
 
 def test_a_caller_not_in_the_directory_is_refused():
     assert check("reset_password", {"user_id": "E-0000"}, DeskContext(user_id="E-0000"))["reason"] == "unknown caller E-0000"
+
+
+def test_envelope_prompt_names_the_caller():
+    from techcorp.agent.middleware import envelope_prompt
+
+    seen = []
+
+    class Recorder(FakeToolModel):
+        def invoke(self, messages, **kwargs):
+            seen.append(messages)
+            return AIMessage(content="ok")
+
+    run_ticket(build_techcorp_desk(model=Recorder(), middleware=[envelope_prompt]), "Ticket TC-1001: reset my password.", user_id="E-4101", role="employee")
+    system = [m for m in seen[0] if isinstance(m, SystemMessage)][0]
+    assert "the person asking is E-4101, role employee, region US" in system.content
+    assert "Ticket" not in system.content.split("Caller:")[1]

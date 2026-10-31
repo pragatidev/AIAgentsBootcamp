@@ -5,6 +5,7 @@ TokenBudget: a run that has spent its token budget ends with a refusal instead o
 RunAudit: one row per run with ids, tools and tokens, never the text of a message.
 PermissionGate: a call the caller's role or region does not allow never reaches a person or a tool.
 region_prompt: the system prompt names the region the desk serves, read from the envelope.
+envelope_prompt: the system prompt names who is asking, read from the envelope, for a door whose tickets carry no id.
 """
 
 from __future__ import annotations
@@ -169,6 +170,19 @@ class PermissionGate(AgentMiddleware):
         if miss is not None:
             return ToolMessage(content=json.dumps(miss), tool_call_id=call["id"], name=call["name"], status="error")
         return handler(request)
+
+
+@dynamic_prompt
+def envelope_prompt(request) -> str:
+    """The desk's prompt plus who is asking, from the envelope: behind a door the ticket text carries no id."""
+    ctx = request.runtime.context
+    caller = getattr(ctx, "user_id", None) or "unknown"
+    role = getattr(ctx, "role", None) or "employee"
+    region = getattr(ctx, "region", None) or "US"
+    return DESK_SYSTEM_PROMPT + (
+        f"\nCaller: the person asking is {caller}, role {role}, region {region}. This comes from the request "
+        "envelope, not from the ticket text; look up that id when you need the record.\n"
+    )
 
 
 @dynamic_prompt
