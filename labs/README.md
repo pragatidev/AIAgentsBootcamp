@@ -34,6 +34,23 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 04_07_forget_break.py            forget the profile, read on a new thread
 04_08_similarity_recall.py       hits with scores inside a customer namespace
 04_10_desk_remembers.py          two tickets one customer, third reads nothing
+05_03_init_chat_model.py         model from config, read_usage, reasoning block vs words
+05_05_write_a_typed_tool.py      lookup_user card, hit and miss, no model needed
+05_06_bind_tools_and_read_the_call.py  answer_calls per hop, pairing [], wrong-id break
+05_08_typed_miss_both_paths.py   reset_outcome known, unknown, empty; desk reads E-9999
+05_10_structured_output_classifier.py  TicketClass rows, categories_right N/4, no-vpn break
+05_12_build_the_desk.py          build_desk graph nodes, done_reason, refusal shape
+05_14_hitl_middleware_on_reset.py  write_gate parks, approve audits once, rejects, grant parks
+05_15_summarization_and_tool_limit.py  summary per turn, read-only desk, limit 2 then 4
+05_16_model_fallback_and_retries.py  real 404, fallback, one retry, tool retry, typed miss
+05_18_iterate_the_prompt.py      score_case on three tickets, weak, strong, iterated
+05_20_runtime_context_user_id.py  acting_user four ways, mismatch on the audit, empty miss
+05_22_stream_reply.py            updates and tokens in one run, wrong hook counts 0
+05_24_package_with_tests.py      answer_ticket, pytest exit, planted WARM_MODEL import
+05_26_portfolio_techcorp_desk.py  handle_ticket, gated reset, refusals, audit, pytest
+05_28_custom_middleware.py       approver miss then row, trace, token budget refusal, PII
+05_30_permissions_and_tenants.py  check, grant three ways, empty envelope miss
+05_32_desk_behind_a_door.py      caller_for, five smoke steps, eval table and count
 06_01_03_build_triage_graph.py   three-node DataFlow graph, mermaid, compile
 06_01_04_invoke_and_test.py      invoke a real ticket, classify alone, pytest
 06_02_02_route_three_ways.py     three tickets, three labeled routes, mermaid

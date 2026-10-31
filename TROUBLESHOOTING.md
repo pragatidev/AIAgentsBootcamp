@@ -147,6 +147,14 @@ test skips with `no local model`.
 Fix **(not tested here)**: install Ollama (on Windows, in PowerShell: `irm https://ollama.com/install.ps1 | iex`, or
 OllamaSetup.exe from ollama.com/download), make sure it is running, then `ollama pull qwen3:8b` (5.2 GB). If you set `OLLAMA_BASE_URL` in the terminal yourself, for example `$env:OLLAMA_BASE_URL = "http://127.0.0.1:1"` in PowerShell to break a lab on purpose, that value wins over the line in `.env` (`config.py` reads `.env` only for names that are not set already), so undo it when you are done: `Remove-Item Env:OLLAMA_BASE_URL`, or open a new terminal.
 
+The Section 4 labs end on the same `httpx.ConnectError` line (caused on the test machine on 2026-10-31 with
+`OLLAMA_BASE_URL` pointed at a port where nothing runs, within a few seconds). `labs/05_03_init_chat_model.py` prints
+its model and message lines first. `labs/05_12_build_the_desk.py` prints its model and the graph's nodes first, and its
+very last line is `During task with name 'model' and id ...`, with the `httpx.ConnectError` line just above it.
+`labs/05_32_desk_behind_a_door.py` prints `ERROR:    Exception in ASGI application` and a traceback from the door
+first, then `smoke 3 reset_parked pass False | 500` and `smoke_passed 2/5` (health and the missing key need no model),
+then stops in the eval set on the same last lines as 05_12. Start Ollama and run the lab again.
+
 ### The model is not pulled
 
 ```
@@ -157,6 +165,12 @@ What it means: Ollama is running but does not have the model `config.py` asked f
 
 Fix **(not tested here)**: `ollama pull <the model named in the error>`, for example `ollama pull qwen3:8b`. Check
 what you have with `ollama list`.
+
+The Section 4 labs `labs/05_03_init_chat_model.py` and `labs/05_12_build_the_desk.py` stop on this error within a few
+seconds (caused on the test machine on 2026-10-31 with `OLLAMA_CHAT_MODEL` set to `qwen3:4b`, a tag not pulled there:
+`ollama._types.ResponseError: model 'qwen3:4b' not found (status code: 404)`). It is the last line of 05_03; in 05_12 it
+sits just above the last line, `During task with name 'model' and id ...`. Both print `qwen3:4b` as the model
+first, read from the model they built, so that line tells you which name `config.py` asked for.
 
 ### No `.env` file
 

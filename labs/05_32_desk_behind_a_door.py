@@ -85,7 +85,11 @@ def call(method: str, path: str, body: dict | None = None, key: str | None = Non
         with urllib.request.urlopen(request, timeout=600) as response:
             return response.status, json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as error:
-        return error.code, json.loads(error.read().decode("utf-8") or "{}")
+        text = error.read().decode("utf-8")
+        try:
+            return error.code, json.loads(text or "{}")
+        except ValueError:
+            return error.code, {"error": text}
 
 
 def audit_lines() -> list[str]:
@@ -100,7 +104,7 @@ status, body = call("POST", "/ticket", {"ticket_id": "TC-1001", "text": "I forgo
 steps.append(("no_key_refused", status == 401, status))
 status, parked = call("POST", "/ticket", {"ticket_id": "TC-1001", "text": "I forgot my laptop password after the long weekend. Please reset it."}, "lab-employee-4101")
 first = parked.get("action_requests", [{}])[0] if parked.get("action_requests") else {}
-steps.append(("reset_parked", status == 200 and first.get("name") == "reset_password" and " will act on E-4101." in (first.get("description") or ""), first.get("description") or parked.get("reply")))
+steps.append(("reset_parked", status == 200 and first.get("name") == "reset_password" and " will act on E-4101." in (first.get("description") or ""), first.get("description") or parked.get("reply") or status))
 before = len(audit_lines())
 status, done = call("POST", "/resume", {"thread_id": parked.get("thread_id", ""), "decision": "approve"}, "lab-agent-4106")
 added = audit_lines()[before:]
