@@ -1,5 +1,5 @@
 # %%
-"""Lab 4.24: move the TechCorp agent into the package with tests.
+"""Lab 4.24: move answer_ticket into the TechCorp package and guard it with tests.
 
 What we build: the desk has lived in techcorp/agent/desk.py since lab 12, but no single function exists
 that a service could call. You write that function, answer_ticket, the package keeps one copy of the
