@@ -44,7 +44,8 @@ def build_desk(model, tools, system_prompt):
 # BREAK: delete reset_password from TOOLS and run. TC-1001 gets no password, because the desk cannot
 # do it any more; read its done_reason and reply. Put reset_password back and run.
 
-chat = config.get_chat_model()
+# reasoning=False: with thinking on, the password ticket thought until the 4096-token cap and never answered.
+chat = config.get_chat_model(reasoning=False)
 print("model", type(chat).__name__, getattr(chat, "model", None) or getattr(chat, "model_name", None))
 desk = build_desk(chat, TOOLS, DESK_SYSTEM_PROMPT)
 print("desk_type", type(desk).__name__)

@@ -61,7 +61,8 @@ def caller_for(api_key, keys: dict) -> dict | None:
 KEYS = parse_keys("lab-employee-4101:E-4101:employee,lab-agent-4106:E-4106:it_agent")
 print("key_owners", [(owner["user_id"], owner["role"]) for owner in KEYS.values()])
 
-chat = config.get_chat_model()
+# reasoning=False: with thinking on, the password ticket thought until the 4096-token cap and never answered.
+chat = config.get_chat_model(reasoning=False)
 print("model", type(chat).__name__, getattr(chat, "model", None) or getattr(chat, "model_name", None))
 
 # %%

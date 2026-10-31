@@ -87,7 +87,7 @@ def create_app(model=None, keys: dict | None = None, identify=caller_for):
         if held["desk"] is None:
             import config
 
-            chat = model if model is not None else config.get_chat_model()
+            chat = model if model is not None else config.get_chat_model(reasoning=False)  # thinking off: the reset ticket hit the 4096-token cap
             held["desk"] = build_techcorp_desk(model=chat, middleware=door_middleware(), checkpointer=InMemorySaver())
         return held["desk"]
 
