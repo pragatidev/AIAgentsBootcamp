@@ -120,9 +120,11 @@ print("trace_has_password", any(p and p in trace.path.read_text(encoding="utf-8"
 
 # %%
 # The budget: measure what one ticket used, then set a budget below it. DESK_TOKEN_BUDGET in .env wins.
+# Half of one average call: the gate parks this ticket after its first call, so a budget the first call
+# stays under never gets a second call to refuse. Every first call carries the whole prompt, so it is over.
 print("measured_tokens", counter.total_tokens, "model_calls", counter.calls)
-budget = config.DESK_TOKEN_BUDGET or counter.total_tokens // 2
-print("budget", budget, "from", "DESK_TOKEN_BUDGET" if config.DESK_TOKEN_BUDGET else "half of the measured run")
+budget = config.DESK_TOKEN_BUDGET or counter.total_tokens // max(counter.calls, 1) // 2
+print("budget", budget, "from", "DESK_TOKEN_BUDGET" if config.DESK_TOKEN_BUDGET else "half of one average call in the measured run")
 budget_desk = build_techcorp_desk(model=chat, middleware=[write_gate(), TokenBudget(max_tokens=budget), RunAudit()], checkpointer=InMemorySaver())
 out = budget_desk.invoke({"messages": [{"role": "user", "content": GRANT}]}, config={"configurable": {"thread_id": "lab-4-28-budget"}}, context=DeskContext(user_id="E-4104"))
 print("budget_tokens_used", out.get("tokens_used"), "parked", bool(out.get("__interrupt__")))

@@ -88,7 +88,7 @@ def test_trace_withholds_the_password(run_lab):
 def test_budget_below_the_measured_run_refuses(run_lab):
     _, out = run_lab()
     assert "measured_tokens 100 model_calls 2" in out
-    assert "budget 50 from half of the measured run" in out
+    assert "budget 25 from half of one average call in the measured run" in out
     assert "budget_reply " + module.BUDGET_REFUSAL in out
 
 
