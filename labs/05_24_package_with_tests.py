@@ -41,6 +41,12 @@ def answer_ticket(text: str, user_id: str, *, model=None, thread_id: str | None 
     return reply_text(state)
 
 
+# MOVE: put your copy into the package. Delete answer_ticket from techcorp/agent/desk.py and its two lines
+# in techcorp/agent/__init__.py (the import and "answer_ticket" in __all__), then run
+#     python -m pytest tests/test_techcorp_tools.py tests/test_techcorp_desk.py tests/test_lab_05_24.py -q
+# and read what fails. Paste your function where the old one was, put both lines back, run it again until it
+# is green, then run git status --short: an empty answer means your copy matches the shipped one.
+
 # BREAK: open techcorp/agent/desk.py and add this line under DEFAULT_TOOLS, the line a team adds to make
 # the first ticket fast:
 #     WARM_MODEL = get_chat_model()  # warm the model at import
