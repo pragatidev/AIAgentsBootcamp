@@ -55,13 +55,14 @@ python -m pytest tests/test_techcorp_tools.py tests/test_techcorp_desk.py tests/
 3. The temporary password reaches the employee in the model's reply, and nothing filters what the model writes.
 4. The tool's audit line says who asked (`by` on a grant), not who approved. The approver is on the run audit row in `techcorp/data/run_audit.jsonl` only when `RunAudit` and `ApproverRequired` from `techcorp/agent/middleware.py` are in the middleware list (lab `labs/05_28_custom_middleware.py`); `DEFAULT_MIDDLEWARE` does not include them.
 5. The rules for who may call what live in `techcorp/agent/permissions.py` (roles, region, the share list in `techcorp/data/shares.json`) and run as `PermissionGate` (lab `labs/05_30_permissions_and_tenants.py`). `DEFAULT_MIDDLEWARE` does not include it, so the default desk grants any share the model names once a person approves.
-6. A parked run lives in an in-memory saver; it is gone when the process ends.
-7. One company, one in-memory directory for everyone.
-8. The local model: see the last section.
+6. A parked run lives in an in-memory saver; it is gone when the process ends. That holds for the door too: restart `uvicorn` and every parked ticket is gone.
+7. The door's keys are shared strings in an environment variable. A company keeps them in a vault, one per caller, or puts single sign-on in front of the door.
+8. One company, one in-memory directory for everyone.
+9. The local model: see the last section.
 
 ## Sample run
 
-What `python labs/05_26_portfolio_techcorp_desk.py` printed on 2026-10-30 on `qwen3:8b` (local Ollama), check lines only; the model's sentences differ from run to run:
+What `python labs/05_26_portfolio_techcorp_desk.py` printed on 2026-10-31 on `qwen3:8b` (local Ollama), in a fresh clone with its own `.venv`, check lines only; the model's sentences differ from run to run:
 
 ```
 gated reset_password ['approve', 'edit', 'reject', 'respond']
@@ -71,7 +72,22 @@ reset_reply_has_token True
 vpn_refused_in_shape True
 oos_refused_in_shape True
 audit_lines_added 1
+audit_line {"action": "reset_password", "user_id": "E-4101", "requested_user_id": "E-4101", "request_id": "6fb15b3debec489b9ceaa04ac6e3e333", "at": "2026-10-31T01:12:42Z"}
+pytest 44 passed in 0.66s
+exit_code 0
 ```
+
+## Behind a door, with an eval set
+
+`techcorp/serve.py` puts the desk behind an HTTP door. The caller is whoever owns the API key: keys come from `TECHCORP_API_KEYS` as `key:user_id:role`, comma separated, and no field in a body and no header the caller writes can name someone else. A parked write is decided on `/resume` by the owner of the key that sends the decision, and only an `it_agent` may decide. With the keys set in your terminal:
+
+```
+uvicorn --factory techcorp.serve:create_app --host 127.0.0.1 --port 8765
+```
+
+`GET /health`, `POST /ticket` with `{"ticket_id", "text"}`, `POST /resume` with `{"thread_id", "decision"}`. Importing `techcorp` never needs FastAPI; `create_app` imports it.
+
+`python labs/05_32_desk_behind_a_door.py` runs the door on a free local port, walks five smoke steps (health, no key refused, a reset parked for the caller, approved by an IT agent with one audit line and no password, a VPN fault refused in the desk's shape), then scores every case in `techcorp/evals/desk_cases.jsonl` (the twelve tickets in `techcorp/data/tickets.jsonl` and three planted ones) in code with `techcorp/evals/score.py`, no judge model. On 2026-10-31 on `qwen3:8b` in a fresh clone it printed `smoke_passed 5/5` and `eval_passed 14/15`; the miss was `planted_mismatch` (the model looked up E-4102 and refused instead of asking for the reset). That count is one run, not a floor: no threshold is set yet. Tests, no model: `tests/test_techcorp_smoke.py`, `tests/test_techcorp_evals.py` (a known-bad run that resets without a gate must fail).
 
 ## What create_agent cannot do here, and why the DataFlow desk is a graph
 
