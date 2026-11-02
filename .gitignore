@@ -83,6 +83,7 @@ dataflow/data/reports/*
 
 # Part 3 notes and rot capture. Created at run time, not committed.
 dataflow/context/notes.json
+dataflow/context/notes/
 dataflow/context/_last_rot.json
 
 # TechCorp password-reset audit. Created at run time, not committed.

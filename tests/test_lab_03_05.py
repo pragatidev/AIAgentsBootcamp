@@ -37,4 +37,4 @@ def test_the_lab_prints_a_clean_map(capsys):
     assert "map_problems []" in out
     assert "fat_chars 58816" in out
     assert "map_file dataflow/context/MAP.md" in out
-    assert len([line for line in out if line.startswith("map_entry ")]) == len(map_lines()) == 12
+    assert len([line for line in out if line.startswith("map_entry ")]) == len(map_lines()) == 13

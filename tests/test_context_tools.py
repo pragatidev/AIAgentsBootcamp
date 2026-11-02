@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_map_has_twelve_lines_with_when():
     lines = map_lines()
-    assert len(lines) == 12
+    assert len(lines) == 13
     for line in lines:
         assert " | " in line
         assert "when" in line.lower()

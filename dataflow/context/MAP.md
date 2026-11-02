@@ -16,3 +16,4 @@ orders.json | when the ticket names an order id such as DF-1001
 privacy_policy.txt | when the customer asks how their data is kept
 employee_handbook.txt | when the ticket is from HR, never for a customer
 competitive_analysis.txt | when a salesperson asks, never for a customer reply
+security.md | when the customer asks about passwords or account security
