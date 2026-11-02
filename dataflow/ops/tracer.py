@@ -649,3 +649,25 @@ def build_failing_carrier_graph(checkpointer=None):
     builder.add_edge("stash", "carrier")
     builder.add_edge("carrier", END)
     return builder.compile(checkpointer=checkpointer)
+
+
+def trace_totals(trace_path: Path | str) -> dict[str, Any]:
+    """Totals for one traced run, read from its jsonl file: tokens and calls over the chat model spans,
+    and the summed duration of each graph step (retrieve, grade, rewrite, generate and the rest)."""
+    tokens = {"input": 0, "output": 0, "total": 0}
+    model_calls = 0
+    step_ms: dict[str, float] = {}
+    for line in Path(trace_path).read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        span = json.loads(line)
+        if span.get("kind") == "chat_model":
+            model_calls += 1
+            for key in tokens:
+                tokens[key] += int((span.get("tokens") or {}).get(key) or 0)
+        elif span.get("kind") == "chain" and span.get("name") in GRAPH_STEPS:
+            step_ms[span["name"]] = round(step_ms.get(span["name"], 0.0) + float(span.get("duration_ms") or 0.0), 2)
+    return {"tokens": tokens, "model_calls": model_calls, "step_ms": step_ms}
+
+
+GRAPH_STEPS = ("route", "retrieve", "rerank", "grade", "rewrite", "generate", "refuse", "cite", "widen")
