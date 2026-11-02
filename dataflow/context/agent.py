@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 from typing import Any, Callable
 
@@ -297,6 +298,7 @@ def chat_caller(num_predict: int = 80, num_ctx: int | None = None, tools: list[d
         }
 
     call.tool_names = [t["function"]["name"] for t in tools or []]
+    call.model = config.CHAT_MODEL
     return call
 
 
@@ -383,7 +385,7 @@ _notes_block = notes_block
 
 
 class ContextAgent:
-    """Loop with optional read_file, write_note, and compaction."""
+    """Loop with optional read_file, write_note, compaction, a token budget and a window log."""
 
     def __init__(
         self,
@@ -405,6 +407,12 @@ class ContextAgent:
         customer_id: str | None = None,
         allowed: set[str] | frozenset[str] | None = None,
         guard: Any = None,
+        budget: int | None = None,
+        on_over: str = "compact",
+        stable_prefix: bool = False,
+        window_log: Path | None = None,
+        run_id: str | None = None,
+        map_version: str | None = None,
     ) -> None:
         self.call_model = call_model
         self.system = system
@@ -419,7 +427,6 @@ class ContextAgent:
         # The write path and the notes block. Labs 5.11 and 5.12 pass the ones you typed.
         self.note_writer = note_writer or write_note
         self.notes_block = notes_block or _notes_block
-        self.writes: list[dict] = []
         # The read tool. Lab 5.14 passes the read_file you typed.
         self.reader = reader or (lambda path: read_file(path, allowed=self.allowed, guard=self.guard))
         # The customer this desk serves. With one set, the notes file is that customer's own.
@@ -433,9 +440,28 @@ class ContextAgent:
         self.guard = guard
         self.cap = cap
         self.preload = preload
+        # The budget is checked on the library count of every call before it is sent. Over it, the desk
+        # folds ("compact") or stops ("refuse"); still over after a fold, it stops with stop "budget".
+        self.budget = budget
+        self.on_over = on_over
+        # A stable prefix keeps the first message the same for the whole run: the notes travel as a
+        # second message, rebuilt on every call, so a note write never changes the first message.
+        self.stable_prefix = stable_prefix
+        self.window_log = Path(window_log) if window_log else None
+        self.run_id = run_id or "run"
+        self.map_version = map_version
+        self._reset()
+
+    def _reset(self) -> None:
         self.token_trace: list[dict] = []
         self.reads: list[str] = []
+        self.writes: list[dict] = []
         self.dropped: list[str] = []
+        self.calls = 0
+        self.tool_sources: dict[str, str] = {}
+        self.last_window: list[dict] = []
+
+    # The window: what the model is sent on a call.
 
     def _inbound(self, text: str) -> str:
         """A customer's words as they enter the window: secrets and emails masked when the desk is guarded."""
@@ -444,17 +470,35 @@ class ContextAgent:
     def _notes(self) -> dict:
         return {} if self.notes_path is None else load_notes(self.notes_path)
 
-    def _system_text(self) -> str:
+    def _prefix(self) -> str:
         text = self.system
         if self.preload:
             text = text + "\n\nPRELOADED\n" + self.preload
-        if self.notes_path is None:
-            return text
-        return text + self.notes_block(self.notes_path)
+        return text
 
-    def _maybe_compact(self, messages: list) -> list:
-        if not self.compact:
-            return messages
+    def _system_text(self) -> str:
+        if self.notes_path is None:
+            return self._prefix()
+        return self._prefix() + self.notes_block(self.notes_path)
+
+    def _first_message(self) -> dict:
+        return {"role": "system", "content": self._prefix() if self.stable_prefix else self._system_text()}
+
+    def window(self, messages: list) -> list:
+        """What the model is sent for this call: the stored messages with the notes as they are now."""
+        if not messages or self.notes_path is None:
+            return list(messages)
+        if self.stable_prefix:
+            block = self.notes_block(self.notes_path).strip()
+            notes = [{"role": "system", "content": block}] if block else []
+            return messages[:1] + notes + messages[1:]
+        return [{"role": "system", "content": self._system_text()}] + messages[1:]
+
+    # Folding and the budget.
+
+    def _fold(self, messages: list, threshold: int, reason: str) -> list:
+        if len(messages) <= self.keep_last + 1:
+            return messages  # nothing older than the kept tail to fold
         usages: list[dict] = []
 
         def summarise(text: str) -> str:
@@ -465,7 +509,7 @@ class ContextAgent:
 
         new, folded, before, after = self.compactor(
             messages,
-            threshold=self.compact_threshold,
+            threshold=threshold,
             keep_last=self.keep_last,
             summariser=summarise,
         )
@@ -481,6 +525,7 @@ class ContextAgent:
             self.token_trace.append(
                 {
                     "event": "compact",
+                    "reason": reason,
                     "tokens_before": before,
                     "tokens_after": after,
                     "summary": summary,
@@ -489,37 +534,114 @@ class ContextAgent:
             )
         return new
 
-    def _run_tools(self, messages: list, ticket: str) -> dict:
-        messages = list(messages)
-        tool_names: list[str] = []
-        for n in range(1, self.cap + 1):
+    def _maybe_compact(self, messages: list) -> list:
+        if not self.compact:
+            return messages
+        return self._fold(messages, self.compact_threshold, "threshold")
+
+    def _prepare(self, messages: list, fold: bool = True) -> tuple[list, list, bool]:
+        """Fold if asked, build the window, check the budget. Returns (messages, window, stopped)."""
+        if fold:
             messages = self._maybe_compact(messages)
-            reply = self.call_model(messages)
-            usage = _usage(reply)
+        sent = self.window(messages)
+        if self.budget is None or count_tokens(sent) <= self.budget:
+            return messages, sent, False
+        if self.on_over == "compact":
+            overhead = count_tokens(sent) - count_tokens(messages)
+            messages = self._fold(messages, max(self.budget - overhead, 0), "budget")
+            sent = self.window(messages)
+        tokens = count_tokens(sent)
+        if tokens <= self.budget:
+            return messages, sent, False
+        self.token_trace.append({"event": "stop", "reason": "budget", "tokens": tokens, "budget": self.budget})
+        return messages, sent, True
+
+    # One model call, logged.
+
+    def _invoke(self, sent: list) -> tuple[dict, dict]:
+        start = time.perf_counter()
+        reply = self.call_model(sent)
+        ms = int((time.perf_counter() - start) * 1000)
+        usage = _usage(reply)
+        self.calls += 1
+        self.last_window = sent
+        if self.window_log is not None:
+            from dataflow.context.window_log import log_call
+
+            log_call(
+                self.window_log,
+                run_id=self.run_id,
+                call_no=self.calls,
+                messages=sent,
+                usage=usage,
+                model=str(getattr(self.call_model, "model", "") or "scripted"),
+                ms=ms,
+                map_version=self.map_version,
+                notes_keys=sorted(self._notes()),
+                reads=list(self.reads),
+                tool_sources=self.tool_sources,
+            )
+        return reply, usage
+
+    # Tools.
+
+    def _run_tool(self, call: dict) -> str:
+        name = str(call.get("name") or "")
+        args = call.get("arguments") or {}
+        if isinstance(args, str):
+            args = json.loads(args) if args else {}
+        if name == "read_file":
+            path = str(args.get("path") or "")
+            self.reads.append(path)
+            self.tool_sources[call.get("id")] = "tool:read_file:" + Path(path).name
+            result = self.reader(path)
+            # Lines a guard dropped are kept on the desk, never sent back to the model.
+            try:
+                parsed = json.loads(result)
+            except (TypeError, ValueError):
+                parsed = None
+            if isinstance(parsed, dict) and "dropped_lines" in parsed:
+                self.dropped.extend(parsed.pop("dropped_lines") or [])
+                result = json.dumps(parsed)
+            return result
+        self.tool_sources[call.get("id")] = "tool:" + name
+        if name == "lookup_my_order":
+            return lookup_my_order(str(args.get("order_id") or ""), self.customer_id)
+        if name == "write_note":
+            key = str(args.get("key") or "")
+            value = str(args.get("value") or "")
+            if self.notes_path is None:
+                result = json.dumps({"ok": False, "key": key, "reason": "this desk has no notes file"})
+            else:
+                result = self.note_writer(key, value, path=self.notes_path)
+            self.writes.append({"key": key, "value": value, "result": json.loads(result)})
+            return result
+        if name in self.tools:
+            fn = self.tools[name]
+            return fn(**args) if args else fn()
+        return json.dumps({"ok": False, "reason": "unknown tool"})
+
+    def _tool_loop(self, messages: list, tool_names: list[str]) -> tuple[list, str, str]:
+        """Call, run any tools, call again, up to cap calls. Returns (messages, stop, final)."""
+        for n in range(1, self.cap + 1):
+            messages, sent, stopped = self._prepare(messages)
+            if stopped:
+                return messages, "budget", "over budget"
+            reply, usage = self._invoke(sent)
             content = reply.get("content") or ""
             calls = list(reply.get("tool_calls") or [])
             self.token_trace.append(
                 {
                     "event": "model",
                     "round": n,
-                    "tokens": count_tokens(messages),
+                    "tokens": count_tokens(sent),
                     "usage": usage,
                     "tools": [c.get("name") for c in calls],
                 }
             )
             if not calls:
                 messages.append({"role": "assistant", "content": content})
-                return {
-                    "final": content,
-                    "messages": messages,
-                    "tool_names": tool_names,
-                    "stop": "final",
-                    "token_trace": list(self.token_trace),
-                    "notes": self._notes(),
-                    "reads": list(self.reads),
-                    "writes": list(self.writes),
-                    "dropped_lines": list(self.dropped),
-                }
+                return messages, "final", content
             raw = reply.get("raw_tool_calls") or []
             messages.append(
                 {
@@ -532,8 +654,7 @@ class ContextAgent:
                             "type": "function",
                             "function": {
                                 "name": c.get("name"),
-                                "arguments": c.get("arguments_json")
-                                or json.dumps(c.get("arguments") or {}),
+                                "arguments": c.get("arguments_json") or json.dumps(c.get("arguments") or {}),
                             },
                         }
                         for c in calls
@@ -541,98 +662,54 @@ class ContextAgent:
                 }
             )
             for call in calls:
-                name = str(call.get("name") or "")
-                args = call.get("arguments") or {}
-                if isinstance(args, str):
-                    args = json.loads(args) if args else {}
-                tool_names.append(name)
-                if name == "read_file":
-                    path = str(args.get("path") or "")
-                    self.reads.append(path)
-                    result = self.reader(path)
-                    # Lines a guard dropped are kept on the desk, never sent back to the model.
-                    try:
-                        parsed = json.loads(result)
-                    except (TypeError, ValueError):
-                        parsed = None
-                    if isinstance(parsed, dict) and "dropped_lines" in parsed:
-                        self.dropped.extend(parsed.pop("dropped_lines") or [])
-                        result = json.dumps(parsed)
-                elif name == "lookup_my_order":
-                    result = lookup_my_order(str(args.get("order_id") or ""), self.customer_id)
-                elif name == "write_note":
-                    key = str(args.get("key") or "")
-                    value = str(args.get("value") or "")
-                    if self.notes_path is None:
-                        result = json.dumps({"ok": False, "key": key, "reason": "this desk has no notes file"})
-                    else:
-                        result = self.note_writer(key, value, path=self.notes_path)
-                    self.writes.append({"key": key, "value": value, "result": json.loads(result)})
-                elif name in self.tools:
-                    fn = self.tools[name]
-                    result = fn(**args) if args else fn()
-                else:
-                    result = json.dumps({"ok": False, "reason": "unknown tool"})
-                messages.append(
-                    {
-                        "role": "tool",
-                        "tool_call_id": call.get("id"),
-                        "content": str(result),
-                    }
-                )
+                tool_names.append(str(call.get("name") or ""))
+                result = self._run_tool(call)
+                messages.append({"role": "tool", "tool_call_id": call.get("id"), "content": str(result)})
+        return messages, "cap", "desk could not finish"
+
+    def _result(self, messages: list, **extra) -> dict:
         return {
-            "final": "desk could not finish",
             "messages": messages,
-            "tool_names": tool_names,
-            "stop": "cap",
             "token_trace": list(self.token_trace),
             "notes": self._notes(),
             "reads": list(self.reads),
             "writes": list(self.writes),
             "dropped_lines": list(self.dropped),
+            "last_window": list(self.last_window),
+            **extra,
         }
 
+    # The three ways to run a desk.
+
     def run(self, ticket: str) -> dict:
-        self.token_trace = []
-        self.reads = []
-        self.writes = []
-        self.dropped = []
-        messages = [
-            {"role": "system", "content": self._system_text()},
-            {"role": "user", "content": self._inbound(ticket)},
-        ]
-        return self._run_tools(messages, ticket)
+        """One ticket, with tools."""
+        self._reset()
+        tool_names: list[str] = []
+        messages = [self._first_message(), {"role": "user", "content": self._inbound(ticket)}]
+        messages, stop, final = self._tool_loop(messages, tool_names)
+        return self._result(messages, final=final, tool_names=tool_names, stop=stop)
 
     def run_turns(self, turns: list[str], progress_every: int = 0) -> dict:
-        """Multi-turn conversation. Compaction may fold between turns.
+        """Multi-turn conversation, one model call per turn, no tools. Compaction may fold between turns.
 
         progress_every prints "turn N of M" every N turns, so a long run shows it is moving.
         """
-        self.token_trace = []
-        messages = [{"role": "system", "content": self._system_text()}]
+        self._reset()
+        messages = [self._first_message()]
         replies: list[str] = []
+        stop = "final"
         for i, turn in enumerate(turns, start=1):
             if progress_every and (i % progress_every == 0 or i == len(turns)):
                 print("turn", i, "of", len(turns), flush=True)
             messages = self._maybe_compact(messages)
             messages.append({"role": "user", "content": self._inbound(turn)})
-            before = count_tokens(messages)
-            reply = self.call_model(messages)
+            messages, sent, stopped = self._prepare(messages, fold=False)
+            if stopped:
+                stop = "budget"
+                break
+            reply, usage = self._invoke(sent)
             content = reply.get("content") or ""
-            usage = _usage(reply)
             messages.append({"role": "assistant", "content": content})
             replies.append(content)
-            self.token_trace.append(
-                {
-                    "turn": i,
-                    "tokens": before,
-                    "usage": usage,
-                    "text": content,
-                }
-            )
-        return {
-            "messages": messages,
-            "replies": replies,
-            "token_trace": list(self.token_trace),
-            "notes": self._notes(),
-        }
+            self.token_trace.append({"turn": i, "tokens": count_tokens(sent), "usage": usage, "text": content})
+        return self._result(messages, replies=replies, stop=stop)

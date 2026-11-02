@@ -17,3 +17,7 @@ privacy_policy.txt | when the customer asks how their data is kept
 employee_handbook.txt | when the ticket is from HR, never for a customer
 competitive_analysis.txt | when a salesperson asks, never for a customer reply
 security.md | when the customer asks about passwords or account security
+
+owner: DataFlow support desk lead
+reviewed: 2026-11-02
+version: 2

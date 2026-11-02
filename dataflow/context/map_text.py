@@ -57,18 +57,44 @@ def get_fat() -> str:
     return "\n\n".join(parts)
 
 
+# The footer lines that say who owns the map. load_map leaves them out of what the desk sees.
+HEADER_KEYS = ("owner", "reviewed", "version")
+
+
+def _is_header(line: str) -> bool:
+    return any(line.startswith(key + ":") for key in HEADER_KEYS)
+
+
 def load_map(path: Path = MAP_PATH) -> str:
-    """The map the desk runs on: the text of dataflow/context/MAP.md, as you wrote it."""
-    return Path(path).read_text(encoding="utf-8")
+    """The map the desk runs on: the text of dataflow/context/MAP.md, as you wrote it, without its owner lines."""
+    lines = [ln for ln in Path(path).read_text(encoding="utf-8").splitlines() if not _is_header(ln)]
+    while lines and not lines[-1].strip():
+        lines.pop()
+    return "\n".join(lines) + "\n"
 
 
-def check_map(text: str) -> list[str]:
-    """One problem per map entry a desk could not use: no bar, no when, or a file read_file cannot open."""
+def map_header(path: Path = MAP_PATH) -> dict:
+    """The owner, reviewed and version lines of MAP.md, as a dict."""
+    header = {}
+    for line in Path(path).read_text(encoding="utf-8").splitlines():
+        if _is_header(line):
+            key, _, value = line.partition(":")
+            header[key] = value.strip()
+    return header
+
+
+def check_map(text: str, require_owner: bool = False) -> list[str]:
+    """One problem per map entry a desk could not use: no bar, no when, or a file read_file cannot open.
+
+    require_owner also asks for an owner: line, which the raw file carries and load_map leaves out.
+    """
     from dataflow.context.agent import _ALLOWED_NAMES
 
     problems = []
+    if require_owner and not any(_is_header(ln) and ln.startswith("owner:") and ln[6:].strip() for ln in text.splitlines()):
+        problems.append("MAP.md: no owner line")
     for line in text.split("Map:", 1)[-1].splitlines():
-        if not line.strip():
+        if not line.strip() or _is_header(line):
             continue
         name, bar, when = line.partition(" | ")
         name = name.strip()
