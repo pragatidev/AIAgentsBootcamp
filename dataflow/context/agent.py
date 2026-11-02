@@ -136,12 +136,22 @@ def count_tokens(messages: list) -> int:
     return len(_enc().encode("\n".join(parts)))
 
 
-def read_file(path: str) -> str:
-    """Read a knowledge base or wiki file by its map name."""
+# The files a customer desk may read: the map's files without the two the map says are never for a customer.
+CUSTOMER_FILES = frozenset(_ALLOWED_NAMES) - {"employee_handbook.txt", "competitive_analysis.txt"}
+
+
+def read_file(path: str, allowed: set[str] | frozenset[str] | None = None) -> str:
+    """Read a knowledge base or wiki file by its map name.
+
+    Only the last part of the path counts, so ../../.env is just .env, which is not on the list.
+    allowed is the role's list; a name outside it is refused even when the file exists.
+    """
     name = Path(str(path or "").strip()).name
     target = _ALLOWED_NAMES.get(name)
     if target is None or not target.is_file():
         return json.dumps({"found": False, "path": name, "reason": "unknown file"})
+    if allowed is not None and name not in allowed:
+        return json.dumps({"found": False, "path": name, "reason": "not on this desk's list"})
     text = target.read_text(encoding="utf-8")
     if len(text) > 4000:
         text = text[:4000] + "\n...[truncated]"
@@ -347,6 +357,7 @@ class ContextAgent:
         compactor: Callable[..., tuple] | None = None,
         note_writer: Callable[..., str] | None = None,
         notes_block: Callable[[Path], str] | None = None,
+        reader: Callable[[str], str] | None = None,
     ) -> None:
         self.call_model = call_model
         self.system = system
@@ -362,6 +373,8 @@ class ContextAgent:
         self.note_writer = note_writer or write_note
         self.notes_block = notes_block or _notes_block
         self.writes: list[dict] = []
+        # The read tool. Lab 5.14 passes the read_file you typed.
+        self.reader = reader or read_file
         # No notes file unless one is passed, so one lab's notes never leak into another lab's desk.
         self.notes_path = notes_path
         self.cap = cap
@@ -476,7 +489,7 @@ class ContextAgent:
                 if name == "read_file":
                     path = str(args.get("path") or "")
                     self.reads.append(path)
-                    result = read_file(path)
+                    result = self.reader(path)
                 elif name == "write_note":
                     key = str(args.get("key") or "")
                     value = str(args.get("value") or "")

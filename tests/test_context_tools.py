@@ -321,38 +321,54 @@ def test_context_caller_binds_tools_on_the_local_model(monkeypatch):
     assert out["usage"]["input_tokens"] == 9
 
 
-def test_jit_read_only_on_match(tmp_path):
-    def call(messages):
-        last = ""
-        for msg in reversed(messages):
-            if msg.get("role") == "user":
-                last = str(msg.get("content") or "")
-                break
-        already = any(m.get("role") == "tool" for m in messages)
-        if "return" in last.lower() and not already:
-            return {
-                "content": "",
-                "tool_calls": [
-                    {
-                        "id": "r1",
-                        "name": "read_file",
-                        "arguments": {"path": "return_policy.md"},
-                        "arguments_json": '{"path": "return_policy.md"}',
-                    }
-                ],
-            }
+def _keyword_reader_model(messages):
+    """Reads return_policy.md for a return ticket and shipping.md for a shipping ticket, once."""
+    last = next(str(m.get("content") or "") for m in reversed(messages) if m.get("role") == "user")
+    if any(m.get("role") == "tool" for m in messages):
+        return {"content": "answered from the file", "tool_calls": []}
+    name = "return_policy.md" if "return" in last.lower() else "shipping.md" if "shipping" in last.lower() else ""
+    if not name:
         return {"content": "noted", "tool_calls": []}
+    return {"content": "", "tool_calls": [{"id": "r1", "name": "read_file", "arguments": {"path": name}}]}
 
-    agent = ContextAgent(call, system="desk", cap=4, notes_path=tmp_path / "n.json")
-    ret = agent.run("What is the return window?")
-    ship = ContextAgent(call, system="desk", cap=4, notes_path=tmp_path / "n.json").run(
-        "How many business days is standard shipping?"
-    )
-    assert "read_file" in ret["tool_names"]
-    assert ret["reads"] == ["return_policy.md"]
-    assert ship["tool_names"] == []
-    raw = read_file("return_policy.md")
-    assert "30 days" in raw
+
+def test_jit_read_only_on_match(tmp_path):
+    ret = ContextAgent(_keyword_reader_model, system="desk", cap=4).run("What is the return window?")
+    ship = ContextAgent(_keyword_reader_model, system="desk", cap=4).run("How many business days is standard shipping?")
+    other = ContextAgent(_keyword_reader_model, system="desk", cap=4).run("Do you have a status page?")
+    assert ret["reads"] == ["return_policy.md"] and ret["tool_names"] == ["read_file"]
+    assert ship["reads"] == ["shipping.md"]
+    assert other["reads"] == [] and other["tool_names"] == []
+    assert "30 days" in read_file("return_policy.md")
+    tool_text = [m["content"] for m in ship["messages"] if m.get("role") == "tool"][0]
+    assert '"found": true' in tool_text and "shipping.md" in tool_text
+
+
+def test_read_file_refuses_outside_the_list():
+    import json
+
+    for path in ("../../.env", "..\\..\\.env", "/etc/passwd", "secrets.md", ""):
+        out = json.loads(read_file(path))
+        assert out["found"] is False and out["reason"] == "unknown file", path
+
+
+def test_customer_files_refuse_the_handbook():
+    import json
+
+    from dataflow.context.agent import CUSTOMER_FILES
+
+    assert json.loads(read_file("employee_handbook.txt"))["found"] is True
+    refused = json.loads(read_file("employee_handbook.txt", allowed=CUSTOMER_FILES))
+    assert refused == {"found": False, "path": "employee_handbook.txt", "reason": "not on this desk's list"}
+    assert json.loads(read_file("competitive_analysis.txt", allowed=CUSTOMER_FILES))["found"] is False
+    assert json.loads(read_file("return_policy.md", allowed=CUSTOMER_FILES))["found"] is True
+
+
+def test_the_desk_uses_the_reader_it_is_given():
+    seen = []
+    desk = ContextAgent(_keyword_reader_model, system="desk", cap=4, reader=lambda path: seen.append(path) or '{"found": false}')
+    desk.run("What is the return window?")
+    assert seen == ["return_policy.md"]
 
 
 def test_child_sees_only_its_document():
