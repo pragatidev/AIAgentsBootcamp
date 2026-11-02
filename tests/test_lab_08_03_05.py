@@ -55,3 +55,13 @@ def test_the_break_runs_away(tmp_path, capsys):
     decisions = [line.rsplit("-> ", 1)[1] for line in out if line.startswith("after_grade ")]
     assert decisions[2] == "rewrite"
     assert any(line.startswith("runaway GraphRecursionError Recursion limit of 12 reached") for line in out)
+
+
+def test_the_break_runs_away_on_either_question(tmp_path, capsys, monkeypatch):
+    # The local model kept nothing for the badly phrased question either, so the break must stop both runs cleanly.
+    model = FakeChatModel(route="retrieve", reply="a rewrite", structured={"Grade": DROP})
+    monkeypatch.setattr(config, "get_chat_model", lambda **k: model)
+    line = '        return "generate"\n    if int(state.get("rewrites") or 0) < int(max_rewrites):\n'
+    out = _out(lab_copy(LAB, tmp_path, line, '        return "generate"\n    if True:\n'), capsys)
+    assert sum(1 for row in out if row.startswith("runaway GraphRecursionError Recursion limit of 12 reached")) == 2
+    assert "REFUSE False" in out

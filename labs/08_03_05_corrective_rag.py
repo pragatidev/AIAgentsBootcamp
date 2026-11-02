@@ -70,21 +70,24 @@ graph = build_rag_graph(model=chat, policy=after_grade)
 
 
 def stream(question: str) -> dict:
-    """Print each node's update as it lands; return the final state."""
+    """Print each node's update as it lands; return the final state. A loop with no exit stops at the limit of 12."""
     print("question", question)
     final: dict = {}
-    for update in graph.stream({"question": question}, {"recursion_limit": 12}, stream_mode="updates"):
-        for node, payload in update.items():
-            payload = payload or {}
-            final.update(payload)
-            if node == "grade":
-                print("grade_pass", "kept", len(payload.get("graded") or []), "of", len(payload.get("grades") or []))
-                for row in payload.get("grades") or []:
-                    print("  GRADE", row["label"], row["source"], "|", row["reason"])
-            elif node == "rewrite":
-                print("rewrite", repr(payload.get("rewritten_question")), "rewrites", payload.get("rewrites"))
-            elif node in ("generate", "refuse", "lookup", "answer"):
-                print("edge_taken", node)
+    try:
+        for update in graph.stream({"question": question}, {"recursion_limit": 12}, stream_mode="updates"):
+            for node, payload in update.items():
+                payload = payload or {}
+                final.update(payload)
+                if node == "grade":
+                    print("grade_pass", "kept", len(payload.get("graded") or []), "of", len(payload.get("grades") or []))
+                    for row in payload.get("grades") or []:
+                        print("  GRADE", row["label"], row["source"], "|", row["reason"])
+                elif node == "rewrite":
+                    print("rewrite", repr(payload.get("rewritten_question")), "rewrites", payload.get("rewrites"))
+                elif node in ("generate", "refuse", "lookup", "answer"):
+                    print("edge_taken", node)
+    except GraphRecursionError as err:
+        print("runaway", type(err).__name__, str(err).splitlines()[0])
     return final
 
 
@@ -98,9 +101,6 @@ print("reply", state.get("reply"))
 
 # %%
 # A question the knowledge base does not cover.
-try:
-    state = stream("Do you offer a student discount on the Enterprise plan?")
-    print("reply", state.get("reply"))
-    print("REFUSE", str(state.get("reply") or "").startswith("I do not have that in the knowledge base"))
-except GraphRecursionError as err:
-    print("runaway", type(err).__name__, str(err).splitlines()[0])
+state = stream("Do you offer a student discount on the Enterprise plan?")
+print("reply", state.get("reply"))
+print("REFUSE", str(state.get("reply") or "").startswith("I do not have that in the knowledge base"))
