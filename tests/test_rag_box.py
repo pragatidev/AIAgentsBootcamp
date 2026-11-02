@@ -45,3 +45,68 @@ def test_a_newline_in_the_source_stays_on_the_fence_line():
 def test_guardrails_reexport_the_same_box():
     assert boxed.wrap_retrieved is wrap_retrieved
     assert boxed.BOX_RULE is BOX_RULE
+
+
+# R10: the box inside the RAG graph, off by default.
+
+import inspect  # noqa: E402
+
+from dataflow.graphs.rag_graph import build_rag_graph  # noqa: E402
+from tests.fixtures.fake_model import FakeChatModel  # noqa: E402
+
+PAGE = {"source": "dataflow/wiki/security.md", "folder": "wiki", "text": "Idle sessions time out after thirty minutes.\n" + PLANTED}
+
+
+class RecordingModel(FakeChatModel):
+    """The fixture model, keeping every message list it was handed."""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.seen = []
+
+    def invoke(self, messages, **kwargs):
+        self.seen.append(messages)
+        return super().invoke(messages, **kwargs)
+
+    def with_structured_output(self, schema, **kwargs):
+        inner = super().with_structured_output(schema, **kwargs)
+        outer = self
+
+        class _Recorder:
+            def invoke(self, messages, **kw):
+                outer.seen.append(messages)
+                return inner.invoke(messages, **kw)
+
+        return _Recorder()
+
+
+def _texts(messages):
+    return [str(getattr(m, "content", None) or (m.get("content") if isinstance(m, dict) else m)) for m in messages]
+
+
+def _run(monkeypatch, **build):
+    monkeypatch.setattr("dataflow.graphs.rag_graph.retrieve_passages", lambda *a, **k: [dict(PAGE)])
+    model = RecordingModel(route="retrieve", reply="Sessions time out after thirty minutes.")
+    build_rag_graph(model=model, **build).invoke({"question": "What is the session timeout?"})
+    return model.seen
+
+
+def test_box_default_is_off():
+    assert inspect.signature(build_rag_graph).parameters["box_passages"].default is False
+
+
+def test_rag_graph_boxes_passages_when_asked(monkeypatch):
+    generate_messages = _texts(_run(monkeypatch, box_passages=True)[-1])
+    assert "Retrieved passages arrive inside a data box" in generate_messages[0]
+    assert BOX_RULE in generate_messages[1] and "```data source=dataflow/wiki/security.md" in generate_messages[1]
+    plain = _texts(_run(monkeypatch)[-1])
+    assert BOX_RULE not in plain[1] and "Source: dataflow/wiki/security.md" in plain[1]
+
+
+def test_grade_prompt_is_boxed(monkeypatch):
+    grade_messages = _texts(_run(monkeypatch, box_passages=True)[1])
+    assert "data box" in grade_messages[0]
+    box = grade_messages[1].split("Passage:\n", 1)[1]
+    lines = box.splitlines()
+    assert lines[0] == "```data source=dataflow/wiki/security.md" and lines[-1] == "```"
+    assert PLANTED in lines[1:-1]
