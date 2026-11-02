@@ -203,8 +203,12 @@ def set_pg_store(store: Any) -> None:
     _PG_STORE = store
 
 
-def _faiss_rows(question: str, k: int, scope_name: str, folders: frozenset[str]) -> list[dict]:
+def _faiss_rows(question: str, k: int, scope_name: str, folders: frozenset[str], mode: str = "dense") -> list[dict]:
     index = get_index(scope=SCOPE_INDEX[scope_name])
+    if mode == "hybrid":
+        from dataflow.rag.hybrid import hybrid_rows
+
+        return hybrid_rows(index, question, k, folders, fetch=max(k, 10))
     fetched = search(index, question, k=max(k * 10, 32), folder=None)
     return [row for row in fetched if row.get("folder") in folders][:k]
 
@@ -222,6 +226,7 @@ def retrieve_passages(
     *,
     scope: str = "customer",
     store: str | None = None,
+    mode: str | None = None,
 ) -> list[dict] | dict:
     """Search the scope's index. folder=None keeps the whole scope; a folder can only narrow it.
 
@@ -230,16 +235,20 @@ def retrieve_passages(
     the typed miss {"found": False, "reason": ...}. store is "faiss" or "pgvector";
     None reads config.RETRIEVE_STORE, the deployment's choice. On FAISS the scope is
     the scope's own index plus a filter on the fetched rows; on pgvector it is a
-    filter Postgres applies in the same query.
+    filter Postgres applies in the same query. mode is "dense" or "hybrid" (dense
+    and BM25 fused, FAISS only); None reads config.RETRIEVE_MODE.
     """
     name = _scope_name(scope)
     allowed = SCOPES[name]
     if folder and folder not in allowed:
         return {"found": False, "reason": f"folder {folder} is outside this caller's scope"}
     folders = frozenset({folder}) if folder else allowed
+    mode = mode or config.RETRIEVE_MODE
     if (store or config.RETRIEVE_STORE) == "pgvector":
+        if mode == "hybrid":
+            raise ValueError("hybrid search runs on the FAISS store in this course; Advanced RAG builds it in Postgres")
         return _pgvector_rows(question, k, folders)
-    return _faiss_rows(question, k, name, folders)
+    return _faiss_rows(question, k, name, folders, mode)
 
 
 @tool(description=RETRIEVE_DESCRIPTION)

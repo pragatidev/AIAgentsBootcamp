@@ -14,6 +14,8 @@ langchain-community>=0.3.27
 langchain-text-splitters>=1.0
 faiss-cpu>=1.8
 langchain-postgres>=0.0.15
+# RAG (Sections 22 to 25): BM25 keyword search for the hybrid lab (24.7).
+rank-bm25>=0.2.2
 python-dotenv>=1.0
 jupyter>=1.0
 nbformat>=5.10

@@ -181,6 +181,9 @@ DESK_TOKEN_BUDGET = int(os.environ["DESK_TOKEN_BUDGET"]) if os.environ.get("DESK
 # the model: "faiss" (the file on disk, the default) or "pgvector" (the docker compose Postgres).
 RETRIEVE_STORE = os.environ.get("DATAFLOW_RETRIEVE_STORE", "faiss").strip() or "faiss"
 PGVECTOR_COLLECTION = os.environ.get("DATAFLOW_PGVECTOR_COLLECTION", "dataflow_customer").strip() or "dataflow_customer"
+# How retrieve searches (Section 24): "dense" (the embedding only, the default) or "hybrid" (dense and BM25
+# keyword search fused by reciprocal rank). Flipping the default changes every later capture: a ruling, not a tweak.
+RETRIEVE_MODE = os.environ.get("DATAFLOW_RETRIEVE_MODE", "dense").strip() or "dense"
 
 # Per-token prices for the cost line (Section 25). Empty by default: the local model has no price, and the
 # repo never holds one. Copy your provider's prices, in dollars per million tokens, into .env to see a cost.

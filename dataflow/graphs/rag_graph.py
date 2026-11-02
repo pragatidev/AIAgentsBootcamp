@@ -317,6 +317,65 @@ class DeskRagState(RagState, total=False):
     """RagState plus the keys the later hooks write. LangGraph drops a key the state does not declare."""
 
     widened: bool
+    reranked: list[dict[str, Any]]
+
+
+RERANK_SYSTEM = (
+    "You rank one retrieved passage for a DataFlow support question. "
+    "3: the passage answers the question. 2: it answers part of it. "
+    "1: it is on the topic but does not answer. 0: it is unrelated. "
+    "Return the score and a one sentence reason."
+)
+
+
+class Relevance(BaseModel):
+    score: Literal[0, 1, 2, 3] = Field(
+        description="3 answers the question, 2 partly, 1 on the topic only, 0 unrelated"
+    )
+    reason: str = Field(description="One sentence why")
+
+
+def rerank(
+    state: DeskRagState,
+    runtime: Runtime[DeskContext] | None = None,
+    *,
+    model: Any = None,
+    keep: int = 3,
+) -> dict[str, Any]:
+    """Score each passage of the shortlist with the chat model from config and keep the best `keep`.
+
+    One model call per passage: the cost of a rerank is the shortlist's length in
+    calls. Ties keep the retrieval order. A cross-encoder is the production option.
+    """
+    chat = _chat(model, runtime)
+    structured = chat.with_structured_output(Relevance)
+    question = state.get("rewritten_question") or state.get("question") or ""
+    scored: list[tuple[int, int, dict[str, Any], str]] = []
+    for position, passage in enumerate(list(state.get("passages") or [])):
+        decision = structured.invoke(
+            [
+                {"role": "system", "content": RERANK_SYSTEM},
+                {
+                    "role": "user",
+                    "content": (
+                        f"Question: {question}\n"
+                        f"Source: {passage.get('source')}\n"
+                        f"Passage:\n{passage.get('text')}"
+                    ),
+                },
+            ]
+        )
+        score = int(decision.score if hasattr(decision, "score") else decision.get("score") or 0)
+        reason = str(decision.reason if hasattr(decision, "reason") else decision.get("reason") or "")
+        scored.append((score, position, passage, reason))
+    ordered = sorted(scored, key=lambda item: (-item[0], item[1]))
+    return {
+        "passages": [item[2] for item in ordered[:keep]],
+        "reranked": [
+            {"source": item[2].get("source"), "score": item[0], "reason": item[3], "was": item[1]}
+            for item in ordered
+        ],
+    }
 
 
 def build_rag_graph(
@@ -338,6 +397,9 @@ def build_rag_graph(
     refuse_check: Any = None,
     retrieve_store: str | None = None,
     span_citations: bool = False,
+    retrieve_mode: str | None = None,
+    rerank_enabled: bool = False,
+    rerank_shortlist: int = 10,
 ):
     """Compile the agentic RAG graph. Every keyword after system_prompt is a hook a lab plugs its own copy into.
 
@@ -348,6 +410,9 @@ def build_rag_graph(
     today's path, and retrieve_passages then reads config.RETRIEVE_STORE.
     span_citations: sources carry the passage's line_start and line_end, and the
     reply ends with a Claims block from cite_with_claims (25.7). Off by default.
+    retrieve_mode: "dense" or "hybrid" for the retrieve node (24.7); None keeps
+    today's path. rerank_enabled: retrieve fetches rerank_shortlist passages and a
+    rerank node, on the chat model, keeps the best retrieve_k. Off by default.
     """
     builder = StateGraph(DeskRagState, context_schema=DeskContext)
 
@@ -358,16 +423,23 @@ def build_rag_graph(
         return route(state, runtime=runtime, model=model)
 
     def retrieve_bound(state: RagState) -> dict[str, Any]:
-        if retrieve_store is None:
+        if retrieve_store is None and retrieve_mode is None and not rerank_enabled:
             return retrieve_node(state, scope=scope, k=retrieve_k)
         question = state.get("rewritten_question") or state.get("question") or ""
         hits = retrieve_passages(
             question,
-            k=retrieve_k,
+            k=rerank_shortlist if rerank_enabled else retrieve_k,
             scope="support_agent" if scope == "all" else "customer",
             store=retrieve_store,
+            mode=retrieve_mode,
         )
         return {"passages": hits}
+
+    def rerank_node(
+        state: DeskRagState,
+        runtime: Runtime[DeskContext] | None = None,
+    ) -> dict[str, Any]:
+        return rerank(state, runtime=runtime, model=model, keep=retrieve_k)
 
     def grade_node(
         state: RagState,
@@ -444,6 +516,11 @@ def build_rag_graph(
     builder.add_node("lookup", lookup_node)
     builder.add_node("answer", answer_bound)
     builder.add_node("widen", widen_node)
+    after_retrieve = "retrieve"
+    if rerank_enabled:
+        builder.add_node("rerank", rerank_node)
+        builder.add_edge("retrieve", "rerank")
+        after_retrieve = "rerank"
 
     builder.add_edge(START, "route")
     builder.add_conditional_edges(
@@ -456,7 +533,7 @@ def build_rag_graph(
         },
     )
     if grade_enabled:
-        builder.add_edge("retrieve", "grade")
+        builder.add_edge(after_retrieve, "grade")
         builder.add_conditional_edges(
             "grade",
             pick_after_grade,
@@ -470,7 +547,7 @@ def build_rag_graph(
         builder.add_edge("rewrite", "retrieve")
         builder.add_edge("widen", "grade")
     else:
-        builder.add_edge("retrieve", "generate")
+        builder.add_edge(after_retrieve, "generate")
 
     if cite_node is ... and span_citations:
         from dataflow.rag.cite import cite_with_claims as cite_node
