@@ -1,15 +1,17 @@
 """Retrieve as a LangGraph tool. FAISS by default, customer scope.
 
-The docstring is the routing rule the model reads. An empty
-description means the desk never calls this tool.
+The description is one of the routing texts the model reads; the desk's
+system prompt is the other. Which folders a search may see comes from the
+caller's envelope (the runtime context's actor_id), never from an argument
+the model fills: the tool has no folder argument, and a code caller's folder
+can only narrow the caller's scope.
 """
 
 from __future__ import annotations
 
 from typing import Any
 
-from langchain.tools import tool
-from langchain_core.tools import StructuredTool
+from langchain.tools import ToolRuntime, tool
 
 import config
 from dataflow.rag.faiss_index import (
@@ -29,6 +31,26 @@ RETRIEVE_DESCRIPTION = (
 )
 
 CUSTOMER_FOLDERS = frozenset({"wiki", "customer_facing"})
+
+# Who may read which folders. Folders are the honest unit here: the repo has one
+# company and no tenant field. A real multi-tenant store also carries a tenant id on
+# every row, with its keys and logs kept apart.
+SCOPES = {
+    "customer": CUSTOMER_FOLDERS,
+    "support_agent": frozenset(
+        {"wiki", "customer_facing", "business_data", "internal_operations", "legal_compliance"}
+    ),
+}
+# The actor names are Section 31's table (dataflow/guardrails/allowlist.py). An
+# actor the table does not know reads as a customer, the lowest scope, never the highest.
+ACTOR_SCOPE = {
+    "anon": "customer",
+    "reviewer-1": "support_agent",
+    "reviewer-2": "support_agent",
+    "desk-lead": "support_agent",
+}
+# Which index each scope searches.
+SCOPE_INDEX = {"customer": "customer", "support_agent": "all"}
 
 # Two indexes, one per scope, each built from its own folders only. The
 # customer index holds the wiki and the customer facing pages, nothing else,
@@ -137,34 +159,57 @@ def get_index(embeddings: Any = None, scope: str = "customer"):
     return _INDEX
 
 
+def scope_for(ctx: Any) -> str:
+    """The caller's scope from the envelope. No envelope, or an unknown actor, is the customer scope."""
+    actor = getattr(ctx, "actor_id", None) if ctx is not None else None
+    return ACTOR_SCOPE.get(str(actor), "customer") if actor else "customer"
+
+
+def allowed_folders(ctx: Any) -> frozenset[str]:
+    """The folders this caller may read, decided by the envelope before any search runs."""
+    return SCOPES[scope_for(ctx)]
+
+
+def scoped_folders(ctx: Any, requested: str | None = None) -> frozenset[str] | dict:
+    """The caller's folders, or one of them when requested. A folder outside the scope is a typed miss."""
+    allowed = allowed_folders(ctx)
+    if not requested:
+        return allowed
+    if requested not in allowed:
+        return {"found": False, "reason": f"folder {requested} is outside this caller's scope"}
+    return frozenset({requested})
+
+
+def _scope_name(scope: str) -> str:
+    return "support_agent" if scope in ("all", "support_agent") else "customer"
+
+
 def retrieve_passages(
     question: str,
     k: int = 3,
     folder: str | None = None,
-) -> list[dict]:
-    """Search the index. folder=None keeps the customer-facing scope."""
-    index = get_index()
-    if folder:
-        return search(index, question, k=k, folder=folder)
+    *,
+    scope: str = "customer",
+) -> list[dict] | dict:
+    """Search the scope's index. folder=None keeps the whole scope; a folder can only narrow it.
+
+    scope is the caller's scope ("customer", or "support_agent" for every folder),
+    set by code from the envelope, never by the model. A folder outside it returns
+    the typed miss {"found": False, "reason": ...}.
+    """
+    name = _scope_name(scope)
+    allowed = SCOPES[name]
+    if folder and folder not in allowed:
+        return {"found": False, "reason": f"folder {folder} is outside this caller's scope"}
+    folders = frozenset({folder}) if folder else allowed
+    index = get_index(scope=SCOPE_INDEX[name])
     fetched = search(index, question, k=max(k * 10, 32), folder=None)
-    scoped = [row for row in fetched if row.get("folder") in CUSTOMER_FOLDERS]
+    scoped = [row for row in fetched if row.get("folder") in folders]
     return scoped[:k]
 
 
-@tool
-def retrieve(question: str, k: int = 3, folder: str | None = None) -> list[dict]:
-    """Search the DataFlow customer policies and guides (wiki and customer facing pages) for a customer question. Returns passages with their source file."""
-    return retrieve_passages(question, k=k, folder=folder)
-
-
-def build_retrieve_tool(description: str | None = None) -> StructuredTool:
-    """Rebuild the tool so a lab can blank RETRIEVE_DESCRIPTION."""
-    desc = RETRIEVE_DESCRIPTION if description is None else description
-    return StructuredTool.from_function(
-        func=retrieve_passages,
-        name="retrieve",
-        description=desc,
-    )
-
-
-retrieve.description = RETRIEVE_DESCRIPTION
+@tool(description=RETRIEVE_DESCRIPTION)
+def retrieve(question: str, k: int = 3, runtime: ToolRuntime[Any] = None) -> list[dict]:
+    """The model fills question and k. runtime is the envelope, hidden from the model; it sets the scope."""
+    ctx = getattr(runtime, "context", None) if runtime is not None else None
+    return retrieve_passages(question, k=k, scope=scope_for(ctx))
