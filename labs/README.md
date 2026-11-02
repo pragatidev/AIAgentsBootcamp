@@ -17,16 +17,19 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 02_04_second_tool.py             two tools, the model's choices, unknown-tool break
 02_06_break_the_loop.py          runaway, blank description, gate you answer; each restored
 02_13_loop_as_a_class.py         ScratchAgent wraps run_loop, two tickets, pytest
-03_02_context_rot.py             constraint at turn 4, needed at turn 30
-03_03_measure_tokens.py          tokens before and after the death
-03_05_map_file.py                FAT and MAP constants, written to disk
-03_06_fat_vs_map.py              same ticket, both files, token delta
-03_08_compaction.py              sawtooth of token counts
-03_09_compare_compaction.py      compacted vs uncompacted totals
-03_11_notes_file.py              notes.json after each turn
-03_12_recover_from_notes.py      fact the summary dropped, recovered
-03_14_just_in_time_read.py       read only on the ticket that needs it
-03_16_subagent_isolation.py      polluted vs isolated scores
+03_02_context_rot.py             judge typed; full window holds, window 512 cuts the rule
+03_03_measure_tokens.py          measure typed; both counts, cut_by_server, encoding break
+03_05_map_file.py                check_map typed on your MAP.md; unreadable-line break
+03_06_fat_vs_map.py              run_desk typed at a set window; 4096 break
+03_08_compaction.py              compact typed; sawtooth, last summary, probe; prompt break
+03_09_compare_compaction.py      total_input typed with the summariser; threshold break
+03_11_notes_file.py              write_note typed; writes, protected key refuses the overwrite
+03_12_recover_from_notes.py      notes_block typed; probe with notes off, then on
+03_14_just_in_time_read.py       read_file typed; exact reads, handbook refused by the list
+03_16_subagent_isolation.py      run_child typed; planted memo, three runs, both rankings
+03_18_guard_the_window.py        guard_read typed; injection, tenant, secrets, notes per customer
+03_20_budget_and_window_log.py   where_in_window typed; budget, window log, prefix, owner
+03_22_long_task.py               pass_lines typed; sixty turns, controls on, then off
 04_03_thread_memory.py           second turn uses the first
 04_03_other_thread_break.py      same graph, other thread id, the desk is a stranger
 04_05_summarizer.py              facts, actions, decisions, open questions
@@ -175,7 +178,6 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 19_03_research_capstone.py     empty-source report, citation check, sourced report
 19_04_talentflow_capstone.py   score collision, reducer, N resumes, summary
 01_setup.py          clone, pytest green, no key
-03_tokens.py         short vs stuffed prompt
 04_walk_package.py   dataflow folders
 05_call_hosted.py    SKIPPED without a key
 05_call_local.py     SKIPPED without Ollama
