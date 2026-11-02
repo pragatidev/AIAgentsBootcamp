@@ -242,8 +242,13 @@ def compact_messages(
     if before <= threshold:
         return messages, False, before, before
     keep_n = max(keep_last, 0)
-    keep = messages[-keep_n:] if keep_n else []
-    older = messages[:-keep_n] if keep_n else list(messages)
+    cut = max(len(messages) - keep_n, 0) if keep_n else len(messages)
+    # The kept tail never starts with a tool result whose call was folded away: move the cut back
+    # to the assistant message that made the call, so the call and its results stay together.
+    while 0 < cut < len(messages) and messages[cut].get("role") == "tool":
+        cut -= 1
+    keep = messages[cut:]
+    older = messages[:cut]
     system = [m for m in older if m.get("role") == "system"][:1]
     body = [m for m in older if m.get("role") != "system"]
     blob = "\n".join(
@@ -712,4 +717,32 @@ class ContextAgent:
             messages.append({"role": "assistant", "content": content})
             replies.append(content)
             self.token_trace.append({"turn": i, "tokens": count_tokens(sent), "usage": usage, "text": content})
+        return self._result(messages, replies=replies, stop=stop)
+
+    def run_session(self, turns: list[str], progress_every: int = 0) -> dict:
+        """A long conversation with tools: one growing message list, the tool loop on every turn.
+
+        Before every call the desk folds if asked, rebuilds the notes, checks the budget and logs
+        the window. Each turn's row records its calls, its tools and its wall time in seconds.
+        """
+        self._reset()
+        messages = [self._first_message()]
+        replies: list[str] = []
+        stop = "final"
+        for i, turn in enumerate(turns, start=1):
+            start = time.perf_counter()
+            calls_before = self.calls
+            tool_names: list[str] = []
+            messages.append({"role": "user", "content": self._inbound(turn)})
+            messages, turn_stop, final = self._tool_loop(messages, tool_names)
+            replies.append(final)
+            seconds = round(time.perf_counter() - start, 2)
+            self.token_trace.append(
+                {"turn": i, "calls": self.calls - calls_before, "tools": tool_names, "text": final, "seconds": seconds}
+            )
+            if progress_every and (i % progress_every == 0 or i == len(turns)):
+                print("turn", i, "of", len(turns), "calls", self.calls - calls_before, "tools", tool_names, "seconds", seconds, flush=True)
+            if turn_stop == "budget":
+                stop = "budget"
+                break
         return self._result(messages, replies=replies, stop=stop)
