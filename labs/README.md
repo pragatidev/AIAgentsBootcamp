@@ -100,17 +100,24 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 07_03_02_permissions.py          actor off the list, blocked write
 07_03_05_miss_to_test.py         xfail on the old desk, green with control
 
-08_01_03_load_knowledge_base.py  twenty files, csv row, json ImportError
-08_01_05_compare_two_chunkers.py  recursive vs heading, orphan counts, winner
-08_02_02_index_faiss.py          FAISS retrieve billing row, wrong embedder
-08_02_04_pgvector.py             refund row from Postgres, or BLOCKED ON DOCKER
-08_02_06_bind_retrieve_tool.py   retrieve tool call, lookup, chitchat, empty description
-08_03_03_agentic_rag_graph.py    paraphrase, grades, skip grade cites the handbook
-08_03_05_corrective_rag.py       GRADE=wrong, REWRITE, REFUSE, GraphRecursionError
-08_04_02_print_citations.py      reply names customer_support_procedures.markdown
-08_04_04_refuse_on_empty.py      REFUSE vs FABRICATED
-08_04_05_rag_evals.py            naive vs agentic table, fluent miss marked
-08_04_06_portfolio_knowledge_desk.py  three tickets plus pytest test_rag_*.py
+08_01_03_load_knowledge_base.py  type load_one and stamp: 21 files, 272 documents, csv row 0, jq ImportError
+08_01_05_compare_two_chunkers.py  type chunk_by_heading: 89/17 at 300, 37 sections, 0 orphans, distances
+08_01_06_load_pdf_and_word.py    type load_docx: markdown, PDF pages and bookmarks, Word, headings kept
+08_02_02_index_faiss.py          type build_faiss_index into faiss_index_lab, billing row 0, desk manifest
+08_02_04_pgvector.py             type check_dimension, refund on top, wrong width refused, graph from Postgres, or BLOCKED ON DOCKER
+08_02_06_bind_retrieve_tool.py   type the retrieve tool: retrieve, lookup_order, nothing, description only
+08_02_08_reindex_a_changed_file.py  type diff: refresh embeds 0, one edit embeds one file
+08_02_10_scope_before_search.py  type allowed_folders: anon and an unknown actor never reach the handbook
+08_03_03_agentic_rag_graph.py    type grade: nodes and edges, customer and all folders, handbook not cited
+08_03_05_corrective_rag.py       type after_grade: six rows, two grade passes, corrected, REFUSE, runaway
+08_03_07_hybrid_and_rerank.py    type the rank fusion: 20 codes dense, BM25, fused, three desks and their calls
+08_04_02_print_citations.py      type format_sources: support-agent and customer desks, csv row 0
+08_04_04_refuse_on_empty.py      type should_refuse: retrieved 3 kept 0, REFUSE, cites_rejected
+08_04_05_rag_evals.py            type refusal_scores: naive vs agentic, tokens and calls, naive answers
+08_04_06_portfolio_knowledge_desk.py  type answer_question: three tickets, checks, dataflow/README.md tests
+08_04_07_span_citations.py       type line_span: Sources with lines, planted sentence UNSUPPORTED
+08_04_08_retrieval_metrics.py    type retrieval_metrics: recall at k and MRR, dense then hybrid, 5 left out
+08_04_09_trace_cost_latency.py   type trace_totals: retrieve span, calls and tokens, grader's cost
 09_01_02_trace_run.py    LangChainTracer or local fallback, retrieve span, default then dataflow-desk
 09_01_05_upload_dataset.py  dataflow-golden evaluate, missing reference skip then fill
 09_01_07_llm_judge.py    three scores twice, cite rule flips fluent-wrong
@@ -126,7 +133,7 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 10_03_04_playwright_ui.py  early innerText flake, two tests green, screenshot
 10_03_06_qa_checklist.py  empty path is the find, parked UI test, path filled
 11_01_03_unguarded_comply.py  escalate.md through the unguarded desk
-11_01_05_wiki_injection.py  raw chunk, boxed data, unboxed vs boxed desk
+11_01_05_wiki_injection.py  type the plant and the box: in-memory index, fence holds, both desks, RAG graph boxed
 11_01_07_allowlist.py  anon blocked at the port, typo turns the golden row red
 11_02_02_confirm_refund.py  park, deny, approve, write-before-interrupt double charge
 11_02_04_actor_id.py  actor=reviewer-1 on the trace, admin fallback is the miss
