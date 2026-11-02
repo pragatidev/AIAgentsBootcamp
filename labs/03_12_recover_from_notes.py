@@ -19,7 +19,7 @@ from dataflow.context.agent import (
     load_notes,
     write_note,
 )
-from dataflow.context.rot import FILLERS
+from dataflow.context.rot import FILLERS, PROBE_AMOUNT
 
 NOTES_PATH.write_text("{}", encoding="utf-8")
 write_note(
@@ -70,7 +70,7 @@ ask = ContextAgent(
 )
 probe = ask.run_turns(
     [
-        "Please refund 129 dollars for the desk lamp. What cap applies?"
+        f"Please refund {PROBE_AMOUNT} dollars for the desk lamp. What cap applies?"
     ]
 )
 print("probe_reply", probe["replies"][0])

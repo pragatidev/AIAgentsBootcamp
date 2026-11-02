@@ -9,6 +9,7 @@ from typing import Any, Callable
 import tiktoken
 
 CONTEXT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parents[2]
 NOTES_PATH = CONTEXT_DIR / "notes.json"
 KB_ROOT = Path(__file__).resolve().parents[1] / "knowledge_base"
 WIKI_ROOT = Path(__file__).resolve().parents[1] / "wiki"
@@ -91,6 +92,40 @@ _ALLOWED_NAMES = {
 
 def _enc():
     return tiktoken.get_encoding("cl100k_base")
+
+
+def repo_path(path: Path) -> str:
+    """A path as it looks from the repo root, so the screen matches every student's machine."""
+    try:
+        return Path(path).resolve().relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        return Path(path).as_posix()
+
+
+def applied_window() -> int | None:
+    """The context window the Ollama server applied to the chat model, read from /api/ps.
+
+    The server reports it after a call has loaded the model. None when the
+    server cannot be reached or reports no context length.
+    """
+    import urllib.error
+    import urllib.request
+
+    import config
+
+    url = config.OLLAMA_BASE_URL.rstrip("/")
+    if url.endswith("/v1"):
+        url = url[:-3]
+    try:
+        with urllib.request.urlopen(url + "/api/ps", timeout=10) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+    except (urllib.error.URLError, OSError, ValueError):
+        return None
+    for item in payload.get("models") or []:
+        if str(item.get("name") or "") == config.CHAT_MODEL or str(item.get("model") or "") == config.CHAT_MODEL:
+            ctx = item.get("context_length")
+            return int(ctx) if ctx else None
+    return None
 
 
 def count_tokens(messages: list) -> int:
@@ -384,12 +419,17 @@ class ContextAgent:
         ]
         return self._run_tools(messages, ticket)
 
-    def run_turns(self, turns: list[str]) -> dict:
-        """Multi-turn conversation. Compaction may fold between turns."""
+    def run_turns(self, turns: list[str], progress_every: int = 0) -> dict:
+        """Multi-turn conversation. Compaction may fold between turns.
+
+        progress_every prints "turn N of M" every N turns, so a long run shows it is moving.
+        """
         self.token_trace = []
         messages = [{"role": "system", "content": self._system_text()}]
         replies: list[str] = []
         for i, turn in enumerate(turns, start=1):
+            if progress_every and (i % progress_every == 0 or i == len(turns)):
+                print("turn", i, "of", len(turns), flush=True)
             messages = self._maybe_compact(messages)
             messages.append({"role": "user", "content": turn})
             before = count_tokens(messages)

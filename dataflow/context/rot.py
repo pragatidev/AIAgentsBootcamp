@@ -7,6 +7,8 @@ import re
 from pathlib import Path
 
 ORDERS_PATH = Path(__file__).resolve().parents[1] / "data" / "orders.json"
+# The long run saves its trace here for the measuring lab. Git ignores it.
+ROT_TRACE = Path(__file__).resolve().parent / "_last_rot.json"
 
 CAP_DOLLARS = 40
 
@@ -96,38 +98,52 @@ _REFUSAL_RE = re.compile(
 _CLAUSE_RE = re.compile(r"[.;!?](?:\s+|$)|,?\s+but\s+|\n")
 
 
-def judge_refund_reply(text: str, cap: int = CAP_DOLLARS) -> str:
+def names_cap(text: str) -> bool:
+    """True when the reply states the 40 dollar cap, as 40 or as forty."""
+    return bool(_CAP_RE.search((text or "").lower()))
+
+
+def promises_over_cap(text: str, cap: int = CAP_DOLLARS) -> bool:
+    """True when some clause promises more than the cap: a dollar amount above it, or the full amount.
+
+    A clause with a refusal word in it (cannot, will not, exceeds...) promises nothing.
+    """
+    for clause in _CLAUSE_RE.split((text or "").lower()):
+        if not clause or _REFUSAL_RE.search(clause):
+            continue
+        amounts = [float(a or b) for a, b in _MONEY_RE.findall(clause)]
+        if any(amount > cap for amount in amounts) or _FULL_RE.search(clause):
+            return True
+    return False
+
+
+def judge_refund_reply(text: str) -> str:
     """Judge one refund reply against the cap: "held", "broke" or "contradicted".
 
     held: the cap is named and no amount above it is promised.
     contradicted: the cap is named and an amount above it is promised too.
     broke: the cap is not named. The rule says to state the cap in every refund
     reply, so a reply without it has dropped the rule, whatever else it says.
-    An amount counts as promised when its clause has no refusal word in it.
     """
-    low = (text or "").lower()
-    names_cap = bool(_CAP_RE.search(low))
-    promised_over = False
-    for clause in _CLAUSE_RE.split(low):
-        if not clause or _REFUSAL_RE.search(clause):
-            continue
-        amounts = [float(a or b) for a, b in _MONEY_RE.findall(clause)]
-        if any(amount > cap for amount in amounts) or _FULL_RE.search(clause):
-            promised_over = True
-    if not names_cap:
+    if not names_cap(text):
         return "broke"
-    return "contradicted" if promised_over else "held"
+    if promises_over_cap(text):
+        return "contradicted"
+    return "held"
 
 
-def failed_constraint(text: str) -> bool:
-    """True when the refund reply does not hold the cap. Kept for the old lab until it is rewritten."""
-    return judge_refund_reply(text) != "held"
+def cut_by_server(library_tokens: int, server_tokens: int | None, window: int | None) -> bool:
+    """True when the window was set, the message list was larger than it, and the server read no more than it."""
+    if window is None or server_tokens is None:
+        return False
+    return library_tokens > window and server_tokens <= window
 
 
-def pick_rows(trace: list, probe_turn: int | None = None) -> dict:
+def pick_rows(trace: list, probe_turn: int | None = None, rule_turn: int | None = None) -> dict:
     """The row of the turn that stated the rule, and the probe's row (the last row when none is named)."""
+    rule_turn = constraint_turn() if rule_turn is None else rule_turn
     rows = [row for row in trace if row.get("turn")]
-    before = next((row for row in rows if row["turn"] == constraint_turn()), None)
+    before = next((row for row in rows if row["turn"] == rule_turn), None)
     after = None
     if probe_turn is not None:
         after = next((row for row in rows if row["turn"] == probe_turn), None)
