@@ -267,6 +267,7 @@ def openai_caller(tools_schema: list[dict], model_id: str | None = None):
             "tool_calls": parsed,
             "raw_tool_calls": raw,
             "finish_reason": resp.choices[0].finish_reason,
+            "usage": resp.usage.model_dump() if resp.usage else {},
         }
 
     return call_model

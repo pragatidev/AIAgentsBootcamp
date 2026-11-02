@@ -206,8 +206,22 @@ def default_summariser(text: str) -> str:
 
 
 def _usage(reply: Any) -> dict:
+    """The server's count in one shape: input_tokens, output_tokens, total_tokens.
+
+    LangChain's usage_metadata already uses those names. The OpenAI SDK says
+    prompt_tokens and completion_tokens, so those are mapped across.
+    """
     if isinstance(reply, dict):
-        return reply.get("usage") or {}
+        usage = reply.get("usage") or {}
+        if "prompt_tokens" in usage and "input_tokens" not in usage:
+            details = usage.get("prompt_tokens_details") or {}
+            return {
+                "input_tokens": usage.get("prompt_tokens"),
+                "output_tokens": usage.get("completion_tokens"),
+                "total_tokens": usage.get("total_tokens"),
+                "cached_tokens": details.get("cached_tokens"),
+            }
+        return usage
     meta = getattr(reply, "usage_metadata", None) or {}
     return {
         "input_tokens": meta.get("input_tokens"),

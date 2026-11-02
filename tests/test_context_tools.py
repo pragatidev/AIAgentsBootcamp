@@ -38,6 +38,56 @@ def test_chat_caller_passes_num_ctx(monkeypatch):
     assert "num_ctx" not in seen[1]
 
 
+def test_openai_caller_returns_usage(monkeypatch):
+    import openai
+    from openai.types.chat import ChatCompletion
+
+    from dataflow.context.agent import _usage
+    from techcorp.agent.scratch import openai_caller
+
+    reply = ChatCompletion.model_validate(
+        {
+            "id": "c1",
+            "object": "chat.completion",
+            "created": 0,
+            "model": "qwen3:8b",
+            "choices": [
+                {
+                    "index": 0,
+                    "finish_reason": "stop",
+                    "message": {"role": "assistant", "content": "Thirty days."},
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 120,
+                "completion_tokens": 4,
+                "total_tokens": 124,
+                "prompt_tokens_details": {"cached_tokens": 100},
+            },
+        }
+    )
+
+    class FakeClient:
+        def __init__(self, **_kw):
+            self.chat = self
+            self.completions = self
+
+        def create(self, **_kw):
+            return reply
+
+    monkeypatch.setattr(openai, "OpenAI", FakeClient)
+    out = openai_caller([])([{"role": "user", "content": "return window?"}])
+    assert out["content"] == "Thirty days."
+    assert out["usage"]["prompt_tokens"] == 120
+    assert _usage(out) == {
+        "input_tokens": 120,
+        "output_tokens": 4,
+        "total_tokens": 124,
+        "cached_tokens": 100,
+    }
+    assert _usage({"usage": {"input_tokens": 7, "output_tokens": 1, "total_tokens": 8}})["input_tokens"] == 7
+
+
 def test_compaction_folds_over_threshold():
     messages = [{"role": "system", "content": "desk"}]
     for i in range(20):
