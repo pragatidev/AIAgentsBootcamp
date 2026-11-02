@@ -3,7 +3,7 @@
 
 What we build: you type the small function that scores one answer on refusal: did it refuse with the house
 sentence, was that right for this row, is it a fluent miss (an answer to a question the knowledge base does
-not cover), or an over-refusal (a refusal on a row that has an answer). You check it on four answers with
+not cover), or an over-refusal (a refusal on a row that has an answer). You check it on five answers with
 the real judge, then run the twelve DataFlow questions through two desks, one that retrieves and answers
 every time and Section 24's graph that grades and can refuse, and read the table.
 
@@ -12,8 +12,8 @@ the fluent miss becomes a number per desk; the grader has a price you can read i
 call columns. And the limits you see: the judge is the desk's own model, a passage judge cannot score a
 lookup, and a refusal in the model's own words does not count as the house refusal.
 
-What will be true on your screen: four refusal_scores lines (one an own-words refusal flagged as a fluent
-miss), warmup_s, the summary table with tokens_per_q and calls_per_q, the per-row lines, the naive desk's
+What will be true on your screen: five refusal_scores lines (one an own-words refusal flagged as a fluent
+miss, one a policy row answered), warmup_s, the summary table with tokens_per_q and calls_per_q, the per-row lines, the naive desk's
 answers on the three refuse rows, over_refusals per desk, recall_by_definition 5 of 12, and
 judge_is_desk_model True. Then python -m pytest tests/test_lab_08_04_05.py -q passes.
 """
@@ -47,7 +47,7 @@ def refusal_scores(kind: str, answer: str, passages: list, *, judge, model=None)
 
 # BREAK: drop the row-kind guard from fluent_miss, so it reads
 #         "fluent_miss": not refused and bool(answer.strip()),
-# run the lab and read the policy row's line, then python -m pytest tests/test_lab_08_04_05.py -q.
+# run the lab and read the answered policy row's line, then python -m pytest tests/test_lab_08_04_05.py -q.
 # git checkout -- labs/08_04_05_rag_evals.py puts it back.
 
 
@@ -69,6 +69,7 @@ for kind, answer in (
     ("refuse", "Yes, every desk lamp has a lifetime warranty."),
     ("refuse", "I don't have information about a lifetime warranty."),
     ("policy", house),
+    ("policy", "Returns are allowed within 30 days of delivery when the item is unused."),
 ):
     print("refusal_scores", kind, repr(answer[:60]), refusal_scores(kind, answer, [], judge=judge, model=chat))
 

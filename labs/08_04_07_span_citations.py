@@ -78,6 +78,6 @@ print(state.get("reply"))
 PLANTED = "Every desk lamp has a lifetime warranty."
 kept = list(state.get("graded") or state.get("passages") or [])
 claims = support_spans(str(state.get("answer") or "") + " " + PLANTED, kept)
-print("Claims:")
+print("Claims with the planted sentence:")
 print(format_claims(claims))
 print("planted_flagged", any(claim["unsupported"] and claim["sentence"] == PLANTED for claim in claims))

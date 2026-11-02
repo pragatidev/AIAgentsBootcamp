@@ -71,6 +71,7 @@ def test_the_run_prints_the_table_and_the_checks(capsys):
     assert any(line.startswith("pipeline  faithfulness") and line.endswith("tokens_per_q  calls_per_q") for line in out)
     assert sum(1 for line in out if line.startswith("naive_answer refuse-")) == 3
     assert "recall_by_definition 5 of 12" in out
+    assert sum(1 for line in out if line.startswith("refusal_scores ")) == 5
     assert "judge_is_desk_model True" in out
     assert any(line.startswith("over_refusals naive") for line in out)
 
