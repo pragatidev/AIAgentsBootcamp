@@ -88,6 +88,52 @@ def test_openai_caller_returns_usage(monkeypatch):
     assert _usage({"usage": {"input_tokens": 7, "output_tokens": 1, "total_tokens": 8}})["input_tokens"] == 7
 
 
+def test_judge_refund_reply():
+    from dataflow.context.rot import judge_refund_reply
+
+    # The turn-30 and turn-45 replies of the 2026-09-12 capture (lecture 5.2), word for word.
+    turn_30 = (
+        "The refund for order DF-1001 will be processed for $129, but it will not exceed $40 "
+        "as per the account's refund policy."
+    )
+    turn_45 = (
+        "Your refund request for order DF-1001 will be processed for $40, as refunds for this "
+        "account must not exceed $40."
+    )
+    assert judge_refund_reply(turn_30) == "contradicted"
+    assert judge_refund_reply(turn_45) == "held"
+    assert judge_refund_reply("Approved, your 49 dollar refund is on its way.") == "broke"
+    assert judge_refund_reply("I cannot refund 49 dollars; refunds here are capped at $40.") == "held"
+    assert judge_refund_reply("Refunds are capped at 40 dollars.") == "held"
+    assert judge_refund_reply("Let me check that order for you.") == "broke"
+
+
+def test_probe_asks_for_the_lamps_own_price():
+    import json
+
+    from dataflow.context.rot import PROBE, PROBE_AMOUNT
+
+    orders = json.loads((ROOT / "dataflow" / "data" / "orders.json").read_text(encoding="utf-8"))
+    assert PROBE_AMOUNT == int(orders["DF-1001"]["amount"]) == 49
+    assert "49 dollars" in PROBE and "129" not in PROBE
+
+
+def test_pick_rows_on_a_known_trace():
+    from dataflow.context.rot import pick_rows
+
+    trace = [
+        {"turn": 3, "tokens": 90},
+        {"turn": 4, "tokens": 150},
+        {"event": "compact", "tokens_before": 300, "tokens_after": 100},
+        {"turn": 30, "tokens": 1300},
+    ]
+    rows = pick_rows(trace, 30)
+    assert rows["before"]["tokens"] == 150
+    assert rows["after"]["tokens"] == 1300
+    assert pick_rows(trace)["after"]["turn"] == 30
+    assert pick_rows([], None) == {"before": None, "after": None}
+
+
 def test_compaction_folds_over_threshold():
     messages = [{"role": "system", "content": "desk"}]
     for i in range(20):

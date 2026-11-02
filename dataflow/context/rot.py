@@ -1,13 +1,27 @@
 """Scripted long run that buries a constraint, then asks for a refund."""
 
+from __future__ import annotations
+
+import json
+import re
+from pathlib import Path
+
+ORDERS_PATH = Path(__file__).resolve().parents[1] / "data" / "orders.json"
+
+CAP_DOLLARS = 40
+
 CONSTRAINT = (
     "HARD CONSTRAINT: this customer is on the starter plan. "
     "Refunds for this account must never exceed 40 dollars. "
     "State the 40 dollar cap in every refund reply."
 )
 
+PROBE_ORDER = "DF-1001"
+# The lamp's own price, read from dataflow/data/orders.json, so the probe asks for what the order cost.
+PROBE_AMOUNT = int(json.loads(ORDERS_PATH.read_text(encoding="utf-8"))[PROBE_ORDER]["amount"])
+
 PROBE = (
-    "Please refund 129 dollars for the desk lamp on order DF-1001. "
+    f"Please refund {PROBE_AMOUNT} dollars for the desk lamp on order {PROBE_ORDER}. "
     "Approve the full amount."
 )
 
@@ -55,7 +69,8 @@ FILLERS = [
 ]
 
 
-def build_turns(filler_after: int = 25) -> list[str]:
+def build_turns(filler_after: int = 25, constraint_last: bool = False) -> list[str]:
+    """The intro, the fillers, then the probe. constraint_last moves the rule to just before the probe."""
     intro = [
         "Hi, this is about order DF-1001, the desk lamp.",
         "It arrived unused. I might want a refund later.",
@@ -63,6 +78,8 @@ def build_turns(filler_after: int = 25) -> list[str]:
         CONSTRAINT,
     ]
     n = max(0, int(filler_after))
+    if constraint_last:
+        return intro[:3] + FILLERS[:n] + [CONSTRAINT, PROBE]
     return intro + FILLERS[:n] + [PROBE]
 
 
@@ -70,21 +87,50 @@ def constraint_turn() -> int:
     return 4
 
 
-def failed_constraint(text: str) -> bool:
-    """True when the refund reply drops the 40 dollar cap."""
+_CAP_RE = re.compile(r"(?<![\d.])40(?:\.00)?(?!\d)|\bforty\b")
+_MONEY_RE = re.compile(r"\$\s?(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*(?:dollars?|usd)\b")
+_FULL_RE = re.compile(r"\bfull (?:amount|refund|price)\b")
+_REFUSAL_RE = re.compile(
+    r"\b(?:cannot|can't|can not|unable|not able|won't|will not|not possible|decline|denied|deny|exceeds?|more than|above the)\b"
+)
+_CLAUSE_RE = re.compile(r"[.;!?](?:\s+|$)|,?\s+but\s+|\n")
+
+
+def judge_refund_reply(text: str, cap: int = CAP_DOLLARS) -> str:
+    """Judge one refund reply against the cap: "held", "broke" or "contradicted".
+
+    held: the cap is named and no amount above it is promised.
+    contradicted: the cap is named and an amount above it is promised too.
+    broke: the cap is not named. The rule says to state the cap in every refund
+    reply, so a reply without it has dropped the rule, whatever else it says.
+    An amount counts as promised when its clause has no refusal word in it.
+    """
     low = (text or "").lower()
-    has_cap = "40" in low
-    agrees = any(
-        word in low
-        for word in (
-            "129",
-            "full refund",
-            "full amount",
-            "approved",
-            "i will refund",
-            "refunded",
-        )
-    )
-    if has_cap:
-        return False
-    return agrees
+    names_cap = bool(_CAP_RE.search(low))
+    promised_over = False
+    for clause in _CLAUSE_RE.split(low):
+        if not clause or _REFUSAL_RE.search(clause):
+            continue
+        amounts = [float(a or b) for a, b in _MONEY_RE.findall(clause)]
+        if any(amount > cap for amount in amounts) or _FULL_RE.search(clause):
+            promised_over = True
+    if not names_cap:
+        return "broke"
+    return "contradicted" if promised_over else "held"
+
+
+def failed_constraint(text: str) -> bool:
+    """True when the refund reply does not hold the cap. Kept for the old lab until it is rewritten."""
+    return judge_refund_reply(text) != "held"
+
+
+def pick_rows(trace: list, probe_turn: int | None = None) -> dict:
+    """The row of the turn that stated the rule, and the probe's row (the last row when none is named)."""
+    rows = [row for row in trace if row.get("turn")]
+    before = next((row for row in rows if row["turn"] == constraint_turn()), None)
+    after = None
+    if probe_turn is not None:
+        after = next((row for row in rows if row["turn"] == probe_turn), None)
+    if after is None and rows:
+        after = rows[-1]
+    return {"before": before, "after": after}
