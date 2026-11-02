@@ -58,3 +58,35 @@ def test_the_break_answers_from_rejected_passages(tmp_path, capsys):
     assert [line.rsplit("-> ", 1)[1] for line in out if line.startswith("should_refuse ")][2] == "False"
     assert "edge_taken generate" in out
     assert "REFUSE False" in out and "cites_rejected True" in out
+
+
+def _record_generate(monkeypatch):
+    seen = []
+    real = G.generate
+
+    def recording(state, runtime=None, **kwargs):
+        seen.append({"read": list(state.get("graded") or state.get("passages") or []), **kwargs})
+        return real(state, runtime, **kwargs)
+
+    monkeypatch.setattr(G, "generate", recording)
+    return seen
+
+
+def test_refuse_on_refuses(monkeypatch, capsys):
+    seen = _record_generate(monkeypatch)
+    out = _out(LAB, capsys)
+    assert "refuse_check on" in out and "edge_taken refuse" in out and "REFUSE True" in out
+    assert seen == []
+
+
+def test_refuse_off_generates_on_what_the_grade_kept(monkeypatch, tmp_path, capsys):
+    seen = _record_generate(monkeypatch)
+    out = _out(lab_copy(LAB, tmp_path, "REFUSE_CHECK_ON = True\n", "REFUSE_CHECK_ON = False\n"), capsys)
+    assert "refuse_check off" in out
+    assert out.count("retrieved 3 kept 0") == 2 and "rewritten 'Does the DataFlow shop sell coffee beans?'" in out
+    assert "edge_taken generate" in out and "edge_taken refuse" not in out
+    assert "generate_read 0 passages" in out and "We do not list coffee beans." in out
+    assert "REFUSE False" in out and "cites_rejected False" in out
+    assert "Sources: none (this reply did not use the knowledge base)" in out
+    assert len(seen) == 1 and seen[0]["read"] == []
+    assert not seen[0]["allow_ungrounded"] and seen[0]["system_prompt"] is None

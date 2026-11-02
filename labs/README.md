@@ -115,7 +115,7 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 08_03_05_corrective_rag.py       type after_grade: six rows, two grade passes, corrected, REFUSE, runaway
 08_03_07_hybrid_and_rerank.py    type the rank fusion: 20 codes dense, BM25, fused, three desks and their calls
 08_04_02_print_citations.py      type format_sources: support-agent and customer desks, csv row 0
-08_04_04_refuse_on_empty.py      type should_refuse: retrieved 3 kept 0, REFUSE, cites_rejected
+08_04_04_refuse_on_empty.py      type should_refuse: retrieved 3 kept 0, REFUSE, cites_rejected; refuse check off, generate_read 0
 08_04_05_rag_evals.py            type refusal_scores: naive vs agentic, tokens and calls, naive answers
 08_04_06_portfolio_knowledge_desk.py  type answer_question: three tickets, checks, dataflow/README.md tests
 08_04_07_span_citations.py       type line_span: Sources with lines, planted sentence UNSUPPORTED

@@ -3,12 +3,12 @@
 
 What we build: you type the small check that tells the DataFlow graph to refuse: nothing survived the grade
 and the one rewrite is spent. You check it on five states, hand it to the graph, and ask the customer desk
-about coffee beans, printing what each pass retrieved and what the grader kept. Then you break the check the
-obvious way, by testing whether the search came back empty.
+about coffee beans, printing what each pass retrieved and what the grader kept. Then you break it two ways:
+test whether the search came back empty, and switch the refuse check off to read what the model writes.
 
 What you learn: 25.3's idea made real. Refusing is an edge that reads the state and replies with one fixed
 sentence, not a prompt; and empty means empty after the grade, because a vector search always returns
-something. A check that reads the retrieve instead answers from passages the grader rejected, and cites them.
+something. A check on the retrieve answers from rejected passages; with no check, a prompt is the only guard.
 
 What will be true on your screen: five should_refuse rows, then for each pass retrieved N kept M with the
 grades, the rewritten question between the passes, the edge taken, the refusal and REFUSE True. Then
@@ -23,7 +23,7 @@ sys.path.insert(0, str(root))
 
 import config
 from dataflow.graphs.crag import MAX_REWRITES
-from dataflow.graphs.rag_graph import build_rag_graph
+from dataflow.graphs.rag_graph import build_rag_graph, grade
 
 
 # %%
@@ -42,6 +42,13 @@ def should_refuse(state: dict, *, max_rewrites: int = MAX_REWRITES) -> bool:
 # run the lab, then python -m pytest tests/test_lab_08_04_04.py -q and read the red line.
 # git checkout -- labs/08_04_04_refuse_on_empty.py puts it back.
 
+# BREAK 2, the refuse check switched off: set REFUSE_CHECK_ON = False and run the lab. The graph still grades and
+# rewrites once, then generates where it would have refused, on what the grade kept (nothing, for this question),
+# with the normal generate prompt: answer only from the passages, say you do not have it, do not invent a policy.
+# No line tells the model to invent. Read the reply your model writes; it can differ from run to run. Then
+# python -m pytest tests/test_lab_08_04_04.py -q, and set it back to True (or git checkout) for the refusal.
+REFUSE_CHECK_ON = True
+
 THREE_DROPS = {"passages": [{"source": "a"}, {"source": "b"}, {"source": "c"}], "grades": [{"label": "drop"}] * 3}
 ROWS = [
     {"grades": [{"label": "keep"}], "rewrites": 0},
@@ -58,7 +65,17 @@ for state in ROWS:
 # %%
 chat = config.get_chat_model()
 print("model", type(chat).__name__, getattr(chat, "model", None) or getattr(chat, "model_name", None))
-graph = build_rag_graph(model=chat, refuse_check=should_refuse)
+if REFUSE_CHECK_ON:
+    graph = build_rag_graph(model=chat, refuse_check=should_refuse)
+else:
+    # When the grade kept nothing, generate falls back to every retrieved passage (BREAK 1 shows that). This
+    # grade hands generate only what it kept, so with the check off generate reads exactly the kept set.
+    def grade_kept_only(state, runtime=None, *, model=None):
+        out = grade(state, runtime=runtime, model=model)
+        return {**out, "passages": out["graded"]}
+
+    graph = build_rag_graph(model=chat, refuse_check=lambda state, **_: False, grade_fn=grade_kept_only)
+print("refuse_check", "on" if REFUSE_CHECK_ON else "off")
 question = "Do you sell coffee beans in the DataFlow shop?"
 print("desk customer")
 print("question", question)
@@ -78,6 +95,8 @@ for update in graph.stream({"question": question}, {"recursion_limit": 12}, stre
             print("rewritten", repr(payload.get("rewritten_question")))
         elif node in ("generate", "refuse"):
             print("edge_taken", node)
+            if node == "generate":
+                print("generate_read", len(state.get("graded") or state.get("passages") or []), "passages")
 
 
 # %%
