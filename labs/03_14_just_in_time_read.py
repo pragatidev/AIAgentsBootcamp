@@ -17,7 +17,7 @@ from dataflow.context.agent import (
     count_tokens,
     read_file,
 )
-from dataflow.context.map_text import MAP, get_fat
+from dataflow.context.map_text import get_fat, load_map
 
 RETURN_TICKET = "What is your return window for a delivered desk lamp?"
 SHIP_TICKET = "How many business days is standard shipping inside the country?"
@@ -25,7 +25,7 @@ SHIP_TICKET = "How many business days is standard shipping inside the country?"
 # %%
 jit = ContextAgent(
     context_caller(enable_read=True, enable_notes=False),
-    system=MAP,
+    system=load_map(),
     cap=6,
 )
 ret = jit.run(RETURN_TICKET)
@@ -36,7 +36,7 @@ print("return_ticket_tokens", count_tokens(ret["messages"]))
 
 ship_agent = ContextAgent(
     context_caller(enable_read=True, enable_notes=False),
-    system=MAP,
+    system=load_map(),
     cap=6,
 )
 ship = ship_agent.run(SHIP_TICKET)
@@ -48,7 +48,7 @@ print("ship_ticket_tokens", count_tokens(ship["messages"]))
 # %%
 pre = ContextAgent(
     context_caller(enable_read=False, enable_notes=False),
-    system=MAP,
+    system=load_map(),
     preload=get_fat(),
     cap=1,
 )

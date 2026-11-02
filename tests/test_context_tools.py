@@ -20,9 +20,29 @@ def test_map_has_twelve_lines_with_when():
     for line in lines:
         assert " | " in line
         assert "when" in line.lower()
-    assert "MAP" in open(
-        ROOT / "labs" / "03_05_map_file.py", encoding="utf-8"
-    ).read()
+
+
+def test_every_map_entry_is_readable():
+    from dataflow.context.map_text import check_map, load_map
+
+    assert check_map(load_map()) == []
+
+
+def test_check_map_names_an_unreadable_entry():
+    from dataflow.context.map_text import check_map, load_map
+
+    broken = load_map() + "refund_policy.md | when the customer asks for a refund\n"
+    assert check_map(broken) == ["refund_policy.md: not readable"]
+    assert check_map(load_map() + "return_policy.md\n") == ["return_policy.md: needs a name, a bar and a when"]
+
+
+def test_load_map_reads_the_file(tmp_path):
+    from dataflow.context.map_text import load_map
+
+    path = tmp_path / "MAP.md"
+    path.write_text("Role: test.\nMap:\nshipping.md | when asked about delivery\n", encoding="utf-8")
+    assert load_map(path) == "Role: test.\nMap:\nshipping.md | when asked about delivery\n"
+    assert map_lines(load_map(path)) == ["shipping.md | when asked about delivery"]
 
 
 def test_chat_caller_passes_num_ctx(monkeypatch):

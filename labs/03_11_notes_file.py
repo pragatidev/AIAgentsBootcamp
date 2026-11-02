@@ -18,11 +18,11 @@ from dataflow.context.agent import (
     context_caller,
     load_notes,
 )
-from dataflow.context.map_text import MAP
+from dataflow.context.map_text import load_map
 
 NOTES_PATH.write_text("{}", encoding="utf-8")
 SYSTEM = (
-    MAP
+    load_map()
     + "\nWhen the customer states a fact, call write_note. "
     "Keys: customer, order, constraint, decision."
 )

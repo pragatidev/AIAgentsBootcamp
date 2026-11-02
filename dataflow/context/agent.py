@@ -213,6 +213,7 @@ def chat_caller(num_predict: int = 80, num_ctx: int | None = None):
             },
         }
 
+    call.tool_names = []
     return call
 
 

@@ -6,7 +6,10 @@ from pathlib import Path
 
 KB = Path(__file__).resolve().parents[1] / "knowledge_base"
 WIKI = Path(__file__).resolve().parents[1] / "wiki"
+CONTEXT_DIR = Path(__file__).resolve().parent
+MAP_PATH = CONTEXT_DIR / "MAP.md"
 
+# The seed the repo ships in dataflow/context/MAP.md. Desks read the file, through load_map.
 MAP = """You are the DataFlow support desk.
 Role: answer customer tickets from this map.
 Scope: customer-facing support only. Never quote HR or competitive analysis to a customer.
@@ -53,5 +56,28 @@ def get_fat() -> str:
     return "\n\n".join(parts)
 
 
-def map_lines() -> list[str]:
-    return [ln for ln in MAP.splitlines() if " | " in ln]
+def load_map(path: Path = MAP_PATH) -> str:
+    """The map the desk runs on: the text of dataflow/context/MAP.md, as you wrote it."""
+    return Path(path).read_text(encoding="utf-8")
+
+
+def check_map(text: str) -> list[str]:
+    """One problem per map entry a desk could not use: no bar, no when, or a file read_file cannot open."""
+    from dataflow.context.agent import _ALLOWED_NAMES
+
+    problems = []
+    for line in text.split("Map:", 1)[-1].splitlines():
+        if not line.strip():
+            continue
+        name, bar, when = line.partition(" | ")
+        name = name.strip()
+        if not bar or "when" not in when.lower():
+            problems.append(line + ": needs a name, a bar and a when")
+        elif name not in _ALLOWED_NAMES or not _ALLOWED_NAMES[name].is_file():
+            problems.append(name + ": not readable")
+    return problems
+
+
+def map_lines(text: str | None = None) -> list[str]:
+    text = load_map() if text is None else text
+    return [ln for ln in text.splitlines() if " | " in ln]
