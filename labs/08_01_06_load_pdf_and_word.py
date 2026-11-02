@@ -72,7 +72,7 @@ def show(name: str, docs: list[Document]) -> None:
 
 md_sections = chunk_by_heading(load_knowledge_base(roots=(markdown,)))
 show("markdown", md_sections)
-pages = PyPDFLoader(str(pdf)).load()
+pages = [_stamp(page, pdf) for page in PyPDFLoader(str(pdf)).load()]
 show("pdf_library_pages", pages)
 print("pdf_library_has_h2", any("h2" in page.metadata for page in pages))
 pdf_sections = load_knowledge_base(roots=(pdf,), suffixes=OFFICE_SUFFIXES)

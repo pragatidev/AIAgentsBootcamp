@@ -43,3 +43,12 @@ def test_the_break_loses_the_word_headings(tmp_path, capsys):
     broken = lab_copy(LAB, tmp_path, line, "        level = 0\n")
     _, out = _out(broken, capsys)
     assert "word_headings_match_markdown False" in out
+
+
+def test_library_pdf_pages_cite_a_repo_relative_source(capsys):
+    lab, out = _out(LAB, capsys)
+    line = next(line for line in out if line.startswith("pdf_library_pages first_metadata"))
+    assert "'source': 'dataflow/documents/product_user_guide.pdf'" in line and "'folder': 'documents'" in line
+    assert {page.metadata["source"] for page in lab["pages"]} == {"dataflow/documents/product_user_guide.pdf"}
+    root = str(Path(__file__).resolve().parents[1])
+    assert not any(root in line or root.replace("\\", "\\\\") in line for line in out)
