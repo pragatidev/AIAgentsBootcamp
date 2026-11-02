@@ -181,10 +181,13 @@ def refresh_index(index: FAISS, index_dir: Path | str, roots) -> dict[str, Any]:
     return {**changes, "embedded": embedded, "count": meta["count"]}
 
 
+SPAN_KEYS = ("start_index", "line_start", "line_end")
+
+
 def _row_payload(doc: Document, score: float) -> dict:
     meta = dict(doc.metadata or {})
     path = heading_path(meta) or meta.get("heading_path") or ""
-    return {
+    row = {
         "text": doc.page_content,
         "source": meta.get("source", ""),
         "folder": meta.get("folder"),
@@ -194,6 +197,10 @@ def _row_payload(doc: Document, score: float) -> dict:
         "h2": meta.get("h2"),
         "h3": meta.get("h3"),
     }
+    for key in SPAN_KEYS:
+        if meta.get(key) is not None:
+            row[key] = meta[key]
+    return row
 
 
 def search(

@@ -337,6 +337,7 @@ def build_rag_graph(
     policy: Any = None,
     refuse_check: Any = None,
     retrieve_store: str | None = None,
+    span_citations: bool = False,
 ):
     """Compile the agentic RAG graph. Every keyword after system_prompt is a hook a lab plugs its own copy into.
 
@@ -345,6 +346,8 @@ def build_rag_graph(
     policy says refuse and refuse_check says False, the graph generates instead.
     retrieve_store: "faiss" or "pgvector" for the retrieve node (23.4); None keeps
     today's path, and retrieve_passages then reads config.RETRIEVE_STORE.
+    span_citations: sources carry the passage's line_start and line_end, and the
+    reply ends with a Claims block from cite_with_claims (25.7). Off by default.
     """
     builder = StateGraph(DeskRagState, context_schema=DeskContext)
 
@@ -382,7 +385,7 @@ def build_rag_graph(
         state: RagState,
         runtime: Runtime[DeskContext] | None = None,
     ) -> dict[str, Any]:
-        return generate(
+        out = generate(
             state,
             runtime=runtime,
             model=model,
@@ -390,6 +393,13 @@ def build_rag_graph(
             allow_ungrounded=force_generate_on_empty,
             system_prompt=system_prompt or generate_system,
         )
+        if span_citations and out.get("sources"):
+            kept = list(state.get("graded") or state.get("passages") or [])
+            for source, row in zip(out["sources"], kept):
+                for key in ("start_index", "line_start", "line_end"):
+                    if row.get(key) is not None:
+                        source[key] = row[key]
+        return out
 
     def answer_bound(
         state: RagState,
@@ -462,6 +472,8 @@ def build_rag_graph(
     else:
         builder.add_edge("retrieve", "generate")
 
+    if cite_node is ... and span_citations:
+        from dataflow.rag.cite import cite_with_claims as cite_node
     if cite_node is ...:
         from dataflow.rag.cite import cite as cite_node
     if cite_node:

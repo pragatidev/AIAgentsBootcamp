@@ -14,8 +14,11 @@ PROCEDURES = (
 
 
 def test_reply_names_real_file(monkeypatch):
+    # The procedures file is internal, so only the support-agent desk (scope "all") can cite it,
+    # and that desk searches with search(get_index(scope="all"), ...), not retrieve_passages.
+    monkeypatch.setattr("dataflow.graphs.rag_graph.get_index", lambda *args, **kwargs: object())
     monkeypatch.setattr(
-        "dataflow.graphs.rag_graph.retrieve_passages",
+        "dataflow.graphs.rag_graph.search",
         lambda *args, **kwargs: [
             {
                 "text": "Agent (Level 1): Approve refunds under 30 days for Starter/Professional.",
@@ -40,11 +43,20 @@ def test_reply_names_real_file(monkeypatch):
             }
         },
     )
-    graph = build_rag_graph(model=model, max_rewrites=0)
+    graph = build_rag_graph(model=model, max_rewrites=0, scope="all")
     out = graph.invoke({"question": "Who can approve a refund under 30 days?"})
     assert "customer_support_procedures.markdown" in out["reply"].replace("\\", "/")
     assert "Sources:" in out["reply"]
     assert "6.1 Authorization Levels" in out["reply"]
+
+
+def test_missing_sources_is_named():
+    from dataflow.rag.cite import cite
+
+    out = cite({"route": "retrieve", "reply": "An answer.", "passages": [{"source": "x.md", "text": "t"}], "sources": []})
+    assert out["reply"].endswith("Sources: missing (passages were used but none were recorded)")
+    out = cite({"route": "answer", "reply": "You are welcome.", "sources": []})
+    assert out["reply"].endswith("Sources: none (this reply did not use the knowledge base)")
 
 
 def test_chitchat_cites_nothing():
