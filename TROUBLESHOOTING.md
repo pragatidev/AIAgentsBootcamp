@@ -155,6 +155,14 @@ very last line is `During task with name 'model' and id ...`, with the `httpx.Co
 first, then `smoke 3 reset_parked pass False | 500` and `smoke_passed 2/5` (health and the missing key need no model),
 then stops in the eval set on the same last lines as 05_12. Start Ollama and run the lab again.
 
+The Section 5 context labs end on the same `httpx.ConnectError` line too (caused on the test machine on 2026-11-02,
+the same way, in about four seconds each): `labs/03_02_context_rot.py`, `03_06_fat_vs_map.py`, `03_08_compaction.py`,
+`03_09_compare_compaction.py`, `03_11_notes_file.py`, `03_12_recover_from_notes.py`, `03_14_just_in_time_read.py`,
+`03_16_subagent_isolation.py`, `03_18_guard_the_window.py`, `03_20_budget_and_window_log.py` and
+`03_22_long_task.py`. Some print their settings first (03_02 its turns, the rule and the probe; 03_08 its three knobs;
+03_20 its budget, its window and the map's owner), then each stops at its first model call. `labs/03_03_measure_tokens.py`
+and `labs/03_05_map_file.py` call no model and run without Ollama.
+
 ### The model is not pulled
 
 ```
