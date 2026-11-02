@@ -336,12 +336,15 @@ def build_rag_graph(
     grade_fn: Any = None,
     policy: Any = None,
     refuse_check: Any = None,
+    retrieve_store: str | None = None,
 ):
     """Compile the agentic RAG graph. Every keyword after system_prompt is a hook a lab plugs its own copy into.
 
     grade_fn: the grade node's function (24.3). policy: the edge after grade (24.5),
     after_grade's signature. refuse_check: should_refuse's signature (25.4); when the
     policy says refuse and refuse_check says False, the graph generates instead.
+    retrieve_store: "faiss" or "pgvector" for the retrieve node (23.4); None keeps
+    today's path, and retrieve_passages then reads config.RETRIEVE_STORE.
     """
     builder = StateGraph(DeskRagState, context_schema=DeskContext)
 
@@ -352,7 +355,16 @@ def build_rag_graph(
         return route(state, runtime=runtime, model=model)
 
     def retrieve_bound(state: RagState) -> dict[str, Any]:
-        return retrieve_node(state, scope=scope, k=retrieve_k)
+        if retrieve_store is None:
+            return retrieve_node(state, scope=scope, k=retrieve_k)
+        question = state.get("rewritten_question") or state.get("question") or ""
+        hits = retrieve_passages(
+            question,
+            k=retrieve_k,
+            scope="support_agent" if scope == "all" else "customer",
+            store=retrieve_store,
+        )
+        return {"passages": hits}
 
     def grade_node(
         state: RagState,

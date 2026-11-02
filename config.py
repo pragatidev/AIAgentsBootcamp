@@ -176,3 +176,8 @@ def get_embeddings():
 # A per-run token budget for the TechCorp desk (lecture 4.28). Unset means no budget: measure one
 # ticket first, then set DESK_TOKEN_BUDGET in .env from what your own run used.
 DESK_TOKEN_BUDGET = int(os.environ["DESK_TOKEN_BUDGET"]) if os.environ.get("DESK_TOKEN_BUDGET", "").strip() else None
+
+# Which store the retrieve tool and the RAG graph search (Section 23). The deployment sets it, never
+# the model: "faiss" (the file on disk, the default) or "pgvector" (the docker compose Postgres).
+RETRIEVE_STORE = os.environ.get("DATAFLOW_RETRIEVE_STORE", "faiss").strip() or "faiss"
+PGVECTOR_COLLECTION = os.environ.get("DATAFLOW_PGVECTOR_COLLECTION", "dataflow_customer").strip() or "dataflow_customer"

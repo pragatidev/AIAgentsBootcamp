@@ -184,28 +184,62 @@ def _scope_name(scope: str) -> str:
     return "support_agent" if scope in ("all", "support_agent") else "customer"
 
 
+_PG_STORE: Any = None
+
+
+def get_pg_store():
+    """The pgvector collection the retrieve path reads (config.PGVECTOR_COLLECTION), opened once per process."""
+    global _PG_STORE
+    if _PG_STORE is None:
+        from dataflow.rag.pgvector_store import build_pgvector_store
+
+        _PG_STORE = build_pgvector_store(config.PGVECTOR_COLLECTION, embeddings=config.get_embeddings())
+    return _PG_STORE
+
+
+def set_pg_store(store: Any) -> None:
+    """Labs and tests hand in the store they opened. None forgets it."""
+    global _PG_STORE
+    _PG_STORE = store
+
+
+def _faiss_rows(question: str, k: int, scope_name: str, folders: frozenset[str]) -> list[dict]:
+    index = get_index(scope=SCOPE_INDEX[scope_name])
+    fetched = search(index, question, k=max(k * 10, 32), folder=None)
+    return [row for row in fetched if row.get("folder") in folders][:k]
+
+
+def _pgvector_rows(question: str, k: int, folders: frozenset[str]) -> list[dict]:
+    from dataflow.rag.pgvector_store import query
+
+    return query(get_pg_store(), question, k=k, filter={"folder": {"$in": sorted(folders)}})
+
+
 def retrieve_passages(
     question: str,
     k: int = 3,
     folder: str | None = None,
     *,
     scope: str = "customer",
+    store: str | None = None,
 ) -> list[dict] | dict:
     """Search the scope's index. folder=None keeps the whole scope; a folder can only narrow it.
 
     scope is the caller's scope ("customer", or "support_agent" for every folder),
     set by code from the envelope, never by the model. A folder outside it returns
-    the typed miss {"found": False, "reason": ...}.
+    the typed miss {"found": False, "reason": ...}. store is "faiss" or "pgvector";
+    None reads config.RETRIEVE_STORE, the deployment's choice. On FAISS the scope is
+    the scope's own index plus a filter on the fetched rows; on pgvector it is a
+    filter Postgres applies in the same query.
     """
     name = _scope_name(scope)
     allowed = SCOPES[name]
     if folder and folder not in allowed:
         return {"found": False, "reason": f"folder {folder} is outside this caller's scope"}
     folders = frozenset({folder}) if folder else allowed
-    index = get_index(scope=SCOPE_INDEX[name])
-    fetched = search(index, question, k=max(k * 10, 32), folder=None)
-    scoped = [row for row in fetched if row.get("folder") in folders]
-    return scoped[:k]
+    if (store or config.RETRIEVE_STORE) == "pgvector":
+        return _pgvector_rows(question, k, folders)
+    return _faiss_rows(question, k, name, folders)
 
 
 @tool(description=RETRIEVE_DESCRIPTION)

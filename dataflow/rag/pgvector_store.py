@@ -2,6 +2,15 @@
 
 Vectors live in Postgres next to the checkpointer. A local FAISS file
 does not survive two boxes. Tests skip when no database is reachable.
+
+This uses langchain_postgres.PGVector, which keeps every collection in one
+shared table, langchain_pg_embedding, whose vector column width is fixed by
+the first store ever opened on the database. The package's newer
+PGVectorStore runs its engine on an event loop it makes with
+asyncio.new_event_loop(), which on Windows is a ProactorEventLoop, and
+psycopg's async mode refuses that loop; PGVector's sync psycopg path runs
+on every student's machine. The scope filter is a metadata filter that
+Postgres applies in the same query as the distance; the distance is cosine.
 """
 
 from __future__ import annotations
@@ -99,8 +108,39 @@ def insert_docs(store: Any, docs: list[Document]) -> list[str]:
     return store.add_documents(docs)
 
 
-def query(store: Any, question: str, k: int = 3) -> list[dict]:
-    pairs = store.similarity_search_with_score(question, k=k)
+def column_width(connection: str | None = None) -> int | None:
+    """The width Postgres already declared for the shared vector column, or None before any store opened it."""
+    import psycopg
+
+    url = connection or DEFAULT_CONNECTION
+    with psycopg.connect(url, connect_timeout=5) as conn:
+        row = conn.execute(
+            "SELECT format_type(a.atttypid, a.atttypmod) FROM pg_attribute a "
+            "JOIN pg_class c ON a.attrelid = c.oid "
+            "WHERE c.relname = 'langchain_pg_embedding' AND a.attname = 'embedding' AND NOT a.attisdropped"
+        ).fetchone()
+    if not row or not row[0] or "(" not in row[0]:
+        return None
+    return int(row[0].split("(", 1)[1].rstrip(")"))
+
+
+def index_corpus(store: Any, docs: list[Document], chunker: str = "heading") -> list[str]:
+    """Chunk the documents and add them with stable ids. The same id again is an update, not a second row."""
+    from dataflow.rag.faiss_index import chunks_with_ids
+
+    chunks, ids = chunks_with_ids(docs, chunker)
+    if not chunks:
+        return []
+    return list(store.add_documents(chunks, ids=ids))
+
+
+def query(store: Any, question: str, k: int = 3, filter: dict | None = None) -> list[dict]:
+    """Nearest rows, shaped like the FAISS rows. score is the cosine distance: lower is nearer.
+
+    filter is a metadata filter Postgres applies in the same query, for example
+    {"folder": {"$in": ["customer_facing", "wiki"]}}.
+    """
+    pairs = store.similarity_search_with_score(question, k=k, filter=filter)
     rows: list[dict] = []
     for doc, score in pairs:
         meta = dict(doc.metadata or {})
@@ -111,7 +151,9 @@ def query(store: Any, question: str, k: int = 3) -> list[dict]:
                 "folder": meta.get("folder"),
                 "score": float(score),
                 "row": meta.get("row"),
-                "heading_path": meta.get("heading_path"),
+                "heading_path": meta.get("heading_path") or "",
+                "h2": meta.get("h2"),
+                "h3": meta.get("h3"),
             }
         )
     return rows
