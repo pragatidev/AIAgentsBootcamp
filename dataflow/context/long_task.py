@@ -12,7 +12,7 @@ import re
 from pathlib import Path
 
 from dataflow.context.guard import CUSTOMER_ID_RE
-from dataflow.context.rot import CONSTRAINT, FILLERS, PROBE, judge_refund_reply, names_cap
+from dataflow.context.rot import CONSTRAINT, FILLERS, PROBE, judge_refund_reply, states_cap
 
 TICKETS_PATH = Path(__file__).resolve().parents[1] / "data" / "tickets.jsonl"
 INTRO = [
@@ -64,6 +64,6 @@ def pass_lines(result: dict, rows: list[dict], limit: int, customer_id: str) -> 
         "stayed_under": all(row["window_tokens"] <= limit for row in rows),
         "compactions": sum(1 for row in result["token_trace"] if row.get("event") == "compact"),
         "verdict": judge_refund_reply(result["replies"][-1]) if result["replies"] else None,
-        "cap_in_last_window": [m["source"] for m in last["messages"] if names_cap(m["text"])],
+        "cap_in_last_window": [m["source"] for m in last["messages"] if states_cap(m["text"])],
         "other_customer_ids_in_window": others,
     }

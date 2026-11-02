@@ -103,6 +103,18 @@ def names_cap(text: str) -> bool:
     return bool(_CAP_RE.search((text or "").lower()))
 
 
+_CAP_AMOUNT_RE = re.compile(r"\$\s?40(?:\.00)?(?!\d)|(?<![\d.])40(?:\.00)?\s*(?:dollars?|usd)\b|\bforty dollars?\b")
+
+
+def states_cap(text: str) -> bool:
+    """True when a text states the cap as money: $40, 40 dollars, 40 dollar, forty dollars.
+
+    Stricter than names_cap, for long texts such as a whole window, where 40 can mean
+    something else ("40+ countries").
+    """
+    return bool(_CAP_AMOUNT_RE.search((text or "").lower()))
+
+
 def promises_over_cap(text: str, cap: int = CAP_DOLLARS) -> bool:
     """True when some clause promises more than the cap: a dollar amount above it, or the full amount.
 

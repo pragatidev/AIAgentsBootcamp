@@ -39,7 +39,7 @@ from dataflow.context.agent import (
 from dataflow.context.guard import CUSTOMER_ID_RE
 from dataflow.context.long_task import build_long_task
 from dataflow.context.map_text import get_fat, load_map, map_header
-from dataflow.context.rot import judge_refund_reply, names_cap
+from dataflow.context.rot import judge_refund_reply, states_cap
 from dataflow.context.window_log import log_path, read_log
 
 CUSTOMER = "C-2001"
@@ -65,7 +65,7 @@ def pass_lines(result: dict, rows: list[dict], limit: int, customer_id: str) -> 
         "stayed_under": all(row["window_tokens"] <= limit for row in rows),
         "compactions": sum(1 for row in result["token_trace"] if row.get("event") == "compact"),
         "verdict": judge_refund_reply(result["replies"][-1]) if result["replies"] else None,
-        "cap_in_last_window": [m["source"] for m in last["messages"] if names_cap(m["text"])],
+        "cap_in_last_window": [m["source"] for m in last["messages"] if states_cap(m["text"])],
         "other_customer_ids_in_window": others,
     }
 
