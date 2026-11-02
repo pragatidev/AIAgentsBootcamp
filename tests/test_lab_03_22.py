@@ -15,7 +15,7 @@ def lab():
     source = LAB.read_text(encoding="utf-8")
     typed = source[source.index("def pass_lines(") : source.index("\ndef show(")]
     scope = {}
-    exec("from dataflow.context.guard import CUSTOMER_ID_RE\nfrom dataflow.context.rot import judge_refund_reply\n" + typed, scope)
+    exec("from dataflow.context.guard import CUSTOMER_ID_RE\nfrom dataflow.context.rot import judge_refund_reply, names_cap\n" + typed, scope)
     return scope
 
 
@@ -44,3 +44,6 @@ def test_pass_lines_both_copies(lab, which):
     }
     assert pass_lines(RESULT, ROWS, 1200, "C-2001")["stayed_under"] is True
     assert pass_lines({"replies": [], "token_trace": []}, [], 10, "C-2001")["verdict"] is None
+    # The rule in a fold's summary, worded as the real 2026-11-02 run's summary worded it.
+    folded = [{"window_tokens": 900, "messages": [{"source": "summary", "text": "- Refunds for this account must not exceed a 40 dollar cap."}, {"source": "user", "text": "Please refund 49 dollars."}]}]
+    assert pass_lines(RESULT, folded, 1000, "C-2001")["cap_in_last_window"] == ["summary"]
