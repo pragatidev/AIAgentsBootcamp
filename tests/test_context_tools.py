@@ -231,14 +231,12 @@ def test_compaction_caps_the_last_call():
     assert total_input(plain["token_trace"]) == {"desk": 1500, "summariser": 0, "total": 1500}
 
 
-def test_notes_survive_compaction(tmp_path):
-    notes_path = tmp_path / "notes.json"
-    write_note("constraint", "cap is 40 dollars", path=notes_path)
+def _notes_run(notes_path):
+    """Eight turns, the cap said on turn 1, a forgetful summariser; returns the last call's messages."""
+    calls = []
 
-    def summariser(_text: str) -> str:
-        return "facts: none. actions: none. decisions: none. open questions: none."
-
-    def call(_messages):
+    def call(messages):
+        calls.append([dict(m) for m in messages])
         return {"content": "ok", "tool_calls": []}
 
     agent = ContextAgent(
@@ -247,12 +245,80 @@ def test_notes_survive_compaction(tmp_path):
         compact=True,
         compact_threshold=10,
         keep_last=2,
-        summariser=summariser,
+        summariser=lambda _text: "facts: none. actions: none. decisions: none. open questions: none.",
         notes_path=notes_path,
     )
-    out = agent.run_turns(["hello"] * 8)
-    assert "40" not in summariser("x")
+    out = agent.run_turns(["My refunds are capped at 40 dollars."] + ["hello"] * 7)
+    return out, calls[-1]
+
+
+def test_notes_survive_compaction(tmp_path):
+    notes_path = tmp_path / "notes.json"
+    write_note("constraint", "cap is 40 dollars", path=notes_path)
+    out, last = _notes_run(notes_path)
+    summary = [m for m in last if str(m.get("content")).startswith("SUMMARY")]
+    assert summary and "40" not in summary[0]["content"]
+    assert last[0]["role"] == "system" and "cap is 40 dollars" in last[0]["content"]
+    assert not any("40 dollars" in str(m.get("content")) for m in last[1:])
     assert out["notes"]["constraint"] == "cap is 40 dollars"
+
+
+def test_no_notes_no_cap_in_window(tmp_path):
+    _out, last = _notes_run(tmp_path / "absent.json")
+    assert not any("40" in str(m.get("content")) for m in last)
+
+
+def test_write_note_assigns_and_keeps_other_keys(tmp_path):
+    import json
+
+    path = tmp_path / "notes.json"
+    write_note("customer", "C-2001", path=path)
+    out = json.loads(write_note("order", "DF-1001", path=path))
+    assert out == {"ok": True, "key": "order", "notes": {"customer": "C-2001", "order": "DF-1001"}}
+    write_note("order", "DF-1002", path=path)
+    assert json.loads(path.read_text(encoding="utf-8")) == {"customer": "C-2001", "order": "DF-1002"}
+
+
+def test_protected_key_is_not_overwritten(tmp_path):
+    import json
+
+    path = tmp_path / "notes.json"
+    write_note("constraint", "Refunds never exceed 40 dollars.", path=path)
+    before = path.read_bytes()
+    out = json.loads(write_note("constraint", "Customer prefers email.", path=path))
+    assert out == {"ok": False, "key": "constraint", "reason": "protected key, ask a person"}
+    assert path.read_bytes() == before
+
+
+def test_context_caller_binds_tools_on_the_local_model(monkeypatch):
+    import config
+    from langchain_core.messages import AIMessage
+
+    from dataflow.context.agent import NOTE_SCHEMA, READ_SCHEMA, context_caller
+
+    seen = {}
+
+    class Model:
+        def bind_tools(self, tools):
+            seen["tools"] = tools
+            return self
+
+        def invoke(self, messages):
+            seen["messages"] = messages
+            return AIMessage(
+                content="",
+                tool_calls=[{"name": "read_file", "args": {"path": "return_policy.md"}, "id": "c1", "type": "tool_call"}],
+                usage_metadata={"input_tokens": 9, "output_tokens": 3, "total_tokens": 12},
+            )
+
+    monkeypatch.setattr(config, "get_local_chat_model", lambda **kw: seen.update(kw=kw) or Model())
+    call = context_caller(num_ctx=8192)
+    out = call([{"role": "user", "content": "return window?"}])
+    assert seen["kw"]["num_ctx"] == 8192 and seen["tools"] == [READ_SCHEMA, NOTE_SCHEMA]
+    assert call.tool_names == ["read_file", "write_note"]
+    assert out["tool_calls"] == [{"id": "c1", "name": "read_file", "arguments": {"path": "return_policy.md"}}]
+    assert out["raw_tool_calls"][0]["function"] == {"name": "read_file", "arguments": '{"path": "return_policy.md"}'}
+    assert out["usage"]["input_tokens"] == 9
 
 
 def test_jit_read_only_on_match(tmp_path):
@@ -306,3 +372,15 @@ def test_child_sees_only_its_document():
                 assert other_body in blob
             else:
                 assert other_body not in blob
+
+
+def test_a_desk_without_a_notes_file_never_reads_the_shared_one(tmp_path, monkeypatch):
+    from dataflow.context import agent as agent_module
+
+    shared = tmp_path / "notes.json"
+    write_note("constraint", "cap is 40 dollars", path=shared)
+    monkeypatch.setattr(agent_module, "NOTES_PATH", shared)
+    sent = []
+    desk = ContextAgent(lambda messages: sent.append(messages) or {"content": "ok", "tool_calls": []}, system="desk")
+    desk.run_turns(["hello"])
+    assert sent[0][0]["content"] == "desk"

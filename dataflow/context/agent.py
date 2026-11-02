@@ -154,12 +154,28 @@ def load_notes(path: Path = NOTES_PATH) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+# A note under one of these keys is written once. Changing it is a person's job, not the model's.
+PROTECTED_KEYS = frozenset({"constraint"})
+
+
 def write_note(key: str, value: str, path: Path = NOTES_PATH) -> str:
+    """Write one named fact. A protected key that already holds a value is refused and the file is left alone."""
     notes = load_notes(path)
-    notes[str(key)] = str(value)
+    key = str(key)
+    if key in PROTECTED_KEYS and key in notes:
+        return json.dumps({"ok": False, "key": key, "reason": "protected key, ask a person"})
+    notes[key] = str(value)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(notes, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
-    return json.dumps(notes)
+    return json.dumps({"ok": True, "key": key, "notes": notes})
+
+
+def notes_block(path: Path = NOTES_PATH) -> str:
+    """The notes as the desk's system message carries them, or nothing when there are none."""
+    notes = load_notes(path)
+    if not notes:
+        return ""
+    return "\n\nNOTES\n" + json.dumps(notes)
 
 
 def compact_messages(
@@ -189,23 +205,39 @@ def compact_messages(
     return new, True, before, after
 
 
-def chat_caller(num_predict: int = 80, num_ctx: int | None = None):
-    """Plain chat, no tools. Used by the rot and compaction labs.
+def chat_caller(num_predict: int = 80, num_ctx: int | None = None, tools: list[dict] | None = None):
+    """The local model through config.py, as one function: messages in, a reply dict out.
 
     num_ctx is the context window in tokens. None leaves it to the Ollama
     server's default; a number makes the window a setting you can print.
+    tools are function schemas bound to the model; with none it is plain chat.
     """
     import config
 
     extra = {} if num_ctx is None else {"num_ctx": int(num_ctx)}
     model = config.get_local_chat_model(reasoning=False, num_predict=num_predict, **extra)
+    if tools:
+        model = model.bind_tools(tools)
 
     def call(messages: list) -> dict:
         reply = model.invoke(messages)
         meta = getattr(reply, "usage_metadata", None) or {}
+        calls = []
+        raw = []
+        for item in getattr(reply, "tool_calls", None) or []:
+            args = item.get("args") or {}
+            calls.append({"id": item.get("id"), "name": item.get("name"), "arguments": args})
+            raw.append(
+                {
+                    "id": item.get("id"),
+                    "type": "function",
+                    "function": {"name": item.get("name"), "arguments": json.dumps(args)},
+                }
+            )
         return {
             "content": str(getattr(reply, "content", "")),
-            "tool_calls": [],
+            "tool_calls": calls,
+            "raw_tool_calls": raw,
             "usage": {
                 "input_tokens": meta.get("input_tokens"),
                 "output_tokens": meta.get("output_tokens"),
@@ -213,19 +245,25 @@ def chat_caller(num_predict: int = 80, num_ctx: int | None = None):
             },
         }
 
-    call.tool_names = []
+    call.tool_names = [t["function"]["name"] for t in tools or []]
     return call
 
 
-def context_caller(*, enable_read: bool = True, enable_notes: bool = True):
-    from techcorp.agent.scratch import openai_caller
-
+def context_caller(
+    *,
+    enable_read: bool = True,
+    enable_notes: bool = True,
+    num_ctx: int | None = None,
+    extra_schemas: list[dict] | None = None,
+):
+    """chat_caller with the desk's tools bound: read_file, write_note, and any extra schemas."""
     schemas: list[dict] = []
     if enable_read:
         schemas.append(READ_SCHEMA)
     if enable_notes:
         schemas.append(NOTE_SCHEMA)
-    return openai_caller(schemas)
+    schemas.extend(extra_schemas or [])
+    return chat_caller(num_predict=512, num_ctx=num_ctx, tools=schemas)
 
 
 def summarise_with_usage(text: str, prompt: str = SUMMARIZE_PROMPT) -> tuple[str, dict]:
@@ -287,6 +325,9 @@ def _usage(reply: Any) -> dict:
     }
 
 
+_notes_block = notes_block
+
+
 class ContextAgent:
     """Loop with optional read_file, write_note, and compaction."""
 
@@ -300,10 +341,12 @@ class ContextAgent:
         compact_threshold: int = 800,
         keep_last: int = 6,
         summariser: Callable[[str], Any] | None = None,
-        notes_path: Path = NOTES_PATH,
+        notes_path: Path | None = None,
         cap: int = 8,
         preload: str | None = None,
         compactor: Callable[..., tuple] | None = None,
+        note_writer: Callable[..., str] | None = None,
+        notes_block: Callable[[Path], str] | None = None,
     ) -> None:
         self.call_model = call_model
         self.system = system
@@ -315,20 +358,27 @@ class ContextAgent:
         self.summariser = summariser or summarise_with_usage
         # The fold itself. Lab 5.8 passes the one you typed; every other lab uses compact_messages.
         self.compactor = compactor or compact_messages
+        # The write path and the notes block. Labs 5.11 and 5.12 pass the ones you typed.
+        self.note_writer = note_writer or write_note
+        self.notes_block = notes_block or _notes_block
+        self.writes: list[dict] = []
+        # No notes file unless one is passed, so one lab's notes never leak into another lab's desk.
         self.notes_path = notes_path
         self.cap = cap
         self.preload = preload
         self.token_trace: list[dict] = []
         self.reads: list[str] = []
 
+    def _notes(self) -> dict:
+        return {} if self.notes_path is None else load_notes(self.notes_path)
+
     def _system_text(self) -> str:
         text = self.system
         if self.preload:
             text = text + "\n\nPRELOADED\n" + self.preload
-        notes = load_notes(self.notes_path)
-        if notes:
-            text = text + "\n\nNOTES\n" + json.dumps(notes)
-        return text
+        if self.notes_path is None:
+            return text
+        return text + self.notes_block(self.notes_path)
 
     def _maybe_compact(self, messages: list) -> list:
         if not self.compact:
@@ -393,8 +443,9 @@ class ContextAgent:
                     "tool_names": tool_names,
                     "stop": "final",
                     "token_trace": list(self.token_trace),
-                    "notes": load_notes(self.notes_path),
+                    "notes": self._notes(),
                     "reads": list(self.reads),
+                    "writes": list(self.writes),
                 }
             raw = reply.get("raw_tool_calls") or []
             messages.append(
@@ -427,11 +478,13 @@ class ContextAgent:
                     self.reads.append(path)
                     result = read_file(path)
                 elif name == "write_note":
-                    result = write_note(
-                        str(args.get("key") or ""),
-                        str(args.get("value") or ""),
-                        path=self.notes_path,
-                    )
+                    key = str(args.get("key") or "")
+                    value = str(args.get("value") or "")
+                    if self.notes_path is None:
+                        result = json.dumps({"ok": False, "key": key, "reason": "this desk has no notes file"})
+                    else:
+                        result = self.note_writer(key, value, path=self.notes_path)
+                    self.writes.append({"key": key, "value": value, "result": json.loads(result)})
                 elif name in self.tools:
                     fn = self.tools[name]
                     result = fn(**args) if args else fn()
@@ -450,13 +503,15 @@ class ContextAgent:
             "tool_names": tool_names,
             "stop": "cap",
             "token_trace": list(self.token_trace),
-            "notes": load_notes(self.notes_path),
+            "notes": self._notes(),
             "reads": list(self.reads),
+            "writes": list(self.writes),
         }
 
     def run(self, ticket: str) -> dict:
         self.token_trace = []
         self.reads = []
+        self.writes = []
         messages = [
             {"role": "system", "content": self._system_text()},
             {"role": "user", "content": ticket},
@@ -494,5 +549,5 @@ class ContextAgent:
             "messages": messages,
             "replies": replies,
             "token_trace": list(self.token_trace),
-            "notes": load_notes(self.notes_path),
+            "notes": self._notes(),
         }
