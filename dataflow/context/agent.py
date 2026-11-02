@@ -154,11 +154,16 @@ def compact_messages(
     return new, True, before, after
 
 
-def chat_caller(num_predict: int = 80):
-    """Plain chat, no tools. Used by the rot and compaction labs."""
+def chat_caller(num_predict: int = 80, num_ctx: int | None = None):
+    """Plain chat, no tools. Used by the rot and compaction labs.
+
+    num_ctx is the context window in tokens. None leaves it to the Ollama
+    server's default; a number makes the window a setting you can print.
+    """
     import config
 
-    model = config.get_local_chat_model(reasoning=False, num_predict=num_predict)
+    extra = {} if num_ctx is None else {"num_ctx": int(num_ctx)}
+    model = config.get_local_chat_model(reasoning=False, num_predict=num_predict, **extra)
 
     def call(messages: list) -> dict:
         reply = model.invoke(messages)

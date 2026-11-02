@@ -25,6 +25,19 @@ def test_map_has_twelve_lines_with_when():
     ).read()
 
 
+def test_chat_caller_passes_num_ctx(monkeypatch):
+    import config
+    from dataflow.context.agent import chat_caller
+
+    seen = []
+    monkeypatch.setattr(config, "get_local_chat_model", lambda **kw: seen.append(kw) or object())
+    chat_caller(num_ctx=16384)
+    chat_caller()
+    assert seen[0]["num_ctx"] == 16384
+    assert seen[0]["reasoning"] is False
+    assert "num_ctx" not in seen[1]
+
+
 def test_compaction_folds_over_threshold():
     messages = [{"role": "system", "content": "desk"}]
     for i in range(20):
