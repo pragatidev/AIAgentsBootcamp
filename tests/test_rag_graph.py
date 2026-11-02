@@ -136,3 +136,92 @@ def test_refuse_text():
     assert "I do not have that in the knowledge base" in out["reply"]
     assert "student discount" in out["reply"]
     assert out["sources"] == []
+
+
+# R4 (24.3, 24.5, 25.4): the hooks a lab plugs its own copy into, and widen once inside the scope.
+
+import importlib  # noqa: E402
+
+from dataflow.graphs.crag import should_refuse  # noqa: E402
+
+RT = importlib.import_module("dataflow.tools.retrieve")
+
+DROP = {"label": "drop", "reason": "fixture drop"}
+
+
+def _stub_retrieve(monkeypatch, rows):
+    stub = lambda *args, **kwargs: [dict(r) for r in rows]  # noqa: E731
+    monkeypatch.setattr("dataflow.graphs.rag_graph.retrieve_passages", stub)
+    monkeypatch.setattr(RT, "retrieve_passages", stub)
+
+
+def test_should_refuse_rows():
+    rows = [
+        ({"grades": [{"label": "keep"}], "rewrites": 0}, False),
+        ({"passages": [POLICY] * 3, "grades": [DROP] * 3, "rewrites": 0}, False),
+        ({"passages": [POLICY] * 3, "grades": [DROP] * 3, "rewrites": 1}, True),
+        ({"passages": [], "grades": [], "rewrites": 1}, True),
+        ({"grades": [], "graded": [POLICY], "rewrites": 1}, False),
+    ]
+    for state, expected in rows:
+        assert should_refuse(state, max_rewrites=MAX_REWRITES) is expected
+
+
+def test_grade_fn_hook_runs_the_labs_grade(monkeypatch):
+    _stub_retrieve(monkeypatch, [POLICY])
+    seen = []
+
+    def lab_grade(state, runtime=None, *, model=None):
+        seen.append(len(state.get("passages") or []))
+        return {"grades": [{"source": POLICY["source"], "label": "keep", "reason": "lab", "text": POLICY["text"]}], "graded": [POLICY]}
+
+    out = build_rag_graph(model=FakeChatModel(route="retrieve", reply="30 days."), grade_fn=lab_grade).invoke({"question": "return window?"})
+    assert seen == [1] and out["grades"][0]["reason"] == "lab"
+
+
+def test_policy_hook_drives_the_edge(monkeypatch):
+    _stub_retrieve(monkeypatch, [POLICY])
+    calls = []
+
+    def lab_policy(state, *, max_rewrites, web_search_allowed):
+        calls.append(max_rewrites)
+        return "refuse"
+
+    out = build_rag_graph(model=FakeChatModel(route="retrieve"), policy=lab_policy).invoke({"question": "return window?"})
+    assert calls == [MAX_REWRITES] and out["reply"].startswith("I do not have that in the knowledge base")
+
+
+def test_refuse_check_that_reads_the_retrieve_generates_on_rejected_passages(monkeypatch):
+    _stub_retrieve(monkeypatch, [HANDBOOK, POLICY])
+
+    def reads_the_retrieve(state, *, max_rewrites):
+        return not state.get("passages") and int(state.get("rewrites") or 0) >= max_rewrites
+
+    fake = FakeChatModel(route="retrieve", reply=["rewritten question", "An answer anyway."], structured={"Grade": DROP})
+    out = build_rag_graph(model=fake, refuse_check=reads_the_retrieve).invoke({"question": "Do you sell coffee beans?"})
+    assert not out["reply"].startswith("I do not have that")
+    cited = [row["source"] for row in out["sources"]]
+    assert HANDBOOK["source"] in cited
+    fake = FakeChatModel(route="retrieve", reply=["rewritten question"], structured={"Grade": DROP})
+    out = build_rag_graph(model=fake, refuse_check=should_refuse).invoke({"question": "Do you sell coffee beans?"})
+    assert out["reply"].startswith("I do not have that in the knowledge base") and out["sources"] == []
+
+
+def test_widen_stops(monkeypatch):
+    _stub_retrieve(monkeypatch, [POLICY])
+    fake = FakeChatModel(route="retrieve", reply=["rewritten question"], structured={"Grade": DROP})
+    out = build_rag_graph(model=fake, web_search_allowed=True).invoke({"question": "Do you sell coffee beans?"}, {"recursion_limit": 30})
+    assert out["widened"] is True
+    assert out["reply"].startswith("I do not have that in the knowledge base")
+
+
+def test_widen_keeps_the_callers_scope(monkeypatch):
+    seen = {}
+
+    def fake_retrieve(question, k=3, folder=None, *, scope="customer"):
+        seen["scope"], seen["k"] = scope, k
+        return []
+
+    monkeypatch.setattr(RT, "retrieve_passages", fake_retrieve)
+    assert widen({"question": "q"}, web_search_allowed=True) == {"passages": [], "widened": True}
+    assert seen == {"scope": "customer", "k": 6}

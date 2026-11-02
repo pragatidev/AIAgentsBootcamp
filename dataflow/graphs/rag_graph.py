@@ -313,6 +313,12 @@ def pick_route(state: RagState) -> Literal["retrieve", "lookup", "answer"]:
     return "answer"
 
 
+class DeskRagState(RagState, total=False):
+    """RagState plus the keys the later hooks write. LangGraph drops a key the state does not declare."""
+
+    widened: bool
+
+
 def build_rag_graph(
     *,
     model: Any = None,
@@ -327,8 +333,17 @@ def build_rag_graph(
     cite_node: Any = ...,
     generate_system: str | None = None,
     system_prompt: str | None = None,
+    grade_fn: Any = None,
+    policy: Any = None,
+    refuse_check: Any = None,
 ):
-    builder = StateGraph(RagState, context_schema=DeskContext)
+    """Compile the agentic RAG graph. Every keyword after system_prompt is a hook a lab plugs its own copy into.
+
+    grade_fn: the grade node's function (24.3). policy: the edge after grade (24.5),
+    after_grade's signature. refuse_check: should_refuse's signature (25.4); when the
+    policy says refuse and refuse_check says False, the graph generates instead.
+    """
+    builder = StateGraph(DeskRagState, context_schema=DeskContext)
 
     def route_node(
         state: RagState,
@@ -343,7 +358,7 @@ def build_rag_graph(
         state: RagState,
         runtime: Runtime[DeskContext] | None = None,
     ) -> dict[str, Any]:
-        return grade(state, runtime=runtime, model=model)
+        return (grade_fn or grade)(state, runtime=runtime, model=model)
 
     def rewrite_node(
         state: RagState,
@@ -371,9 +386,13 @@ def build_rag_graph(
         return answer_node(state, runtime=runtime, model=model)
 
     def widen_node(state: RagState) -> dict[str, Any]:
-        return widen(state, web_search_allowed=web_search_allowed)
+        return widen(
+            state,
+            web_search_allowed=web_search_allowed,
+            scope="support_agent" if scope == "all" else "customer",
+        )
 
-    def pick_after_grade(state: RagState) -> str:
+    def pick_after_grade(state: DeskRagState) -> str:
         if force_generate_on_empty:
             kept = [
                 row
@@ -382,11 +401,17 @@ def build_rag_graph(
             ]
             if not kept and not (state.get("graded") or []):
                 return "generate"
-        return after_grade(
+        decision = (policy or after_grade)(
             dict(state),
             max_rewrites=max_rewrites,
             web_search_allowed=web_search_allowed,
         )
+        if decision == "widen" and state.get("widened"):
+            decision = "refuse"
+        if decision == "refuse" and refuse_check is not None:
+            if not refuse_check(dict(state), max_rewrites=max_rewrites):
+                decision = "generate"
+        return decision
 
     builder.add_node("route", route_node)
     builder.add_node("retrieve", retrieve_bound)
