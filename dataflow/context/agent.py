@@ -228,17 +228,38 @@ def context_caller(*, enable_read: bool = True, enable_notes: bool = True):
     return openai_caller(schemas)
 
 
-def default_summariser(text: str) -> str:
+def summarise_with_usage(text: str, prompt: str = SUMMARIZE_PROMPT) -> tuple[str, dict]:
+    """One real summariser call. Returns the summary and the server's count for that call."""
     import config
 
     chat = config.get_local_chat_model(reasoning=False, num_predict=160)
     reply = chat.invoke(
         [
-            {"role": "system", "content": SUMMARIZE_PROMPT},
+            {"role": "system", "content": prompt},
             {"role": "user", "content": text[:6000]},
         ]
     )
-    return str(getattr(reply, "content", reply))
+    return str(getattr(reply, "content", reply)), _usage(reply)
+
+
+def default_summariser(text: str) -> str:
+    return summarise_with_usage(text)[0]
+
+
+def total_input(trace: list) -> dict:
+    """What a run read, from its trace: the desk's calls, the summariser's calls, and both together.
+
+    The server's count where there is one, the library's where there is not.
+    """
+    desk = 0
+    summariser = 0
+    for row in trace:
+        if row.get("event") == "compact":
+            summariser += int((row.get("summariser_usage") or {}).get("input_tokens") or 0)
+        elif row.get("turn") or row.get("event") == "model":
+            usage = row.get("usage") or {}
+            desk += int(usage.get("input_tokens") or row.get("tokens") or 0)
+    return {"desk": desk, "summariser": summariser, "total": desk + summariser}
 
 
 def _usage(reply: Any) -> dict:
@@ -278,10 +299,11 @@ class ContextAgent:
         compact: bool = False,
         compact_threshold: int = 800,
         keep_last: int = 6,
-        summariser: Callable[[str], str] | None = None,
+        summariser: Callable[[str], Any] | None = None,
         notes_path: Path = NOTES_PATH,
         cap: int = 8,
         preload: str | None = None,
+        compactor: Callable[..., tuple] | None = None,
     ) -> None:
         self.call_model = call_model
         self.system = system
@@ -289,7 +311,10 @@ class ContextAgent:
         self.compact = compact
         self.compact_threshold = compact_threshold
         self.keep_last = keep_last
-        self.summariser = summariser or default_summariser
+        # A summariser returns the summary, or (summary, usage) when it can report its own count.
+        self.summariser = summariser or summarise_with_usage
+        # The fold itself. Lab 5.8 passes the one you typed; every other lab uses compact_messages.
+        self.compactor = compactor or compact_messages
         self.notes_path = notes_path
         self.cap = cap
         self.preload = preload
@@ -308,18 +333,36 @@ class ContextAgent:
     def _maybe_compact(self, messages: list) -> list:
         if not self.compact:
             return messages
-        new, folded, before, after = compact_messages(
+        usages: list[dict] = []
+
+        def summarise(text: str) -> str:
+            out = self.summariser(text)
+            summary, usage = out if isinstance(out, tuple) else (out, {})
+            usages.append(usage or {})
+            return summary
+
+        new, folded, before, after = self.compactor(
             messages,
             threshold=self.compact_threshold,
             keep_last=self.keep_last,
-            summariser=self.summariser,
+            summariser=summarise,
         )
         if folded:
+            summary = next(
+                (
+                    str(m.get("content"))
+                    for m in new
+                    if m.get("role") == "assistant" and str(m.get("content") or "").startswith("SUMMARY")
+                ),
+                "",
+            )
             self.token_trace.append(
                 {
                     "event": "compact",
                     "tokens_before": before,
                     "tokens_after": after,
+                    "summary": summary,
+                    "summariser_usage": usages[-1] if usages else {},
                 }
             )
         return new

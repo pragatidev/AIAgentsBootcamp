@@ -176,6 +176,61 @@ def test_compaction_folds_over_threshold():
     assert any("SUMMARY" in str(m.get("content")) for m in new)
 
 
+def _long_messages(n: int = 20) -> list:
+    messages = [{"role": "system", "content": "desk"}]
+    for i in range(n):
+        messages.append({"role": "user", "content": f"turn {i} " + ("policy " * 20)})
+        messages.append({"role": "assistant", "content": "ok " + str(i)})
+    return messages
+
+
+def test_fold_keeps_the_system_message():
+    new, folded, _before, _after = compact_messages(
+        _long_messages(), threshold=50, keep_last=4, summariser=lambda _t: "facts: lamp."
+    )
+    assert folded is True
+    assert new[0] == {"role": "system", "content": "desk"}
+    assert new[1] == {"role": "assistant", "content": "SUMMARY\nfacts: lamp."}
+    assert new[2:] == _long_messages()[-4:]
+
+
+def test_fold_records_its_summary():
+    def summariser(_text: str):
+        return "facts: order DF-1001. actions: none.", {"input_tokens": 300, "output_tokens": 12}
+
+    def call(_messages):
+        return {"content": "ok " * 10, "tool_calls": [], "usage": {"input_tokens": 50}}
+
+    agent = ContextAgent(call, system="desk", compact=True, compact_threshold=60, keep_last=2, summariser=summariser)
+    out = agent.run_turns(["question about the lamp " * 3] * 6)
+    folds = [row for row in out["token_trace"] if row.get("event") == "compact"]
+    assert folds
+    assert folds[-1]["summary"] == "SUMMARY\nfacts: order DF-1001. actions: none."
+    assert folds[-1]["summariser_usage"] == {"input_tokens": 300, "output_tokens": 12}
+
+
+def test_compaction_caps_the_last_call():
+    from dataflow.context.agent import total_input
+
+    def call(_messages):
+        return {"content": "ok, noted for the desk lamp order", "tool_calls": [], "usage": {"input_tokens": 100}}
+
+    def summariser(_text: str):
+        return "facts: DF-1001.", {"input_tokens": 70}
+
+    turns = ["Order DF-1001, the desk lamp."] + [f"question {i} about shipping and invoices" for i in range(14)]
+    plain = ContextAgent(call, system="desk", compact=False).run_turns(turns)
+    comp = ContextAgent(call, system="desk", compact=True, compact_threshold=120, keep_last=4, summariser=summariser).run_turns(turns)
+    last_plain = [r for r in plain["token_trace"] if r.get("turn")][-1]["tokens"]
+    last_comp = [r for r in comp["token_trace"] if r.get("turn")][-1]["tokens"]
+    folds = sum(1 for r in comp["token_trace"] if r.get("event") == "compact")
+    assert last_comp < last_plain
+    assert folds > 0
+    totals = total_input(comp["token_trace"])
+    assert totals == {"desk": 100 * 15, "summariser": 70 * folds, "total": 100 * 15 + 70 * folds}
+    assert total_input(plain["token_trace"]) == {"desk": 1500, "summariser": 0, "total": 1500}
+
+
 def test_notes_survive_compaction(tmp_path):
     notes_path = tmp_path / "notes.json"
     write_note("constraint", "cap is 40 dollars", path=notes_path)
