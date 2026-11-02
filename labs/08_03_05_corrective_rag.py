@@ -1,12 +1,21 @@
-# %% [markdown]
-# Add corrective RAG to the DataFlow graph.
-#
-# When this works, a planted noise query prints GRADE=wrong, REWRITE,
-# then the support procedures passage. A question the knowledge base
-# does not cover prints REFUSE. Take the rewrite cap off and the
-# recursion limit stops the loop with GraphRecursionError.
-
 # %%
+"""Lab 24.5: add corrective RAG to the DataFlow graph.
+
+What we build: you type the one function that decides what the DataFlow graph does after it grades a
+search: answer, search again in better words, or say it does not know. You check it on six states before any
+model runs, then give it to the graph and watch both grade passes on a badly phrased question, and the
+refusal on a question the knowledge base does not cover. Then you break it so the loop has no exit.
+
+What you learn: 24.4's idea made real. When the graded set is bad, correct the search, not the answer;
+rewrite once, refuse after that, and the cap is what makes the refuse edge reachable. The run carries a
+recursion limit of 12 because LangGraph's own default here is 10007 steps.
+
+What will be true on your screen: six after_grade rows (generate, rewrite, refuse, widen, generate,
+refuse), then for the badly phrased question each grade pass, the rewritten question with rewrites 1, the
+second pass and corrected True or False, then the refusal for the uncovered question and REFUSE True. Then
+python -m pytest tests/test_lab_08_03_05.py -q passes.
+"""
+
 from pathlib import Path
 import sys
 
@@ -15,89 +24,83 @@ sys.path.insert(0, str(root))
 
 from langgraph.errors import GraphRecursionError
 
-from config import CHAT_MODEL
-from dataflow.graphs.crag import MAX_REWRITES, build_crag
+import config
+from dataflow.graphs.crag import MAX_REWRITES
 from dataflow.graphs.rag_graph import build_rag_graph
-from dataflow.tools.retrieve import get_index
 
-print("model", CHAT_MODEL)
-print("MAX_REWRITES", MAX_REWRITES)
-print("building_index")
-get_index()
-print("index_ready")
 
-noise_candidates = [
-    "lamp send-back window twelve spins, unused, not the shipping table",
-    "how do I file a TPS report for an unused desk lamp return",
-    "what is the P0 first response for an Enterprise customer",
+# %%
+# TYPE THIS: after_grade. The signature and docstring are given; you type the body.
+# Its finished copy is after_grade in dataflow/graphs/crag.py, the edge every later graph uses.
+def after_grade(state: dict, *, max_rewrites: int = MAX_REWRITES, web_search_allowed: bool = False) -> str:
+    """Pick the edge after the grade node: generate when at least one passage was kept, rewrite when none was kept and a rewrite is left, widen when none is left and the company allows widening, otherwise refuse."""
+    kept = [row for row in state.get("grades") or [] if row.get("label") == "keep"] or list(state.get("graded") or [])
+    if kept:
+        return "generate"
+    if int(state.get("rewrites") or 0) < int(max_rewrites):
+        return "rewrite"
+    if web_search_allowed:
+        return "widen"
+    return "refuse"
+
+
+# BREAK: let the loop run forever. Change
+#     if int(state.get("rewrites") or 0) < int(max_rewrites):
+# to
+#     if True:
+# run the lab, then python -m pytest tests/test_lab_08_03_05.py -q and read the red line.
+# git checkout -- labs/08_03_05_corrective_rag.py puts it back.
+
+ROWS = [
+    ({"grades": [{"label": "keep"}], "rewrites": 0}, False),
+    ({"grades": [{"label": "wrong"}], "rewrites": 0}, False),
+    ({"grades": [{"label": "wrong"}], "rewrites": 1}, False),
+    ({"grades": [{"label": "wrong"}], "rewrites": 1}, True),
+    ({"grades": [], "graded": [{"source": "dataflow/wiki/return_policy.md"}]}, False),
+    ({"grades": [{"label": "drop"}], "rewrites": 2}, False),
 ]
-graph = build_crag()
+for state, allowed in ROWS:
+    print("after_grade", state, "web_search_allowed", allowed, "->", after_grade(state, web_search_allowed=allowed))
+
 
 # %%
-print("noise_search")
-noise_used = None
-noise_state = None
-for text in noise_candidates:
-    print("trying", text)
-    state = graph.invoke({"question": text})
-    grades = list(state.get("grades") or [])
-    labels = [row.get("label") for row in grades]
-    print("route", state.get("route"))
-    print("rewrites", state.get("rewrites"))
-    print("rewritten_question", state.get("rewritten_question"))
-    print("grade_labels", labels)
-    for row in grades:
-        print("GRADE", row.get("label"), "source", row.get("source"))
-        print("reason", row.get("reason"))
-    if int(state.get("rewrites") or 0) >= 1:
-        noise_used = text
-        noise_state = state
-        print("NOISE_QUERY", text)
-        break
-    print("---")
-if noise_state is None:
-    noise_used = noise_candidates[0]
-    noise_state = graph.invoke({"question": noise_used})
-    print("NOISE_QUERY_FALLBACK", noise_used)
+chat = config.get_chat_model()
+print("model", type(chat).__name__, getattr(chat, "model", None) or getattr(chat, "model_name", None))
+graph = build_rag_graph(model=chat, policy=after_grade)
 
-print("after_rewrite_passages")
-for row in noise_state.get("passages") or []:
-    print("source", row.get("source"))
-    print("text", str(row.get("text") or "")[:240])
-print("answer")
-print(noise_state.get("answer") or noise_state.get("reply"))
+
+def stream(question: str) -> dict:
+    """Print each node's update as it lands; return the final state."""
+    print("question", question)
+    final: dict = {}
+    for update in graph.stream({"question": question}, {"recursion_limit": 12}, stream_mode="updates"):
+        for node, payload in update.items():
+            payload = payload or {}
+            final.update(payload)
+            if node == "grade":
+                print("grade_pass", "kept", len(payload.get("graded") or []), "of", len(payload.get("grades") or []))
+                for row in payload.get("grades") or []:
+                    print("  GRADE", row["label"], row["source"], "|", row["reason"])
+            elif node == "rewrite":
+                print("rewrite", repr(payload.get("rewritten_question")), "rewrites", payload.get("rewrites"))
+            elif node in ("generate", "refuse", "lookup", "answer"):
+                print("edge_taken", node)
+    return final
+
 
 # %%
-uncovered = "Do you offer a student discount on the Enterprise plan?"
-print("uncovered", uncovered)
-refuse_graph = build_rag_graph()
-refused = refuse_graph.invoke({"question": uncovered})
-print("uncovered_route", refused.get("route"))
-print("uncovered_rewrites", refused.get("rewrites"))
-print("uncovered_grades")
-for row in refused.get("grades") or []:
-    print("GRADE", row.get("label"), row.get("source"), row.get("reason"))
-print("uncovered_reply")
-print(refused.get("reply"))
-print("REFUSE", "I do not have that in the knowledge base" in str(refused.get("reply") or ""))
+# A badly phrased question: does the rewrite find a passage the first search missed?
+state = stream("how do I file a TPS report for an unused desk lamp return")
+print("rewrites", state.get("rewrites") or 0)
+print("corrected", bool(state.get("rewrites")) and bool(state.get("graded")))
+print("reply", state.get("reply"))
+
 
 # %%
-print("break_uncapped_rewrites")
+# A question the knowledge base does not cover.
 try:
-    runaway = build_rag_graph(max_rewrites=50)
-    runaway.invoke(
-        {"question": uncovered},
-        {"recursion_limit": 12},
-    )
-    print("runaway_unexpected_success")
+    state = stream("Do you offer a student discount on the Enterprise plan?")
+    print("reply", state.get("reply"))
+    print("REFUSE", str(state.get("reply") or "").startswith("I do not have that in the knowledge base"))
 except GraphRecursionError as err:
-    print("GraphRecursionError", err)
-except Exception as err:
-    print("runaway_error", type(err).__name__ + ":", err)
-
-# %%
-print("restore_max_rewrites", MAX_REWRITES)
-restored = build_rag_graph(max_rewrites=MAX_REWRITES)
-again = restored.invoke({"question": uncovered})
-print("restore_reply")
-print(again.get("reply"))
+    print("runaway", type(err).__name__, str(err).splitlines()[0])
