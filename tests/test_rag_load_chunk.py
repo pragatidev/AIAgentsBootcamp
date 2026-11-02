@@ -21,12 +21,12 @@ PROCEDURES = (
 )
 
 
-def test_twenty_files_loaded():
+def test_every_file_loaded():
     files = list_knowledge_files()
-    assert len(files) >= 20
+    assert len(files) == 21
     assert any(path.name == "security.md" for path in files)
     docs = load_knowledge_base()
-    assert len(docs) > 20
+    assert len(docs) == 272
     sources = {doc.metadata["source"] for doc in docs}
     assert "dataflow/wiki/return_policy.md" in sources
     assert "dataflow/wiki/security.md" in sources

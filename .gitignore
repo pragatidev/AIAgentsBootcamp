@@ -105,6 +105,10 @@ chromadb/
 dataflow/data/faiss_index/
 dataflow/data/faiss_index_all/
 dataflow/data/faiss_index_rec*/
+# Lab 23.2 builds its own index here, so a broken student build never becomes the desk's index.
+dataflow/data/faiss_index_lab/
+# Lab 31.5 writes the student's own desk runs here; the committed runs beside it are the reference run.
+dataflow/guardrails/runs/last/
 
 # Lab 10.2 last-run mirror. Not the baseline.
 eval/last_run.md

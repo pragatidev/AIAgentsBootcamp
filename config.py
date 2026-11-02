@@ -176,3 +176,21 @@ def get_embeddings():
 # A per-run token budget for the TechCorp desk (lecture 4.28). Unset means no budget: measure one
 # ticket first, then set DESK_TOKEN_BUDGET in .env from what your own run used.
 DESK_TOKEN_BUDGET = int(os.environ["DESK_TOKEN_BUDGET"]) if os.environ.get("DESK_TOKEN_BUDGET", "").strip() else None
+
+# Which store the retrieve tool and the RAG graph search (Section 23). The deployment sets it, never
+# the model: "faiss" (the file on disk, the default) or "pgvector" (the docker compose Postgres).
+RETRIEVE_STORE = os.environ.get("DATAFLOW_RETRIEVE_STORE", "faiss").strip() or "faiss"
+PGVECTOR_COLLECTION = os.environ.get("DATAFLOW_PGVECTOR_COLLECTION", "dataflow_customer").strip() or "dataflow_customer"
+# How retrieve searches (Section 24): "dense" (the embedding only, the default) or "hybrid" (dense and BM25
+# keyword search fused by reciprocal rank). Flipping the default changes every later capture: a ruling, not a tweak.
+RETRIEVE_MODE = os.environ.get("DATAFLOW_RETRIEVE_MODE", "dense").strip() or "dense"
+
+# Per-token prices for the cost line (Section 25). Empty by default: the local model has no price, and the
+# repo never holds one. Copy your provider's prices, in dollars per million tokens, into .env to see a cost.
+def _price(name: str) -> float | None:
+    raw = os.environ.get(name, "").strip()
+    return float(raw) if raw else None
+
+
+PRICE_PER_MTOK_IN = _price("PRICE_PER_MTOK_IN")
+PRICE_PER_MTOK_OUT = _price("PRICE_PER_MTOK_OUT")

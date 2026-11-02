@@ -1,89 +1,98 @@
-# %% [markdown]
-# Build the DataFlow agentic RAG graph.
-#
-# When this works, a paraphrase of the refund policy prints the route,
-# retrieved sources with scores, every grade with its reason, the
-# answer and the sources. Skip grade and a wrong chunk can be cited;
-# add grade and the chunk drops.
-
 # %%
+"""Lab 24.3: build the DataFlow agentic RAG graph.
+
+What we build: you type the grade node, plug it into the DataFlow agentic RAG graph, and print the graph's
+nodes and edges so you see grade sitting between retrieve and generate. Then the lamp return question runs
+twice: once on the customer pages, once on the whole knowledge base where the employee handbook can come
+back. Then you break your grade so it keeps everything, and read what ends up cited.
+
+What you learn: 24.1 and 24.2 made real. Route, retrieve, grade, generate and cite are nodes on one graph,
+the model from config makes every decision, and grade reads each passage next to the question and drops
+the near miss before generate can use it. Nearest is a distance, not an answer, and grading costs one model
+call per passage.
+
+What will be true on your screen: the model read off the object, the nodes and edges, then for each run the
+route, the retrieved passages with their distances, every grade with its reason, the answer and its Sources,
+whether the handbook was retrieved and whether it was cited, and the grade calls and seconds. Then
+python -m pytest tests/test_lab_08_03_03.py -q passes.
+"""
+
 from pathlib import Path
 import sys
+import time
 
 root = Path(__file__).resolve().parents[1] if "__file__" in globals() else Path.cwd()
 sys.path.insert(0, str(root))
 
-from config import CHAT_MODEL
-from dataflow.graphs.rag_graph import build_rag_graph
-from dataflow.rag.faiss_index import search
-from dataflow.tools.retrieve import get_index
+import config
+from dataflow.graphs.rag_graph import GRADE_SYSTEM, Grade, build_rag_graph
 
-print("model", CHAT_MODEL)
-print("building_index")
-index = get_index()
-print("index_ready", type(index).__name__)
-
-question = "Can I send back an unused lamp after twelve days?"
-print("question", question)
-graph = build_rag_graph()
-state = graph.invoke({"question": question})
-print("route", state.get("route"))
-print("rewrites", state.get("rewrites"))
-print("rewritten_question", state.get("rewritten_question"))
-print("retrieved")
-for row in state.get("passages") or []:
-    print("source", row.get("source"), "folder", row.get("folder"), "score", row.get("score"))
-    print("text", str(row.get("text") or "")[:240])
-print("grades")
-for row in state.get("grades") or []:
-    print("GRADE", row.get("label"), "source", row.get("source"))
-    print("reason", row.get("reason"))
-print("answer")
-print(state.get("answer"))
-print("sources", state.get("sources"))
-print("reply")
-print(state.get("reply"))
 
 # %%
-print("break_grade_disabled")
-candidates = [
-    "Can I send back an unused lamp after twelve days?",
-    "What is the return policy for equipment?",
-    "Do I have to return company equipment after I leave?",
-]
-chosen = None
-for text in candidates:
-    hits = search(index, text, k=3, folder=None)
-    sources = [str(hit.get("source") or "") for hit in hits]
-    has_handbook = any("employee_handbook" in src.replace("\\", "/") for src in sources)
-    print("probe", text)
-    print("probe_sources", sources)
-    print("handbook_in_top_k", has_handbook)
-    if has_handbook and chosen is None:
-        chosen = text
-if chosen is None:
-    chosen = candidates[-1]
-    print("handbook_not_in_top_k_using", chosen)
-else:
-    print("handbook_question", chosen)
+# TYPE THIS: grade. The signature and docstring are given; you type the body.
+# Its finished copy is grade in dataflow/graphs/rag_graph.py, which every later graph uses.
+def grade(state: dict, runtime=None, *, model=None) -> dict:
+    """Read each retrieved passage next to the question and label it keep, drop or wrong with a one sentence reason (the Grade schema). Return every grade under "grades" and only the kept passages under "graded"."""
+    structured = model.with_structured_output(Grade)
+    question = state.get("rewritten_question") or state.get("question") or ""
+    grades, kept = [], []
+    for passage in state.get("passages") or []:
+        decision = structured.invoke(
+            [
+                {"role": "system", "content": GRADE_SYSTEM},
+                {"role": "user", "content": f"Question: {question}\nSource: {passage.get('source')}\nPassage:\n{passage.get('text')}"},
+            ]
+        )
+        label = str(decision.label)
+        grades.append({"source": str(passage.get("source") or ""), "label": label, "reason": str(decision.reason), "text": str(passage.get("text") or "")})
+        if label == "keep":
+            kept.append(passage)
+    return {"grades": grades, "graded": kept}
 
-broken = build_rag_graph(grade_enabled=False, scope="all")
-wrong = broken.invoke({"question": chosen})
-print("no_grade_route", wrong.get("route"))
-print("no_grade_sources", wrong.get("sources"))
-print("no_grade_answer")
-print(wrong.get("answer"))
-cited = " ".join(
-    str(row.get("source") or "") for row in (wrong.get("sources") or [])
-)
-print("cited_handbook", "employee_handbook" in cited.replace("\\", "/"))
+
+# BREAK: make your grade keep every passage. Change
+#     if label == "keep":
+# to
+#     if label:
+# run the lab, then python -m pytest tests/test_lab_08_03_03.py -q and read the red line.
+# git checkout -- labs/08_03_03_agentic_rag_graph.py puts it back.
+
 
 # %%
-print("restore_grade_enabled")
-restored = build_rag_graph(grade_enabled=True)
-again = restored.invoke({"question": question})
-print("restore_route", again.get("route"))
-print("restore_grades")
-for row in again.get("grades") or []:
-    print("GRADE", row.get("label"), row.get("source"), row.get("reason"))
-print("restore_sources", again.get("sources"))
+chat = config.get_chat_model()
+print("model", type(chat).__name__, getattr(chat, "model", None) or getattr(chat, "model_name", None))
+graph = build_rag_graph(model=chat, grade_fn=grade)
+drawn = graph.get_graph()
+print("nodes", [name for name in drawn.nodes if not name.startswith("__")])
+print("edges", [f"{edge.source} -> {edge.target}" for edge in drawn.edges])
+
+
+def run(graph, question: str, desk: str) -> dict:
+    print("desk", desk)
+    print("question", question)
+    started = time.perf_counter()
+    state = graph.invoke({"question": question})
+    seconds = time.perf_counter() - started
+    print("route", state.get("route"))
+    for passage in state.get("passages") or []:
+        print("retrieved", round(float(passage.get("score", 0)), 4), passage.get("source"))
+    for row in state.get("grades") or []:
+        print("GRADE", row["label"], row["source"], "|", row["reason"])
+    print("answer", state.get("answer"))
+    cited = [row.get("source") for row in state.get("sources") or []]
+    print("sources", cited)
+    print("handbook_retrieved", any("employee_handbook" in str(p.get("source")) for p in state.get("passages") or []))
+    print("cited_handbook", any("employee_handbook" in str(source) for source in cited))
+    print("grade_calls", len(state.get("grades") or []), "seconds", round(seconds, 1))
+    return state
+
+
+# %%
+# The customer desk: the wiki and the customer facing pages only.
+lamp = "Can I send back an unused lamp after twelve days?"
+run(graph, lamp, "customer")
+
+
+# %%
+# The whole knowledge base, five passages, so the employee handbook can come back and meet your grade.
+run(build_rag_graph(model=chat, grade_fn=grade, scope="all", retrieve_k=5), lamp, "all folders")

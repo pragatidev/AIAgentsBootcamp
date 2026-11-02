@@ -674,3 +674,80 @@ ERROR AIAgentsBootcamp/tests/test_foundation_llm.py - FileNotFoundError: Cann...
 What it means: the same mistake as pytest stops on 6 errors during collection. Since 2026-10-05 the repo's `conftest.py` keeps pytest out of the scripts in `labs/`, so the `06_01_04` line is gone, no lab calls your model, and the run stops in seconds. The `E   FileNotFoundError: Cannot find the AI Agents Bootcamp repo` line is still among the five.
 
 Fix **(tested)**: `cd AIAgentsBootcamp` and run `pytest -q` there.
+
+## The RAG labs (Sections 22 to 25, and 31.5)
+
+### `docker compose` cannot start Postgres (lab 23.4)
+
+Caused on the test machine on 2026-11-02 with Docker Desktop installed and not running, on
+`labs/08_02_04_pgvector.py`:
+
+```
+compose_returncode 1
+compose_said unable to get image 'pgvector/pgvector:pg16': error during connect: ... open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.
+BLOCKED ON DOCKER
+docker compose could not start Postgres (its last line is above); if Docker is not running, start Docker Desktop and run this lab again.
+```
+
+What it means: your width check ran (it needs no Docker), and then nothing answered on Docker's pipe, so compose
+could not even fetch the Postgres image. The lab stops cleanly with exit code 0. If the `docker` command itself is
+missing, the lab prints `BLOCKED ON DOCKER` and `docker is not installed or not on PATH`.
+
+Fix **(not tested here)**: start Docker Desktop, wait until it says it is running, and run the lab again. The first
+`docker compose up` downloads the `pgvector/pgvector:pg16` image, which takes a while once.
+
+### The json loader says `jq package not found` (lab 22.3)
+
+```
+JSONLoader_error ImportError: jq package not found, please install it with `pip install jq`
+```
+
+What it means: nothing is wrong. Caused on purpose by `labs/08_01_03_load_knowledge_base.py` (run on the test
+machine on 2026-11-02): LangChain's `JSONLoader` needs the `jq` package, which this course does not install, so the
+lab prints `jq_installed False` and loads the json files with its own `load_json`.
+
+Fix: none needed, and do not install `jq`: the lecture's run is the one without it. If you installed it, the lab
+prints `JSONLoader_loaded (jq is installed on this machine)` instead.
+
+### The embedder is not pulled
+
+```
+ollama._types.ResponseError: model 'nomic-embed-text:v1.5-not-pulled' not found (status code: 404)
+```
+
+What it means: Ollama is running, but it does not have the embedding model `config.py` asked for. Every RAG lab
+that builds or loads an index stops here. Caused on the test machine on 2026-11-02 on `labs/08_02_02_index_faiss.py`
+with `OLLAMA_EMBED_MODEL` set to a tag that machine had not pulled; the lab printed
+`embedder OllamaEmbeddings nomic-embed-text:v1.5-not-pulled` first, read off the embedder it built, so that line
+names the model it asked for.
+
+Fix **(not tested here)**: `ollama pull nomic-embed-text` (274 MB), and if you set `OLLAMA_EMBED_MODEL` yourself,
+remove it so the default is used.
+
+### A lab prints `rebuilding_index` or `refreshed_index`
+
+```
+rebuilding_index customer the index on disk has no index_meta.json, so nothing says what built it
+```
+
+What it means: not an error. The desk's indexes under `dataflow/data/` carry `index_meta.json`, which says which
+folders and which embedder built them and what every file's contents were. When there is no index yet, or it came
+from other folders or another embedder, or from before 2026-11-02 (no `index_meta.json`), the lab rebuilds it once and
+says why; when a knowledge base file changed, it re-embeds only that file and prints `refreshed_index` with the file.
+Caused on the test machine on 2026-11-02 on `labs/08_02_02_index_faiss.py` after deleting the customer index's
+`index_meta.json`; the rebuild took about half a minute there.
+
+Fix: none needed. Never copy an index folder from someone else's machine: loading one unpickles it.
+
+### An index build stops on `tokenize ... (status code: 400)`
+
+```
+ollama._types.ResponseError: Post "http://127.0.0.1:49313/tokenize": dial tcp 127.0.0.1:49313: connectex: No connection could be made because the target machine actively refused it. (status code: 400)
+```
+
+What it means: Ollama's own embedding worker stopped answering while the index was being built (the port in the line
+is Ollama's internal one, not yours). Caused once on the test machine on 2026-11-02, on the first run of
+`labs/08_04_06_portfolio_knowledge_desk.py`, while Ollama was loading the chat model beside the embedder.
+
+Fix **(tested)**: run the lab again. An index is saved only when its build finishes, so nothing half-built is left;
+on the test machine the second run built it.

@@ -12,3 +12,7 @@ langchain-openai==1.6.2
 langchain-anthropic==1.7.1
 pydantic==2.12.5
 pytest==9.1.1
+# The RAG block's three readers and keyword index, read from the versions its tests and captures ran on (2026-11-02).
+rank-bm25==0.2.2
+pypdf==6.19.0
+python-docx==1.2.0

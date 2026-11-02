@@ -1,7 +1,7 @@
 """DataFlow RAG tool cycle: agent, ToolNode, back to the agent.
 
 The Section 8 cycle binds lookup_order and retrieve. retrieve replaces
-the Section 9 keyword search; search_policy stays on v2_tools. Recursion
+the Section 8 keyword search; search_policy stays on v2_tools. Recursion
 cap is 10.
 """
 

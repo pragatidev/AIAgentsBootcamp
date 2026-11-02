@@ -59,14 +59,8 @@ ops/                tracing/runs/, where the DataFlow service writes its request
 conftest.py         keeps pytest out of the lab scripts
 ```
 
-## RAG (Part 8)
+## RAG (Sections 22 to 25)
 
-Local default embedder is `nomic-embed-text` on Ollama. Chat is `qwen3:8b`.
-
-```
-python -m dataflow.rag.faiss_index                 # build the FAISS index (dataflow/data/faiss_index, gitignored)
-python labs/08_04_06_portfolio_knowledge_desk.py   # three tickets: a cited policy, an unknown that refuses, an order id that does not retrieve
-python labs/08_04_05_rag_evals.py                  # naive vs agentic evals on eval/questions.jsonl
-```
+The DataFlow knowledge desk, how to run it, its tests, design decisions and known limits: `dataflow/README.md`.
 
 First lab: `labs/00_03_setup_check.py`. Twins: `python scripts/make_twins.py`. License MIT.

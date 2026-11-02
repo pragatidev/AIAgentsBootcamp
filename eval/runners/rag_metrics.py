@@ -3,14 +3,22 @@
 Faithfulness is an LLM judge: every claim in the answer appears in the
 cited passages (0 or 1). Context recall is whether the expected source
 was retrieved. Refused correctly is a refuse row that actually refused.
+Tokens and model calls are counted per question, inside each pipeline only
+(the judge's calls are not counted). retrieval_metrics measures retrieval
+alone, with no chat model: the rank of the expected file, recall at k, MRR.
 """
 
 from __future__ import annotations
 
 import json
 import time
+from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Any, Callable
+
+from langchain_core.callbacks import BaseCallbackHandler
+from langchain_core.tracers.context import register_configure_hook
 
 from config import ROOT, get_chat_model
 from dataflow.graphs.rag_graph import build_rag_graph, generate
@@ -18,6 +26,43 @@ from dataflow.rag.faiss_index import search
 from dataflow.tools.retrieve import get_index
 
 QUESTIONS = ROOT / "eval" / "questions.jsonl"
+
+
+class CallMeter(BaseCallbackHandler):
+    """Counts chat model calls and sums their tokens, from every call made inside meter()."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.model_calls = 0
+        self.input_tokens = 0
+        self.output_tokens = 0
+
+    def on_llm_end(self, response: Any, **kwargs: Any) -> None:
+        self.model_calls += 1
+        for generations in getattr(response, "generations", None) or []:
+            for generation in generations:
+                usage = getattr(getattr(generation, "message", None), "usage_metadata", None) or {}
+                self.input_tokens += int(usage.get("input_tokens") or 0)
+                self.output_tokens += int(usage.get("output_tokens") or 0)
+
+    @property
+    def tokens(self) -> int:
+        return self.input_tokens + self.output_tokens
+
+
+_METER: ContextVar[CallMeter | None] = ContextVar("rag_call_meter", default=None)
+register_configure_hook(_METER, inheritable=True)
+
+
+@contextmanager
+def meter():
+    """Every LangChain chat model call inside this block reports to the CallMeter it yields."""
+    handler = CallMeter()
+    token = _METER.set(handler)
+    try:
+        yield handler
+    finally:
+        _METER.reset(token)
 
 JUDGE_SYSTEM = (
     "You judge faithfulness. The answer may only use facts that appear "
@@ -51,6 +96,75 @@ def _source_blob(sources: list[Any]) -> str:
 
 def _refused(text: str) -> bool:
     return "I do not have that in the knowledge base" in (text or "")
+
+
+def refusal_scores(kind: str, answer: str, passages: list, *, judge, model: Any = None) -> dict[str, Any]:
+    """Score one answer on refusal.
+
+    refused is True only when the answer carries the house refusal sentence. A
+    refuse row that refused: refused_correctly 1, faithfulness 1, no judge call. A
+    refuse row that answered: refused_correctly 0, faithfulness from the judge,
+    fluent_miss True when the answer is not empty. Any other row: a refusal scores
+    faithfulness 1 and over_refusal True; an answer goes to the judge.
+    """
+    refused = _refused(answer)
+    if kind == "refuse":
+        refused_correctly = 1 if refused else 0
+        faithful = 1 if refused else judge(answer, passages, model=model)
+    elif refused:
+        refused_correctly = 0
+        faithful = 1
+    else:
+        refused_correctly = 0
+        faithful = judge(answer, passages, model=model)
+    return {
+        "refused": refused,
+        "refused_correctly": refused_correctly,
+        "faithfulness": faithful,
+        "fluent_miss": kind == "refuse" and not refused and bool(answer.strip()),
+        "over_refusal": kind != "refuse" and refused,
+    }
+
+
+def retrieval_metrics(row: dict[str, Any], passages: list[dict[str, Any]], ks: tuple[int, ...] = (1, 3, 5)) -> dict[str, Any] | None:
+    """Retrieval alone, for a row that names an expected file: its 0-based rank, recall at each k, and MRR.
+
+    rank is the position of the first passage whose source is the expected file,
+    None when it is not there. recall_at_k is 1 when the rank is below k. mrr is
+    1 / (rank + 1), or 0. A row with no expected_source (refuse, lookup) returns
+    None: it is left out, never counted as a hit.
+    """
+    expected = str(row.get("expected_source") or "").replace("\\", "/")
+    if not expected:
+        return None
+    sources = [str(p.get("source") or "").replace("\\", "/") for p in passages]
+    rank = sources.index(expected) if expected in sources else None
+    out: dict[str, Any] = {"id": row.get("id"), "rank": rank}
+    for k in ks:
+        out[f"recall_at_{k}"] = 1 if rank is not None and rank < k else 0
+    out["mrr"] = 0.0 if rank is None else 1.0 / (rank + 1)
+    return out
+
+
+def run_retrieval_only(question: str, *, k: int = 5, index: Any = None, scope: str = "support_agent", **retrieve_kwargs: Any) -> list[dict[str, Any]]:
+    """The top k passages for a question, with the embedder and no chat model. index= searches that index directly."""
+    if index is not None:
+        return search(index, question, k=k, folder=None)
+    from dataflow.tools.retrieve import retrieve_passages
+
+    return retrieve_passages(question, k=k, scope=scope, **retrieve_kwargs)
+
+
+def retrieval_table(rows: list[dict[str, Any]], passages_for: Callable[[str], list[dict[str, Any]]], ks: tuple[int, ...] = (1, 3, 5)) -> dict[str, Any]:
+    """retrieval_metrics for every row that names a file, and their means. Rows with no file are counted, not scored."""
+    scored = []
+    for row in rows:
+        result = retrieval_metrics(row, passages_for(str(row.get("question") or "")), ks)
+        if result is not None:
+            scored.append(result)
+    means = {f"recall_at_{k}": mean([r[f"recall_at_{k}"] for r in scored]) for k in ks}
+    means["mrr"] = mean([r["mrr"] for r in scored])
+    return {"rows": scored, "means": means, "scored": len(scored), "left_out": len(rows) - len(scored)}
 
 
 def faithfulness_judge(
@@ -147,24 +261,14 @@ def score_row(
         recall = 1 if expected.replace("\\", "/") in sources else 0
     else:
         recall = 1 if kind in {"refuse", "lookup"} else 0
-    refused = _refused(answer)
-    if kind == "refuse":
-        refused_correctly = 1 if refused else 0
-        faithful = 1 if refused else judge(answer, passages, model=model)
-    elif refused:
-        refused_correctly = 0
-        faithful = 1
-    else:
-        refused_correctly = 0
-        faithful = judge(answer, passages, model=model)
-    fluent_miss = kind == "refuse" and not refused and bool(answer.strip())
+    scores = refusal_scores(kind, answer, passages, judge=judge, model=model)
     return {
         "id": row.get("id"),
         "kind": kind,
-        "faithfulness": faithful,
+        "faithfulness": scores["faithfulness"],
         "context_recall": recall,
-        "refused_correctly": refused_correctly,
-        "fluent_miss": fluent_miss,
+        "refused_correctly": scores["refused_correctly"],
+        "fluent_miss": scores["fluent_miss"],
         "answer": answer,
         "route": result.get("route"),
     }
@@ -197,12 +301,14 @@ def run_metrics(
     for row in rows:
         question = str(row.get("question") or "")
         t0 = time.perf_counter()
-        naive_result = naive_fn(question)
+        with meter() as naive_meter:
+            naive_result = naive_fn(question)
         naive_result["latency"] = naive_result.get("latency") or (
             time.perf_counter() - t0
         )
         t1 = time.perf_counter()
-        agentic_result = agentic_fn(question)
+        with meter() as agentic_meter:
+            agentic_result = agentic_fn(question)
         agentic_result["latency"] = agentic_result.get("latency") or (
             time.perf_counter() - t1
         )
@@ -210,6 +316,9 @@ def run_metrics(
         agentic_score = score_row(row, agentic_result, judge=judge, model=model)
         naive_score["latency"] = naive_result["latency"]
         agentic_score["latency"] = agentic_result["latency"]
+        for score, used, result in ((naive_score, naive_meter, naive_result), (agentic_score, agentic_meter, agentic_result)):
+            score["tokens"] = int(result.get("tokens", used.tokens))
+            score["model_calls"] = int(result.get("model_calls", used.model_calls))
         report["naive"].append(naive_score)
         report["agentic"].append(agentic_score)
     return report
@@ -233,15 +342,27 @@ def summarize(report: dict[str, list[dict[str, Any]]]) -> list[dict[str, Any]]:
                 ),
                 "latency_s": mean([float(r["latency"]) for r in rows]),
                 "fluent_misses": sum(1 for r in rows if r.get("fluent_miss")),
+                "tokens_per_q": mean([int(r.get("tokens") or 0) for r in rows]),
+                "calls_per_q": mean([int(r.get("model_calls") or 0) for r in rows]),
             }
         )
     return out
 
 
+def cost_line(input_tokens: int, output_tokens: int) -> str:
+    """A cost only when the student has set both prices from their provider's page; the repo holds no price."""
+    from config import PRICE_PER_MTOK_IN, PRICE_PER_MTOK_OUT
+
+    if PRICE_PER_MTOK_IN is None or PRICE_PER_MTOK_OUT is None:
+        return "cost n/a (local model, no per-token price)"
+    dollars = input_tokens / 1_000_000 * PRICE_PER_MTOK_IN + output_tokens / 1_000_000 * PRICE_PER_MTOK_OUT
+    return f"cost {dollars:.6f} at your prices ({PRICE_PER_MTOK_IN} in, {PRICE_PER_MTOK_OUT} out per million tokens)"
+
+
 def render(report: dict[str, list[dict[str, Any]]]) -> str:
     lines: list[str] = []
     lines.append(
-        "pipeline  faithfulness  context_recall  refused_correctly  latency_s  fluent_misses"
+        "pipeline  faithfulness  context_recall  refused_correctly  latency_s  fluent_misses  tokens_per_q  calls_per_q"
     )
     for row in summarize(report):
         lines.append(
@@ -249,6 +370,7 @@ def render(report: dict[str, list[dict[str, Any]]]) -> str:
             f"{row['context_recall']:.2f}            "
             f"{row['refused_correctly']:.2f}               "
             f"{row['latency_s']:.2f}       {row['fluent_misses']}"
+            f"              {row['tokens_per_q']:.0f}          {row['calls_per_q']:.1f}"
         )
     lines.append("")
     lines.append("per_row")
