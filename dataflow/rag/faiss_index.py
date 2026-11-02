@@ -146,19 +146,20 @@ def current_files(roots) -> dict[str, Path]:
     return {relative_source(path): path for path in list_knowledge_files(roots)}
 
 
-def refresh_index(index: FAISS, index_dir: Path | str, roots) -> dict[str, Any]:
+def refresh_index(index: FAISS, index_dir: Path | str, roots, *, diff_fn: Any = None) -> dict[str, Any]:
     """Bring a saved index up to date with the files under roots, one file at a time.
 
     A changed or removed file's chunks are deleted by the ids its manifest row
     holds; an added or changed file is loaded, chunked and embedded again with
     stable ids. An unchanged file is never sent to the embedder. Saves the index
     and the manifest, and returns the diff and the number of texts embedded.
+    diff_fn replaces manifest.diff (lab 23.8 passes the student's copy).
     """
     meta = load_manifest(index_dir)
     if meta is None:
         raise ValueError(f"no index_meta.json in {index_dir}; build the index first")
     paths = current_files(roots)
-    changes = diff(meta, {source: file_hash(path) for source, path in paths.items()})
+    changes = (diff_fn or diff)(meta, {source: file_hash(path) for source, path in paths.items()})
     files = dict(meta.get("files") or {})
     stale: list[str] = []
     for source in changes["changed"] + changes["removed"]:
