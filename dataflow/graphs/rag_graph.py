@@ -638,6 +638,20 @@ def build_rag_graph(
     return builder.compile(checkpointer=checkpointer)
 
 
+def answer_question(graph: Any, text: str) -> dict[str, Any]:
+    """Run one ticket through the knowledge desk. Return the reply, the route the desk chose, the source files it cited (in order, no repeats), whether it refused with the house sentence, and whether it retrieved any passages."""
+    state = graph.invoke({"question": text})
+    reply = str(state.get("reply") or "")
+    sources = list(dict.fromkeys(str(row.get("source")) for row in state.get("sources") or [] if row.get("source")))
+    return {
+        "reply": reply,
+        "route": state.get("route"),
+        "sources": sources,
+        "refused": reply.startswith(REFUSE_TEMPLATE.split(".")[0]),
+        "retrieved": bool(state.get("passages")),
+    }
+
+
 def builder_for_server():
     """Compile the replay graph without a checkpointer. The Agent Server injects persistence.
 
