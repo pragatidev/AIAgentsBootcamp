@@ -4,17 +4,17 @@
 What we build: the DataFlow troubleshooting guide lists its errors by code. For every code in it, we ask
 "What does error <code> mean and how do I fix it?" and print where the chunk holding that code ranks three
 ways: dense search (the embedding), BM25 keyword search, and the two fused by reciprocal rank, the ten
-lines you type. Then the code dense search ranked worst goes through the DataFlow graph three ways: dense
-only, hybrid, and hybrid with a rerank by the model, with the model calls and tokens each one cost.
+lines you type. Then the code dense search ranked worst goes to the create_agent desk twice, its retrieve
+tool searching dense and then hybrid, with the model calls and tokens each run cost.
 
-What you learn: 24.6's idea in its small version. An embedding puts meaning in a vector, so an exact token
-like an error code can sit far from its question, while keyword search scores the exact word; fusing by
-rank needs no shared score scale. A rerank reads a shortlist with the model and costs one call per
-passage. Advanced RAG owns the depth: tuned fusion, cross-encoders, rerank models.
+What you learn: an embedding puts meaning in a vector, so an exact token like an error code can sit far
+from its question, while keyword search scores the exact word; fusing by rank needs no shared score scale.
+The search mode is the deployment's switch, never the model's. The rerank, a model reading a shortlist, is
+labs/08_03_07_rerank_on_the_graph.py, for after LangGraph. Advanced RAG owns the depth of both.
 
 What will be true on your screen: one probe line per code with its three ranks (None when not in the top
-ten), the code dense ranks worst, then for that code each desk's passages, whether the code's chunk is
-among them, the rerank's scores, the reply's Sources, and model_calls and tokens per run. Then
+ten), the code dense ranks worst, then for that code each desk's search rank, tool call and passages,
+whether the code's chunk is among them, the reply, and model_calls and tokens per run. Then
 python -m pytest tests/test_lab_08_03_07.py -q passes.
 """
 
@@ -26,17 +26,17 @@ root = Path(__file__).resolve().parents[1] if "__file__" in globals() else Path.
 sys.path.insert(0, str(root))
 
 import config
-from dataflow.graphs.rag_graph import build_rag_graph
+from dataflow.rag.cite import tool_passages
+from dataflow.rag.desk import ask_desk, build_rag_desk, reply_text
 from dataflow.rag.faiss_index import search
 from dataflow.rag.hybrid import RRF_K, bm25_for_index, bm25_rows, row_key
 from dataflow.rag.load import KB_DIR
-from dataflow.tools.retrieve import SCOPES, get_index
-from eval.runners.rag_metrics import meter
+from dataflow.tools.retrieve import SCOPES, get_index, retrieve_passages
 
 
 # %%
 # TYPE THIS: reciprocal_rank_fusion. The signature and docstring are given; you type the body.
-# Its finished copy is in dataflow/rag/hybrid.py, which the graph's hybrid retrieve uses.
+# Its finished copy is in dataflow/rag/hybrid.py, which the retrieve tool's hybrid search uses.
 def reciprocal_rank_fusion(ranked_lists: list[list[dict]], k: int = RRF_K) -> list[dict]:
     """Fuse ranked lists: each chunk scores the sum of 1 / (k + rank) over the lists it is in, rank counted from 1. A chunk in two lists is one row. Return the rows best first, each with its "rrf" score."""
     fused = {}
@@ -82,24 +82,20 @@ print("worst_dense_code", worst, "dense", ranks[worst][0], "bm25", ranks[worst][
 
 
 # %%
-# The worst code through the DataFlow customer desk, three ways.
+# The worst code on the create_agent desk, twice: the retrieve tool searching dense, then hybrid.
 chat = config.get_chat_model()
 print("model", type(chat).__name__, getattr(chat, "model", None) or getattr(chat, "model_name", None))
 question = f"What does error {worst} mean and how do I fix it?"
 print("question", question)
-for label, options in (
-    ("dense", {"retrieve_mode": "dense"}),
-    ("hybrid", {"retrieve_mode": "hybrid"}),
-    ("hybrid_rerank", {"retrieve_mode": "hybrid", "rerank_enabled": True}),
-):
-    with meter() as used:
-        state = build_rag_graph(model=chat, **options).invoke({"question": question})
-    passages = state.get("passages") or []
-    print("desk", label)
-    for row in state.get("reranked") or []:
-        print("  rerank", row["score"], row["source"], "| was", row["was"] + 1, "|", row["reason"])
+for mode in ("dense", "hybrid"):
+    print("desk", mode)
+    print("  search_rank_of_code_chunk", rank_of(retrieve_passages(question, mode=mode), worst))
+    state = ask_desk(build_rag_desk(model=chat, mode=mode), question, model=chat)
+    turns = [message for message in state["messages"] if message.type == "ai"]
+    for call in [call for message in turns for call in message.tool_calls]:
+        print("  tool_call", call["name"], call["args"])
+    passages = tool_passages(state["messages"])
     print("  passages", [Path(p["source"]).name for p in passages])
     print("  code_chunk_retrieved", rank_of(passages, worst) is not None)
-    print("  sources", [Path(s["source"]).name for s in state.get("sources") or []])
-    print("  reply", str(state.get("answer") or state.get("reply"))[:300].replace("\n", " "))
-    print("  model_calls", used.model_calls, "tokens", used.tokens)
+    print("  reply", reply_text(state)[:300].replace("\n", " "))
+    print("  model_calls", len(turns), "tokens", sum((message.usage_metadata or {}).get("total_tokens", 0) for message in turns))
