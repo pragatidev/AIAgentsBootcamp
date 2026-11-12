@@ -44,12 +44,12 @@ class RouteDecision(BaseModel):
     )
 
 
-@dataclass
-class DeskContext:
-    model: Any = None
-    customer_id: str = "anon"
-    actor_id: str = "anon"
-    user_id: str = ""
+# DeskContext, the request envelope (the model, and who is asking), is defined in
+# dataflow/envelope.py, a module that imports no graph, so the create_agent desk
+# and the retrieve tool can use it before the course builds a graph. It is
+# imported here so `from dataflow.graphs.v1_triage import DeskContext`, the import
+# every DataFlow graph already has, still gives the same class.
+from dataflow.envelope import DeskContext  # noqa: E402
 
 
 def classify(
