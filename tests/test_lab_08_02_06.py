@@ -63,3 +63,14 @@ def test_the_break_changes_the_wire_description(offline, tmp_path):
     broken = lab_copy(LAB, tmp_path, old, '    """Look up a DataFlow order by its id."""\n')
     lab = runpy.run_path(str(broken), run_name="__main__")
     assert convert_to_openai_tool(lab["retrieve"])["function"]["description"] == "Look up a DataFlow order by its id."
+
+
+def test_the_desk_is_create_agent_and_the_lab_imports_no_graph(offline, capsys):
+    from tests.fixtures.lab_imports import graph_imports
+
+    lab = runpy.run_path(str(LAB), run_name="__main__")
+    out = capsys.readouterr().out.splitlines()
+    assert list(lab["desk"].get_graph().nodes) == ["__start__", "model", "tools", "__end__"]
+    assert 'model tool_call retrieve {"question": "Can I send back an unused lamp after twelve days?"}' in out
+    assert "model reply Yes, within 30 days of delivery." in out
+    assert graph_imports(LAB) == []

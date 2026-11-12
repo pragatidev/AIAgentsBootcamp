@@ -116,3 +116,26 @@ def cite_with_claims(state: dict[str, Any]) -> dict[str, str]:
     if claims:
         out["reply"] = out["reply"] + "\n\nClaims:\n" + format_claims(claims)
     return out
+
+
+def tool_passages(messages: list[Any], tool_name: str = "retrieve") -> list[dict[str, Any]]:
+    """The passages a create_agent desk retrieved: the rows of every `tool_name` tool message, in order, each once.
+
+    A tool message's content is the tool's return value as JSON text. Nothing here
+    grades a passage: on that desk the Sources block lists what the tool returned,
+    whether or not the answer used it.
+    """
+    import json
+
+    rows: list[dict[str, Any]] = []
+    for message in messages or []:
+        if getattr(message, "type", None) != "tool" or getattr(message, "name", None) != tool_name:
+            continue
+        try:
+            found = json.loads(message.content)
+        except (TypeError, ValueError):
+            continue
+        for row in found if isinstance(found, list) else []:
+            if isinstance(row, dict) and row.get("source") and row not in rows:
+                rows.append(row)
+    return rows
