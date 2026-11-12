@@ -7,13 +7,13 @@ and ask who can approve a refund. Then the agent half: the customer pages go int
 the create_agent desk answers a customer from Postgres, not from the FAISS file.
 
 What you learn: 23.3's idea made real. The vectors become rows any copy of the desk can read; the column
-is declared once at the embedder's width and checked before any row is written; the database is the last
-guard when nothing in Python checked; and the store is a switch the deployment sets, never the model.
+is declared once at the embedder's width and checked before any row is written; the column's own type is
+the last guard when your check did not run; and the store is a switch the deployment sets, never the model.
 
 What will be true on your screen: the embedder read off the object and your two width_check lines (they
 need no Docker), then compose's return code and waiting for postgres ... ready, the column's width read
 back from Postgres, the inserted count, the top three hits with their distances and refund_on_top, the
-database's one-line refusal of a wrong-width vector, and the desk's reply ending in a Sources line that
+column type's one-line refusal of a wrong-width vector, and the desk's reply ending in a Sources line that
 names dataflow/wiki/return_policy.md from Postgres. If Docker is not running, the lab prints
 BLOCKED ON DOCKER after your width check and exits cleanly. Then python -m pytest tests/test_lab_08_02_04.py -q.
 """
@@ -97,7 +97,7 @@ print("refund_on_top", hits[0]["heading_path"].endswith("6.1 Authorization Level
 
 
 # %%
-# The database is the last guard: a vector one wider than the column, written past every Python check.
+# The last guard: a vector one wider than the column, written past your check. The store's column type refuses it before it is sent; Postgres refuses the same row if one ever arrives.
 print("break_wrong_width", declared + 1)
 try:
     store.add_embeddings(texts=["wrong width vector"], embeddings=[[0.0] * (declared + 1)], metadatas=[{"source": "lab-break"}])

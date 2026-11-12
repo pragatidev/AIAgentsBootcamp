@@ -696,6 +696,23 @@ missing, the lab prints `BLOCKED ON DOCKER` and `docker is not installed or not 
 Fix **(not tested here)**: start Docker Desktop, wait until it says it is running, and run the lab again. The first
 `docker compose up` downloads the `pgvector/pgvector:pg16` image, which takes a while once.
 
+### The pgvector lab prints `Collection not found` (lab 23.4)
+
+Caused on the test machine on 2026-11-12, on the first run of `labs/08_02_04_pgvector.py` against a new Postgres
+volume, with Docker Desktop running:
+
+```
+Collection not found
+Collection not found
+```
+
+What it means: not an error. The lab opens each of its two collections with "delete it first if it is there", and on
+a new database there is nothing to delete, so the library says so once per collection. The run carries on: the lines
+to read are the ones after it (`inserted 37`, the three hits, the desk's reply). On the second run the collections
+exist and the two lines are gone.
+
+Fix: none needed.
+
 ### The json loader says `jq package not found` (lab 22.3)
 
 ```
