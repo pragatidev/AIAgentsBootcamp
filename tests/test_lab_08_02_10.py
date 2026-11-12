@@ -75,3 +75,13 @@ def test_the_break_hands_an_unknown_actor_the_handbook(tmp_path, capsys):
     broken = lab_copy(LAB, tmp_path, 'ACTOR_SCOPE.get(str(actor), "customer")] if actor', 'ACTOR_SCOPE.get(str(actor), "support_agent")] if actor')
     _, out = _out(broken, capsys)
     assert _reached(out)["contractor-7"] is True
+
+
+def test_the_desk_is_create_agent_and_the_lab_imports_no_graph(capsys):
+    from dataflow.envelope import DeskContext as envelope
+    from tests.fixtures.lab_imports import graph_imports
+
+    lab, _ = _out(LAB, capsys)
+    assert list(lab["desk"].get_graph().nodes) == ["__start__", "model", "tools", "__end__"]
+    assert lab["DeskContext"] is envelope is DeskContext
+    assert graph_imports(LAB) == []
