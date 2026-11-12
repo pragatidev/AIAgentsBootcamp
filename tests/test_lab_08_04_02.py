@@ -28,7 +28,7 @@ def _by_scope(question, k=3, folder=None, *, scope="customer", store=None, mode=
     """What the retrieve tool returns here: the scope decides, as it does in the module."""
     if scope != "support_agent":
         return [dict(POLICY)]
-    return [dict(PRICE)] if "extra user" in question else [dict(PROCEDURES), dict(POLICY)]
+    return [dict(PRICE), {**PRICE, "row": 45}] if "extra user" in question else [dict(PROCEDURES), dict(POLICY)]
 
 
 def _script():
@@ -68,7 +68,8 @@ def test_three_desks(capsys):
     out = _out(LAB, capsys)
     assert PROCEDURES["source"] + " > 6. Refund and Cancellation Procedures > 6.1 Authorization Levels" in out
     assert "customer_desk_cites_internal False" in out
-    assert PRICE["source"] + " row 0" in out and "price_cites_a_row True" in out
+    assert PRICE["source"] + " row 0" in out and PRICE["source"] + " row 45" in out
+    assert "every_csv_citation_has_its_row True" in out
 
 
 def test_the_desk_cites_every_passage_the_tool_returned(capsys):
@@ -95,5 +96,6 @@ def test_the_lab_imports_no_graph():
 def test_the_break_loses_row_0(tmp_path, capsys):
     broken = lab_copy(LAB, tmp_path, '        if row is not None and row != "":\n', "        if row:\n")
     out = _out(broken, capsys)
-    assert PRICE["source"] in out and PRICE["source"] + " row 0" not in out
-    assert "price_cites_a_row False" in out
+    # Row 45 keeps its number on the break, so the check has to read every csv line, not any one of them.
+    assert PRICE["source"] in out and PRICE["source"] + " row 0" not in out and PRICE["source"] + " row 45" in out
+    assert "every_csv_citation_has_its_row False" in out

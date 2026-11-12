@@ -53,7 +53,7 @@ def format_sources(sources: list) -> str:
 
 # BREAK: write the row check as
 #     if row:
-# run the lab and read the price question's Sources line, then python -m pytest tests/test_lab_08_04_02.py -q.
+# run the lab and read the price question's Sources and its last check, then python -m pytest tests/test_lab_08_04_02.py -q.
 # git checkout -- labs/08_04_02_print_citations.py puts it back.
 
 for sample in (
@@ -102,7 +102,8 @@ staff = ask(refund, "support_agent", "desk-lead")
 customer = ask(refund, "customer", "anon")
 print("customer_desk_cites_internal", "internal_operations" in customer["reply"])
 price = ask("How much does an extra user cost on the Professional plan?", "support_agent", "desk-lead")
-print("price_cites_a_row", " row " in price["reply"].split("Sources:")[-1])
+csv_lines = [line for line in price["reply"].split("Sources:")[-1].splitlines() if ".csv" in line]
+print("every_csv_citation_has_its_row", bool(csv_lines) and all(" row " in line for line in csv_lines))
 
 
 # %%
