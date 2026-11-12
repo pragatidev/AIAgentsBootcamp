@@ -131,7 +131,7 @@ def index_corpus(store: Any, docs: list[Document], chunker: str = "heading") -> 
     chunks, ids = chunks_with_ids(docs, chunker)
     if not chunks:
         return []
-    return list(store.add_documents(chunks, ids=ids))
+    return list(store.add_documents(chunks, ids=row_ids(store, ids)))
 
 
 def query(store: Any, question: str, k: int = 3, filter: dict | None = None) -> list[dict]:
@@ -157,3 +157,15 @@ def query(store: Any, question: str, k: int = 3, filter: dict | None = None) -> 
             }
         )
     return rows
+
+
+def row_ids(store: Any, ids: list[str]) -> list[str]:
+    """Each stable chunk id with its collection's name in front, so the id is this collection's own.
+
+    The library keeps every collection in one table whose key is the id alone, and
+    writing an id that already exists updates that row where it is. Without the name,
+    the same file indexed into a second collection would overwrite the first
+    collection's rows and add nothing to the second.
+    """
+    name = getattr(store, "collection_name", None)
+    return [f"{name}:{chunk_id}" for chunk_id in ids] if name else list(ids)
