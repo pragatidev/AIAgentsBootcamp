@@ -107,14 +107,15 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 08_01_05_compare_two_chunkers.py  type chunk_by_heading: 89/17 at 300, 37 sections, 0 orphans, distances
 08_01_06_load_pdf_and_word.py    type load_docx: markdown, PDF pages and bookmarks, Word, headings kept
 08_02_02_index_faiss.py          type build_faiss_index into faiss_index_lab, billing row 0, desk manifest
-08_02_04_pgvector.py             type check_dimension, refund on top, wrong width refused, graph from Postgres, or BLOCKED ON DOCKER
-08_02_06_bind_retrieve_tool.py   type the retrieve tool: retrieve, lookup_order, nothing, description only
+08_02_04_pgvector.py             type check_dimension, refund on top, wrong width refused, the create_agent desk from Postgres, or BLOCKED ON DOCKER
+08_02_06_bind_retrieve_tool.py   type the retrieve tool, on the create_agent desk: retrieve, lookup_order, nothing, description only
 08_02_08_reindex_a_changed_file.py  type diff: refresh embeds 0, one edit embeds one file
-08_02_10_scope_before_search.py  type allowed_folders: anon and an unknown actor never reach the handbook
+08_02_10_scope_before_search.py  type allowed_folders, on the create_agent desk: anon and an unknown actor never reach the handbook
 08_03_03_agentic_rag_graph.py    type grade: nodes and edges, customer and all folders, handbook not cited
 08_03_05_corrective_rag.py       type after_grade: six rows, two grade passes, corrected, REFUSE, runaway
-08_03_07_hybrid_and_rerank.py    type the rank fusion: 20 codes dense, BM25, fused, three desks and their calls
-08_04_02_print_citations.py      type format_sources: support-agent and customer desks, csv row 0
+08_03_07_hybrid_and_rerank.py    type the rank fusion: 20 codes dense, BM25, fused, the create_agent desk dense then hybrid
+08_03_07_rerank_on_the_graph.py  after LangGraph: the same code on the graph, hybrid then hybrid with a rerank, calls and tokens
+08_04_02_print_citations.py      type format_sources, on the create_agent desk: support lead and customer, csv row 0, a citation with lines
 08_04_04_refuse_on_empty.py      type should_refuse: retrieved 3 kept 0, REFUSE, cites_rejected; refuse check off, generate_read 0
 08_04_05_rag_evals.py            type refusal_scores: naive vs agentic, tokens and calls, naive answers
 08_04_06_portfolio_knowledge_desk.py  type answer_question: three tickets, checks, dataflow/README.md tests
