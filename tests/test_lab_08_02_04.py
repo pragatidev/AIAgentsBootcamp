@@ -1,5 +1,5 @@
 """Lab 08.02.04 (23.4), check_dimension typed by the student. Never starts Docker: subprocess, Postgres and the store
-are stood in for here, and only here, with a hashing embedder and a scripted chat model."""
+are stood in for here, and only here, with a hashing embedder and a scripted tool model."""
 
 import importlib
 import math
@@ -8,10 +8,11 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from langchain_core.messages import AIMessage
 
 import config
 from dataflow.rag import pgvector_store as PG
-from tests.fixtures.fake_model import FakeChatModel
+from tests.fixtures.fake_model import FakeToolModel
 from tests.fixtures.hashing_embeddings import HashingEmbeddings
 from tests.fixtures.lab_copy import lab_copy
 
@@ -85,17 +86,28 @@ def test_the_live_path_answers_from_postgres(offline, monkeypatch, capsys):
     monkeypatch.setattr(PG, "wait_for_postgres", lambda *a, **k: True)
     monkeypatch.setattr(PG, "column_width", lambda *a, **k: None)
     monkeypatch.setattr(PG, "build_pgvector_store", lambda name, **k: FakeStore(offline))
-    reply = "Returns are allowed within 30 days of delivery when the item is unused."
-    monkeypatch.setattr(config, "get_chat_model", lambda **k: FakeChatModel(route="retrieve", reply=reply, structured={"Grade": {"label": "keep", "reason": "k"}}))
-    runpy.run_path(str(LAB), run_name="__main__")
+    call = AIMessage(content="", tool_calls=[{"name": "retrieve", "args": {"question": "customer return window"}, "id": "c1", "type": "tool_call"}])
+    reply = AIMessage(content="Returns are allowed within 30 days of delivery when the item is unused.")
+    monkeypatch.setattr(config, "get_chat_model", lambda **k: FakeToolModel(script=[call, reply]))
+    lab = runpy.run_path(str(LAB), run_name="__main__")
     out = capsys.readouterr().out.splitlines()
     assert "compose_returncode 0" in out and "column none yet" in out
     assert any(line.startswith("inserted ") and int(line.split()[1]) > 30 for line in out)
     assert any(line.startswith("refund_on_top ") for line in out)
     assert "wrong_width_error ValueError: expected 256 dimensions, not 257" in out
+    assert "tool_calls [('retrieve', {'question': 'customer return window'})]" in out
     sources = next(line for line in out if line.startswith("passages_from_postgres "))
     assert "internal_operations" not in sources and "dataflow/" in sources
-    assert "Sources:" in out
+    assert "Returns are allowed within 30 days of delivery when the item is unused." in out
+    cited = out[out.index("Sources:") + 1 :]
+    assert cited and all(line.startswith("dataflow/") for line in cited)
+    assert {row["folder"] for row in lab["passages"]} <= {"customer_facing", "wiki"}
+
+
+def test_the_lab_imports_no_graph():
+    from tests.fixtures.lab_imports import graph_imports
+
+    assert graph_imports(LAB) == []
 
 
 def test_the_break_lets_a_wrong_width_through(offline, monkeypatch, tmp_path, capsys):

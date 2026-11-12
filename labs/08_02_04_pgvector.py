@@ -4,7 +4,7 @@
 What we build: you type the small check that keeps the embedder and the vector column the same width,
 start the course's Postgres with docker compose, put the support procedures into one pgvector collection
 and ask who can approve a refund. Then the agent half: the customer pages go into a second collection, and
-the DataFlow RAG graph answers a customer from Postgres, not from the FAISS file.
+the create_agent desk answers a customer from Postgres, not from the FAISS file.
 
 What you learn: 23.3's idea made real. The vectors become rows any copy of the desk can read; the column
 is declared once at the embedder's width and checked before any row is written; the database is the last
@@ -13,7 +13,7 @@ guard when nothing in Python checked; and the store is a switch the deployment s
 What will be true on your screen: the embedder read off the object and your two width_check lines (they
 need no Docker), then compose's return code and waiting for postgres ... ready, the column's width read
 back from Postgres, the inserted count, the top three hits with their distances and refund_on_top, the
-database's one-line refusal of a wrong-width vector, and the graph's reply ending in a Sources line that
+database's one-line refusal of a wrong-width vector, and the desk's reply ending in a Sources line that
 names dataflow/wiki/return_policy.md from Postgres. If Docker is not running, the lab prints
 BLOCKED ON DOCKER after your width check and exits cleanly. Then python -m pytest tests/test_lab_08_02_04.py -q.
 """
@@ -107,8 +107,9 @@ except Exception as err:
 
 
 # %%
-# The agent half: the customer pages in their own collection, and the graph reads it through retrieve.
-from dataflow.graphs.rag_graph import build_rag_graph
+# The agent half: the customer pages in their own collection, and the create_agent desk reads it through retrieve.
+from dataflow.rag.cite import cite, tool_passages
+from dataflow.rag.desk import ask_desk, build_rag_desk, reply_text
 from dataflow.tools.retrieve import set_pg_store
 
 customer = build_pgvector_store(config.PGVECTOR_COLLECTION, embeddings=emb, embedding_length=declared, pre_delete_collection=True)
@@ -116,7 +117,8 @@ print("customer_collection", config.PGVECTOR_COLLECTION, "inserted", len(index_c
 set_pg_store(customer)
 chat = config.get_chat_model()
 print("model", type(chat).__name__, getattr(chat, "model", None) or getattr(chat, "model_name", None))
-state = build_rag_graph(model=chat, retrieve_store="pgvector").invoke({"question": "What is the customer return window?"})
-print("route", state.get("route"))
-print("passages_from_postgres", [row["source"] for row in state.get("passages") or []])
-print(state["reply"])
+state = ask_desk(build_rag_desk(model=chat, store="pgvector"), "What is the customer return window?", model=chat)
+print("tool_calls", [(call["name"], call["args"]) for message in state["messages"] for call in getattr(message, "tool_calls", None) or []])
+passages = tool_passages(state["messages"])
+print("passages_from_postgres", [row["source"] for row in passages])
+print(cite({"reply": reply_text(state), "sources": passages})["reply"])
