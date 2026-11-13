@@ -1,0 +1,18 @@
+{
+  "about": "MCP servers the DataFlow desk may load, each tool pinned by the SHA-256 of its name, description and input schema (dataflow/mcp/allowlist.py). Change a pin only after a person has read the new description.",
+  "servers": {
+    "dataflow": {
+      "note": "the orders team's server, dataflow/mcp/server.py",
+      "tools": {
+        "lookup_order": "b8417bf9cd999bcf52e2b1aec3f6768770c308582a2471ff7cd2942643557dbb",
+        "refund": "a30a433d40e5853423c631ea36163049679f815a199fa033cc744702fe56da6b"
+      }
+    },
+    "kb": {
+      "note": "the knowledge team's server, dataflow/mcp/kb_server.py",
+      "tools": {
+        "retrieve": "751fd159eb7a8cb0888f4afc88df45d3b6ace441d3c6a852a00d85b38a1f4802"
+      }
+    }
+  }
+}
