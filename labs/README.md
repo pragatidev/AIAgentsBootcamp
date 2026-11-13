@@ -74,10 +74,11 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 06_05_03_resume_approve_reject.py  two threads, approve writes, reject does not
 06_05_04_edit_state_before_resume.py  dict decision lowers the refund amount
 06_05_06_policy_lookup_free_refund_parks.py  lookup free, refund parks, pytest
-06_06_02_stream.py               values, updates, messages, then custom+updates
-06_06_03_stream_events.py        stream_events v3 interrupt projections, then approve
+06_06_02_stream.py               15.2: watch typed, one v2 stream of updates, messages, custom; values break
+06_06_03_stream_events.py        15.3: drive typed, v3 values, interrupted, park, resume; parked = False break
 06_06_05_fork.py                 fork before speak, original trail intact
-06_06_06_full_run.py             lookup through, refund parks, approve, pytest
+06_06_06_full_run.py             15.4: show and full_run typed, three runs, pytest; resume without thread
+06_06_07_stream_the_tool_cycle.py  15.2: stream_tool_cycle typed, tool-call pieces, finished call; no messages
 06_07_02_two_lookups_in_parallel.py  lookup and policy_search in one superstep
 06_07_04_map_reduce_resumes.py   Send one score worker per TalentFlow resume
 06_07_06_billing_subgraph.py     billing box, private keys, interrupt inside

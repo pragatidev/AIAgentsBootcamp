@@ -917,3 +917,71 @@ the return type of `classify_command` in `labs/06_02_06_command_vs_edge.py` to a
 Fix **(tested)**: declare the roads, in the return type as the lab does, or as
 `add_node("classify", classify_command, destinations=("orders_desk", "policy_desk", "escalate_desk"))` as
 `dataflow/graphs/v2_command.py` does. The drawing then shows three dotted roads out of `classify`.
+
+## The LangGraph streaming labs (Section 15)
+
+### `ValueError: Checkpointer requires one or more of the following 'configurable' keys: thread_id` on a resume stream (lab 15.4)
+
+```
+run approve
+ValueError: Checkpointer requires one or more of the following 'configurable' keys: thread_id, checkpoint_ns, checkpoint_id
+```
+
+What it means: the graph has a checkpointer, so every run needs a thread, and the resume stream was opened with no
+config. The traceback points into the code that reads the stream (`for part in stream`), not the line that opened
+it, because a stream starts only when it is read. Caused on the test machine on 2026-11-13 by deleting
+`refund_thread, ` from the resume line of `full_run` in `labs/06_06_06_full_run.py`.
+
+Fix **(tested)**: pass the same config the refund parked on, `graph.stream(Command(resume="approve"), refund_thread,
+...)`. A config with a different `thread_id` does not raise: it starts that thread fresh and parks again, and the
+approval is lost (lab 14.3).
+
+### A parked run is shown as finished, with `reply None` (lab 15.3)
+
+```
+output_keys ['route', 'ticket']
+interrupted False
+done route refund reply None
+status done
+refunds_rows 0
+thread_next ('refund',)
+```
+
+What it means: the code read `stream.output` without first asking `stream.interrupted`. On a parked run `output`
+is the state so far (a route and no reply), so it looks like a finished run with no answer, while the thread is
+still waiting at `refund`. Caused on the test machine on 2026-11-13 by changing `parked = stream.interrupted` to
+`parked = False` in `labs/06_06_03_stream_events.py`.
+
+Fix **(tested)**: check `stream.interrupted` before you read `output`; when it is True, show `stream.interrupts`
+and wait for the person, then resume with `Command(resume=...)` on the same thread.
+
+### A stream shows no tokens, only `values keys [...]` lines (lab 15.2)
+
+```
+values keys ['last_ticket', 'messages', 'ticket', 'turns']
+node read_pref wrote []
+node classify wrote ['route']
+values keys ['last_ticket', 'messages', 'route', 'ticket', 'turns']
+```
+
+What it means: the stream was asked for `values` instead of `messages`. `values` sends the whole state after each
+step that changed it; the model's tokens only come on `messages`. Nothing is wrong with the model. Caused on the
+test machine on 2026-11-13 by changing `"messages"` to `"values"` in `watch` in `labs/06_06_02_stream.py`.
+
+Fix **(tested)**: put `"messages"` in `stream_mode`, `stream_mode=["updates", "messages", "custom"]`.
+
+### A streamed tool cycle prints no tool-call pieces, and `same_call False` (lab 15.2, second file)
+
+```
+pieces 0 text_tokens 0 quiet_chunks 0
+call_from_pieces []
+same_call False
+```
+
+What it means: the stream has no `messages` lane, so no chunk of the model's output arrives while it works; the
+call is seen only in the agent's update once the step is over. Caused on the test machine on 2026-11-13 by
+deleting `"messages"` from `stream_mode` in `labs/06_06_07_stream_the_tool_cycle.py`.
+
+Fix **(tested)**: `stream_mode=["messages", "updates"]`. With qwen3:8b on Ollama the call then arrives as one
+piece with the whole arguments; a provider that streams arguments sends the id and name first and the rest in pieces. Act on
+the finished call either way.

@@ -1,10 +1,26 @@
-# %% [markdown]
-# Stream the same ticket three ways, then custom plus updates.
-#
-# values is the whole state per step. updates is the per node diary.
-# messages is the tokens with the node name. custom is a line you emit.
-
 # %%
+"""Lab 15.2: stream tokens, node events and a progress line from one run.
+
+What we build: one loop that watches a whole run of the DataFlow v5 desk live. The desk is the memory desk with a
+speak node that streams the model's reply and sends two progress lines of its own. You ask the graph for three
+lanes at once, updates, messages and custom, with version="v2", so every piece that arrives says which lane it is
+on, and your loop prints each kind its own way. The second half of this lab, 06_06_07_stream_the_tool_cycle.py,
+does the same on the tool cycle and watches a tool call arrive.
+
+What you learn: a stream is the same run seen through taps. updates says which node finished and which keys it
+wrote. messages carries the model's tokens, each with the name of the node that is talking, and it also carries
+the messages a node writes into state, like the customer's ticket. custom carries whatever a node sends with
+get_stream_writer, here "calling the model" and "model finished". values, the fourth tap, is the whole state
+after every step: right for a debugger, wrong for a chat screen.
+
+What will be true on your screen: the model line and the versions, then T-3001's run as it happens: the ticket
+on the messages lane as the human message ingest writes, a line per node with the keys it wrote, the classify
+tokens (its JSON route), the two progress lines around speak, the reply typed out token by token as
+AIMessageChunk, then the same reply once more, whole, as the ai message speak writes into state, then the count
+of parts per lane (a few hundred on messages) and the reply.
+"""
+
+from importlib.metadata import version
 from pathlib import Path
 import json
 import sys
@@ -17,95 +33,60 @@ if hasattr(sys.stdout, "reconfigure"):
 import config
 from dataflow.graphs.v5_stream import build_v5_stream
 
-tickets_path = root / "dataflow" / "data" / "tickets.jsonl"
-by_id = {}
-for line in tickets_path.read_text(encoding="utf-8").splitlines():
-    if not line.strip():
-        continue
-    row = json.loads(line)
-    by_id[row["ticket_id"]] = row
-
-ticket = by_id["T-3001"]
-payload = {"ticket": ticket["text"]}
-print("model", config.CHAT_MODEL)
-print("ticket_id", ticket["ticket_id"])
-print("ticket_text", ticket["text"])
-
-graph = build_v5_stream()
-
-
-def content_text(message) -> str:
-    content = getattr(message, "content", message)
-    if isinstance(content, list):
-        parts = []
-        for block in content:
-            if isinstance(block, dict):
-                parts.append(str(block.get("text") or block.get("content") or ""))
-            else:
-                parts.append(str(block))
-        return "".join(p for p in parts if p)
-    if content is None:
-        return ""
-    return str(content)
+chat = config.get_chat_model()
+print("model", type(chat).__name__, getattr(chat, "model", None) or getattr(chat, "model_name", None))
+print("langchain-core", version("langchain-core"))
+print("langgraph", version("langgraph"))
 
 
 # %%
-print("mode values")
-thread_values = {"configurable": {"thread_id": "lab-12-2-values"}}
-final_state = None
-for step, event in enumerate(
-    graph.stream(payload, thread_values, stream_mode="values"),
-    start=1,
-):
-    keys = sorted(event.keys()) if isinstance(event, dict) else [type(event).__name__]
-    print("step", step, "keys", keys)
-    final_state = event
-print("reply", (final_state or {}).get("reply"))
-
-# %%
-print("mode updates")
-thread_updates = {"configurable": {"thread_id": "lab-12-2-updates"}}
-for event in graph.stream(payload, thread_updates, stream_mode="updates"):
-    if not isinstance(event, dict):
-        print("node", type(event).__name__, "keys", [])
-        continue
-    for node, update in event.items():
-        if isinstance(update, dict):
-            keys = sorted(update.keys())
+# TYPE THIS: watch. The signature and docstring are given; you type the rest.
+# The package has no printer; tests/test_dataflow_stream.py checks the same three lanes on the same desk.
+def watch(graph, payload, config):
+    """One v2 stream with three lanes: node updates, model tokens, custom progress. Returns the counts and the reply."""
+    counts = {}
+    reply = None
+    token_node = None
+    for part in graph.stream(payload, config, stream_mode=["updates", "messages", "custom"], version="v2"):
+        kind, data = part["type"], part["data"]
+        counts[kind] = counts.get(kind, 0) + 1
+        if kind == "messages":
+            token, meta = data
+            if meta["langgraph_node"] != token_node:
+                if token_node:
+                    print()
+                token_node = meta["langgraph_node"]
+                print(f"tokens {token_node} {token.type}: ", end="")
+            print(token.text, end="", flush=True)
+            continue
+        if token_node:
+            print()
+            token_node = None
+        if kind == "updates":
+            for node, update in data.items():
+                print("node", node, "wrote", sorted(update or {}))
+                reply = (update or {}).get("reply", reply)
+        elif kind == "custom":
+            print("progress", data["progress"])
         else:
-            keys = [type(update).__name__]
-        print("node", node, "keys", keys)
+            print(kind, "keys", sorted(data))
+    if token_node:
+        print()
+    return {"counts": counts, "reply": reply}
+
+
+# BREAK: in the stream_mode list, change "messages" to "values" and run. The typing stops: no tokens line at all.
+# Instead a values line arrives after every step, carrying the whole state, ticket, route, reply and the rest,
+# again and again. That is the debugger's tap, not the chat screen's. Put "messages" back and run.
 
 # %%
-print("mode messages")
-thread_messages = {"configurable": {"thread_id": "lab-12-2-messages"}}
-chunk_count = 0
-nodes_seen = set()
-for event in graph.stream(payload, thread_messages, stream_mode="messages"):
-    chunk_count += 1
-    message = event
-    meta = {}
-    if isinstance(event, tuple) and len(event) == 2:
-        message, meta = event
-    if isinstance(meta, dict):
-        node = meta.get("langgraph_node")
-        if node:
-            nodes_seen.add(node)
-    print(content_text(message), end="", flush=True)
-print()
-print("chunks", chunk_count)
-print("nodes", nodes_seen)
+tickets_path = root / "dataflow" / "data" / "tickets.jsonl"
+rows = [json.loads(line) for line in tickets_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+by_id = {row["ticket_id"]: row for row in rows}
+ticket = by_id["T-3001"]
+print("ticket", ticket["ticket_id"], ticket["text"])
 
-# %%
-print("mode updates+custom v2")
-thread_custom = {"configurable": {"thread_id": "lab-12-2-custom"}}
-for part in graph.stream(
-    payload,
-    thread_custom,
-    stream_mode=["updates", "custom"],
-    version="v2",
-):
-    kind = part.get("type") if isinstance(part, dict) else type(part).__name__
-    data = part.get("data") if isinstance(part, dict) else part
-    print("type", kind, "payload", data)
-print("messages_chunks", chunk_count)
+graph = build_v5_stream(model=chat)
+seen = watch(graph, {"ticket": ticket["text"]}, {"configurable": {"thread_id": "lab-15-2"}})
+print("parts", seen["counts"])
+print("reply", seen["reply"])
