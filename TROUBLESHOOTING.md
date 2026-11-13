@@ -917,3 +917,92 @@ the return type of `classify_command` in `labs/06_02_06_command_vs_edge.py` to a
 Fix **(tested)**: declare the roads, in the return type as the lab does, or as
 `add_node("classify", classify_command, destinations=("orders_desk", "policy_desk", "escalate_desk"))` as
 `dataflow/graphs/v2_command.py` does. The drawing then shows three dotted roads out of `classify`.
+
+## The LangGraph labs (Sections 12 and 13)
+
+### `InvalidUpdateError: At key 'log': Can receive only one value per step` (lab 12.4)
+
+```
+langgraph.errors.InvalidUpdateError: At key 'log': Can receive only one value per step. Use an Annotated key to handle multiple values.
+For troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/INVALID_CONCURRENT_GRAPH_UPDATE
+```
+
+What it means: two nodes ran in the same step and both wrote the key named in the message, and that key has no
+reducer, so it keeps one value and LangGraph will not pick which one. The traceback ends in
+`langgraph/channels/last_value.py`: the key's channel is a `LastValue`. Caused on the test machine on 2026-11-13 by
+changing `log: Annotated[list[str], operator.add]` to `log: list[str]` in `labs/06_03_04_plant_a_collision.py`.
+
+Fix **(tested)**: give the key a reducer that says how two writes combine, `log: Annotated[list[str], operator.add]`,
+and have each node return a list (`{"log": ["policy read"]}`). For a message list the reducer is `add_messages`.
+`type(graph.channels["log"]).__name__` prints `BinaryOperatorAggregate` once the reducer is on.
+
+### The conversation stays at one message, turn after turn (lab 12.3)
+
+```
+  count 1 newest human
+  count 1 newest ai
+  count 1 newest ai note
+...
+thread_count 1
+```
+
+What it means: no error is raised, but each write replaces the whole list. The `messages` key has no reducer, so the
+agent's answer wipes the question, the note wipes the answer, and turn two wipes turn one. Caused on the test machine
+on 2026-11-13 by changing `messages: Annotated[list, add_messages]` to `messages: list` in
+`labs/06_03_03_add_messages_on_the_thread.py`.
+
+Fix **(tested)**: `messages: Annotated[list, add_messages]`. Each node then returns only its new message and the
+count grows 1, 2, 3, then 4, 5, 6 on turn two of the same thread.
+
+### A resumed thread comes back empty: `saved turns None`, `rows_in_file 0`, `turns 1` (lab 13.2)
+
+```
+process 56884 saved turns None reply None
+rows_in_file 0
+turn 2 turns 1 reply ...
+```
+
+What it means: the second process asked the checkpointer for a thread id that has nothing saved under it, so it
+started a new conversation. Nothing fails, and the reply can still look fine, because a follow-up ticket often names
+its own order; the proof is `turns 1`. Caused on the test machine on 2026-11-13 by changing `thread = THREAD` in
+`resume` to `{"configurable": {"thread_id": "lab-13-2-other"}}` in `labs/06_04_03_sqlite_kill_and_resume.py`, after
+`--start` had saved turn one under `lab-13-2`.
+
+Fix **(tested)**: resume with the exact thread id the first process used, on the same database file (the lab prints
+the file on its `db` line, and `DATAFLOW_CHECKPOINTS_PATH` moves it). `SELECT COUNT(*) FROM checkpoints WHERE
+thread_id = ?` on that file shows whether anything is saved for an id.
+
+### A preference written on one thread is missing on the customer's next thread (lab 13.3)
+
+```
+thread lab-13-3-b customer C-2001 ticket Where is order DF-1001?
+   read_pref {'preference': None}
+   store ('customers', 'lab-13-3-a') preferences {'channel': 'email', 'stated': True}
+```
+
+What it means: the fact was written, but onto a shelf named after the thread, so only that thread would ever find it.
+The store line shows the namespace the item really sits under. Caused on the test machine on 2026-11-13 by making
+`owner` return `("customers", get_config()["configurable"]["thread_id"])` in `labs/06_04_05_store_facts.py`.
+
+Fix **(tested)**: namespace a fact by its owner, `("customers", runtime.context.customer_id)`, and pass the customer
+in the run's context, `context=DeskContext(customer_id="C-2001")`. Thread B then reads `{'channel': 'email', ...}`.
+If a `search` seems to lose items, check its `limit`: it returns 10 unless you ask for more, and says nothing about
+the rest (the same lab prints 10 of 12, then 12 with `limit=20`).
+
+### A fork's reply is just the text you wrote, and the node you wanted never ran again (lab 13.5)
+
+```
+forked_from 1f1df790-5ebd-66b7-8006-7bd64d43a507 next ()
+...
+fork_reply The return window is 30 days and the lamp qualifies.
+```
+
+What it means: the fork started from a save point after the node had already run (`next ()`, the finished run), so
+`update_state` wrote your value onto a finished notebook and `invoke(None, fork_config)` had nothing left to run.
+Caused on the test machine on 2026-11-13 by changing the `before = ...` line of `fork_before` to
+`before = history[0]` in `labs/06_06_05_fork.py`.
+
+Fix **(tested)**: fork from the save point whose `next` is the node you want to run again,
+`next(s for s in history if s.next == ("speak",))`. The fork's reply is then the model's new answer, and every old
+save point reads back as it was. Replaying a point before a node that pauses runs the pause again: on the refund
+desk the replay parks with the same question and the ledger keeps one row.
