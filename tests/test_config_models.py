@@ -11,10 +11,11 @@ FAKE_OPENAI_KEY = "sk-fake-key-for-the-setup-lab"
 
 @pytest.fixture
 def no_keys(monkeypatch):
-    for name in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY"):
+    for name in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY"):
         monkeypatch.delenv(name, raising=False)
     monkeypatch.setattr(config, "OPENAI_CHAT_MODEL", "")
     monkeypatch.setattr(config, "ANTHROPIC_CHAT_MODEL", "")
+    monkeypatch.setattr(config, "GOOGLE_CHAT_MODEL", "", raising=False)
     monkeypatch.setattr(config, "_warned_no_model_id", set(), raising=False)
     return monkeypatch
 
@@ -64,3 +65,30 @@ def test_local_default_has_no_warning_and_temperature_zero(no_keys, capsys):
     assert chat.model == config.CHAT_MODEL
     assert chat.temperature == 0
     assert capsys.readouterr().err == ""
+
+
+FAKE_GOOGLE_KEY = "fake-google-key-for-the-setup-lab"
+
+
+def test_google_key_and_model_build_gemini(no_keys):
+    pytest.importorskip("langchain_google_genai")
+    no_keys.setenv("GOOGLE_API_KEY", FAKE_GOOGLE_KEY)
+    no_keys.setattr(config, "GOOGLE_CHAT_MODEL", "gemini-test-model")
+    chat = config.get_chat_model()
+    assert type(chat).__name__ == "ChatGoogleGenerativeAI"
+    assert "gemini-test-model" in chat.model
+    assert chat.temperature == 0
+    assert config.has_live_key()
+
+
+def test_google_key_without_model_warns_and_stays_local(no_keys, capsys):
+    no_keys.setenv("GOOGLE_API_KEY", FAKE_GOOGLE_KEY)
+    chat = config.get_chat_model()
+    assert type(chat).__name__ == "ChatOllama"
+    assert "GOOGLE_CHAT_MODEL is empty" in capsys.readouterr().err
+
+
+def test_force_local_ignores_a_google_key(no_keys):
+    no_keys.setenv("GOOGLE_API_KEY", FAKE_GOOGLE_KEY)
+    no_keys.setattr(config, "GOOGLE_CHAT_MODEL", "gemini-test-model")
+    assert type(config.get_chat_model(force_local=True)).__name__ == "ChatOllama"

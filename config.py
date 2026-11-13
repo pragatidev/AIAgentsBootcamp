@@ -45,6 +45,9 @@ NO_TOOLS_MODEL = os.environ.get("OLLAMA_NO_TOOLS_MODEL", "llama3.2:3b")
 # Cloud ids stay empty until you set a key. Copy the exact id from the provider's page. Do not guess.
 OPENAI_CHAT_MODEL = os.environ.get("OPENAI_CHAT_MODEL", "")
 ANTHROPIC_CHAT_MODEL = os.environ.get("ANTHROPIC_CHAT_MODEL", "")
+# Google Gemini needs one extra package: pip install langchain-google-genai (tested on 4.4.0).
+# Use it for the chat model only; keep embeddings on nomic-embed-text so every index stays 768 wide.
+GOOGLE_CHAT_MODEL = os.environ.get("GOOGLE_CHAT_MODEL", "")
 
 # Embeddings. Local default is nomic-embed-text (768 dimensions on Ollama).
 # faiss_index measures the width at build time; do not copy 768 elsewhere.
@@ -58,7 +61,8 @@ def has_live_key() -> bool:
     """True only when a cloud key is present. Local Ollama does not count as a key."""
     openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
-    return bool(openai_key or anthropic_key)
+    google_key = os.environ.get("GOOGLE_API_KEY", "").strip()
+    return bool(openai_key or anthropic_key or google_key)
 
 
 def _ollama_base() -> str:
@@ -103,6 +107,18 @@ def _anthropic_chat(model: str):
     return chat
 
 
+def _google_chat(model: str, api_key: str):
+    """ChatGoogleGenerativeAI at temperature 0. The package is optional, so say how to get it."""
+    try:
+        from langchain_google_genai import ChatGoogleGenerativeAI
+    except ImportError as err:
+        raise ImportError(
+            "GOOGLE_API_KEY and GOOGLE_CHAT_MODEL are set, but langchain-google-genai is not installed. "
+            "Run: pip install langchain-google-genai"
+        ) from err
+    return ChatGoogleGenerativeAI(model=model, google_api_key=api_key, temperature=0)
+
+
 _warned_no_model_id: set[str] = set()
 
 
@@ -122,22 +138,27 @@ def _warn_key_without_model_id(provider: str) -> None:
 def get_chat_model(**kwargs):
     """Return a LangChain chat model for the configured provider.
 
-    Hosted OpenAI or Anthropic when a key and a model id are set.
+    Hosted OpenAI, Anthropic or Google when a key and a model id are set (checked in that order).
     Otherwise ChatOllama on the student default.
     """
     openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    google_key = os.environ.get("GOOGLE_API_KEY", "").strip()
     if not kwargs.get("force_local"):
         if openai_key and not OPENAI_CHAT_MODEL:
             _warn_key_without_model_id("OPENAI")
         if anthropic_key and not ANTHROPIC_CHAT_MODEL:
             _warn_key_without_model_id("ANTHROPIC")
+        if google_key and not GOOGLE_CHAT_MODEL:
+            _warn_key_without_model_id("GOOGLE")
     if openai_key and OPENAI_CHAT_MODEL and not kwargs.get("force_local"):
         from langchain_openai import ChatOpenAI
 
         return ChatOpenAI(model=OPENAI_CHAT_MODEL, temperature=0)
     if anthropic_key and ANTHROPIC_CHAT_MODEL and not kwargs.get("force_local"):
         return _anthropic_chat(ANTHROPIC_CHAT_MODEL)
+    if google_key and GOOGLE_CHAT_MODEL and not kwargs.get("force_local"):
+        return _google_chat(GOOGLE_CHAT_MODEL, google_key)
     kwargs.pop("force_local", None)
     return get_local_chat_model(**kwargs)
 
