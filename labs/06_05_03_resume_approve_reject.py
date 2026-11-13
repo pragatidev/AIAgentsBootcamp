@@ -75,8 +75,9 @@ def answer(graph, thread_id, decision):
 
 # BREAK: in the cell below, change answer(graph, "lab-14-3-approve", "approve") to
 # answer(graph, "lab-14-3-aprove", "approve") and run. Nothing raises. The answer starts a new thread with no
-# ticket, no refund is written, and the final lines show lab-14-3-approve still waiting at ('refund',): the customer
-# was approved and never paid. Put it back and run.
+# ticket, so the reply is whatever road the classifier picks for an empty ticket (on qwen3:8b, the lookup desk's
+# "looked up none. I could not find that order"), no refund is written, and the final lines show lab-14-3-approve
+# still waiting at ('refund',): the customer was approved and never paid. Put it back and run.
 
 # %%
 tickets_path = root / "dataflow" / "data" / "tickets.jsonl"
