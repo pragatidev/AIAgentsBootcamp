@@ -64,19 +64,19 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 06_02_04_tool_cycle.py           11.4: build_tool_cycle typed; no edge back ends on a tool, cap of 10
 06_02_05_test_routes.py          11.5: test_routes_are_right typed; weak assert passes a wrong route
 06_02_06_command_vs_edge.py      11.6: classify_command typed; plain Command loses the roads in the drawing
-06_03_03_add_messages_on_the_thread.py  two turns, count grows per node
-06_03_04_plant_a_collision.py    InvalidUpdateError, then both log lines
-06_03_05_trim_and_summarize.py   token count before and after, plus summary
-06_04_02_resume_thread.py        same thread_id, turn two continues turn one
-06_04_03_sqlite_kill_and_resume.py  --start then --resume on checkpoints.sqlite
-06_04_05_store_facts.py          preference written on A, read on B, miss on C
+06_03_03_add_messages_on_the_thread.py  12.3: ChatState and build_chat typed; count 1 to 6, replace by id; no reducer keeps 1
+06_03_04_plant_a_collision.py    12.4: FixedState with operator.add typed; plain log key raises InvalidUpdateError
+06_03_05_trim_and_summarize.py   12.1's run (lab cut): tokens before and after, summary, returned_keys
+06_04_02_resume_thread.py        cut as a lecture: its in-memory run is 13.2's first cell (06_04_03)
+06_04_03_sqlite_kill_and_resume.py  13.2: start and resume typed; --start dies, --resume in a new process; other thread
+06_04_05_store_facts.py          13.3: owner and the two store nodes typed; hit on B, miss on C; namespace by thread
 06_05_02_park_the_refund.py      refund parks, payload on screen, no jsonl row
 06_05_03_resume_approve_reject.py  two threads, approve writes, reject does not
 06_05_04_edit_state_before_resume.py  dict decision lowers the refund amount
 06_05_06_policy_lookup_free_refund_parks.py  lookup free, refund parks, pytest
 06_06_02_stream.py               15.2: watch typed, one v2 stream of updates, messages, custom; values break
 06_06_03_stream_events.py        15.3: drive typed, v3 values, interrupted, park, resume; parked = False break
-06_06_05_fork.py                 fork before speak, original trail intact
+06_06_05_fork.py                 13.5: fork_before typed; trail intact; refund replay parks again; fork after speak
 06_06_06_full_run.py             15.4: show and full_run typed, three runs, pytest; resume without thread
 06_06_07_stream_the_tool_cycle.py  15.2: stream_tool_cycle typed, tool-call pieces, finished call; no messages
 06_07_02_two_lookups_in_parallel.py  lookup and policy_search in one superstep

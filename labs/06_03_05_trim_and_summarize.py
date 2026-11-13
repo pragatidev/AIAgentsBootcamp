@@ -48,3 +48,4 @@ print("kept", len(after))
 for index, msg in enumerate(after):
     role = getattr(msg, "type", type(msg).__name__)
     print("kept_role", index, role)
+print("returned_keys", sorted(out))
