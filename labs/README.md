@@ -79,13 +79,13 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 06_06_05_fork.py                 13.5: fork_before typed; trail intact; refund replay parks again; fork after speak
 06_06_06_full_run.py             15.4: show and full_run typed, three runs, pytest; resume without thread
 06_06_07_stream_the_tool_cycle.py  15.2: stream_tool_cycle typed, tool-call pieces, finished call; no messages
-06_07_02_two_lookups_in_parallel.py  lookup and policy_search in one superstep
-06_07_04_map_reduce_resumes.py   Send one score worker per TalentFlow resume
-06_07_06_billing_subgraph.py     billing box, private keys, interrupt inside
-06_08_02_retry_and_error_handler.py  flaky carrier retries, then a typed miss
-06_08_03_task_survives_crash.py  receipt @task, planted crash, resume
-06_08_04_cache_and_defer.py      policy cache hits, then defer on/off
-06_08_06_cap_a_runaway.py        recursion limit, RemainingSteps, timeout, spend
+06_07_02_two_lookups_in_parallel.py  16.2: ParallelState and build_parallel typed; one superstep, history, defer cell; no reducer
+06_07_04_map_reduce_resumes.py   16.4: ParentState, fan_out and score typed; ten Send copies, ranking; scores without operator.add
+06_07_06_billing_subgraph.py     16.6: build_desk typed; keys at the door, park inside, resume; checkpointer False reruns the room
+06_08_02_retry_and_error_handler.py  17.2: handler and add_carrier typed; retries, typed misses, cache cell; retry everything
+06_08_03_task_survives_crash.py  17.3: write_receipt task and send_receipt typed; crash, resume, exit vs sync; plain write twice
+06_08_04_cache_and_defer.py      cut as a lab: its cache cell is 17.2's last cell (06_08_02), its defer cell 16.2's (06_07_02)
+06_08_06_cap_a_runaway.py        17.5: planner, slow_lookup and build_timeout typed; four brakes logged; sync node refused
 06_09_02_build_a_supervisor.py   supervisor, two specialists, writer parks
 06_09_03_debug_a_failed_handoff.py  planted bad return, then the good path
 06_09_05_handoffs_with_command.py  history on one thread, then parallel collision
