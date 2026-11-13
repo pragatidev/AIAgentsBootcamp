@@ -70,10 +70,10 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 06_04_02_resume_thread.py        same thread_id, turn two continues turn one
 06_04_03_sqlite_kill_and_resume.py  --start then --resume on checkpoints.sqlite
 06_04_05_store_facts.py          preference written on A, read on B, miss on C
-06_05_02_park_the_refund.py      refund parks, payload on screen, no jsonl row
-06_05_03_resume_approve_reject.py  two threads, approve writes, reject does not
-06_05_04_edit_state_before_resume.py  dict decision lowers the refund amount
-06_05_06_policy_lookup_free_refund_parks.py  lookup free, refund parks, pytest
+06_05_02_park_the_refund.py      14.2: refund_node typed, parks before the write; a write above the pause runs twice
+06_05_03_resume_approve_reject.py  14.3: resume_with, park, answer typed; approve writes, reject not; thread-id typo
+06_05_04_edit_state_before_resume.py  14.4: two edits typed, answer and update_state; an edit after the write
+06_05_06_policy_lookup_free_refund_parks.py  14.5: three policy tests typed, partial run, pytest; misrouted refund
 06_06_02_stream.py               15.2: watch typed, one v2 stream of updates, messages, custom; values break
 06_06_03_stream_events.py        15.3: drive typed, v3 values, interrupted, park, resume; parked = False break
 06_06_05_fork.py                 fork before speak, original trail intact
