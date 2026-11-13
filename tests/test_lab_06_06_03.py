@@ -43,11 +43,13 @@ def test_lab_parks_then_resumes(refund_desk, capsys):
         "value_step 0 keys ['ticket']",
         "value_step 1 keys ['route', 'ticket']",
         "value_step 2 keys ['route', 'ticket']",
+        "output_keys ['route', 'ticket']",
         "interrupted True",
         "parked_on refund order DF-1001 amount 49.0",
         "question Approve this refund of 49.0 on order DF-1001?",
         "rows_after_first_stream 0",
     ]
+    assert "output_keys ['decision', 'order', 'refund', 'reply', 'route', 'ticket']" in out
     assert out[-5:] == ["interrupted False", f"done route refund reply {REPLY}", "status done", "refunds_rows 1", "thread_next ()"]
     assert _ledger_state() == before
 
@@ -69,6 +71,6 @@ def test_break_parked_false_says_done_with_no_reply(refund_desk, tmp_path, capsy
     broken = lab_copy_dataflow(LAB, tmp_path, PARKED, "    parked = False\n")
     _, out = _run(broken, capsys)
     assert "interrupted False" in out and "interrupted True" not in out
-    assert "done route refund reply None" in out
+    assert "output_keys ['route', 'ticket']" in out and "done route refund reply None" in out
     assert "reviewer answers approve" not in out
     assert out[-3:] == ["status done", "refunds_rows 0", "thread_next ('refund',)"]

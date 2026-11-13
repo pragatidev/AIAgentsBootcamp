@@ -13,8 +13,8 @@ interrupted (did it park), interrupts (what it is waiting for, with the payload 
 (the state when the stream ended). output on a parked run is the state so far, not an answer: it has a route and
 no reply. Only interrupted tells you which one you are holding.
 
-What will be true on your screen: the model line and the versions, then T-3001: three value steps, interrupted
-True, the refund it parked on with its order and amount, the reviewer's question, no refund row yet; then the
+What will be true on your screen: the model line and the versions, then T-3001: three value steps, output_keys
+with a route and no reply, interrupted True, the refund it parked on with its order and amount, the reviewer's question, no refund row yet; then the
 resume: interrupted False, the reply "Refund issued for order DF-1001. Amount: 49.0.", one refund row, and the
 thread with nothing left to run.
 """
@@ -49,6 +49,7 @@ def drive(graph, run_input, config):
     stream = graph.stream_events(run_input, config, version="v3")
     for step, values in enumerate(stream.values):
         print("value_step", step, "keys", sorted(values))
+    print("output_keys", sorted(stream.output))
     parked = stream.interrupted
     print("interrupted", parked)
     if parked:
