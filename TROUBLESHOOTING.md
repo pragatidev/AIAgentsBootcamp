@@ -768,3 +768,72 @@ is Ollama's internal one, not yours). Caused once on the test machine on 2026-11
 
 Fix **(tested)**: run the lab again. An index is saved only when its build finishes, so nothing half-built is left;
 on the test machine the second run built it.
+
+## The MCP labs (Section 28)
+
+### A stdio MCP lab says `Connection closed` and `No module named 'dataflow'` (lab 28.7)
+
+```
+D:\...\.venv\Scripts\python.exe: Error while finding module specification for 'dataflow.mcp.server' (ModuleNotFoundError: No module named 'dataflow')
+client_error MCPError Connection closed
+```
+
+What it means: the client started the server, and the server could not import the course's own code. A stdio
+server is a child process that sees only a short list of your environment (on Windows PATH, SYSTEMROOT, TEMP and a
+few more; elsewhere HOME, PATH, SHELL and a few more), not your PYTHONPATH and not your `.env`, and a host starts it
+from its own folder, not from the repo. Caused on the test machine on 2026-11-13 by deleting the
+`server["env"] = stdio_env()` line in `labs/13_01_04_mcp_client.py`, whose config starts the server from the temp
+folder; the client gave up after 0.1 seconds.
+
+Fix **(tested)**: give the server its environment in the config, the way `dataflow/mcp/client.py` does with
+`"env": stdio_env()` (it carries PYTHONPATH), or a `"cwd"` at the repo root. A server you add to a host such as
+Claude Desktop needs the same two keys.
+
+### `ValueError: MCP target 'dataflow/mcp/server.py' is not a valid URL` (lab 28.8)
+
+```
+ValueError: MCP target 'dataflow/mcp/server.py' is not a valid URL. To run a local MCP server over stdio, ask for it explicitly with `Path('server.py')`, a `fastmcp` transport, or an `MCPConfig`
+```
+
+What it means: `MCPAdapter` reads a string target as a URL and accepts only http and https, so that a string from a
+config file or from a model can never quietly start a program on your machine. Caused on the test machine on
+2026-11-13 by passing `"dataflow/mcp/server.py"` to `mcp_tools` in `labs/13_01_06_mcpadapter.py`.
+
+Fix **(tested)**: pass the config dict from `load_config()` (or a `ClientGroup`, lab 28.9). A `Path` also works for
+a server file that runs on its own.
+
+### `git status` lists `dataflow/mcp/runs/server.pid` after an MCP lab
+
+What it means: the DataFlow server writes its process id there when it starts and removes the file when it exits.
+The file stays when the server is killed instead. FastMCP keeps a stdio server running after the client leaves, so
+it can be reused (`keep_alive`, on by default), and when your Python ends, the MCP library ends that server with a
+hard kill, which leaves the file. Caused on the test machine on 2026-11-13 by a first draft of
+`labs/13_01_04_mcp_client.py` with `keep_alive` left on.
+
+Fix **(tested)**: delete the file; every MCP lab also deletes it at the end. A lab that should stop its server when
+the call is done sets `"keep_alive": False` in the server's config, as lab 28.7 does, or closes the client the way
+`close_mcp()` in `dataflow/mcp/bind.py` does.
+
+### `LangChainBetaWarning: langchain.mcp is in beta` (labs 28.8 and 28.9)
+
+```
+LangChainBetaWarning: `langchain.mcp` is in beta. It is actively being worked on, so the API may change.
+```
+
+What it means: not an error. `MCPAdapter` arrived in LangChain 1.4 as a beta, and LangChain says so once per run.
+The course pins the version its labs ran on (`constraints.txt`), so the lab you run is the one on screen.
+
+Fix: none needed.
+
+### `RuntimeError: Client failed to connect: fileno` from an MCP lab
+
+```
+io.UnsupportedOperation: fileno
+RuntimeError: Client failed to connect: fileno
+```
+
+What it means: a stdio client hands the server its own stderr, and that has to be a real file handle. A Jupyter
+kernel does not have one, which is why the stdio MCP labs carry a `no-twin` line and run from the terminal. Caused on
+the test machine on 2026-11-13 under pytest's `capsys`, which replaces stderr the same way.
+
+Fix **(tested)**: run the lab from the terminal, `python labs/<lab>.py`. In a test, use `capfd` instead of `capsys`.

@@ -1,5 +1,6 @@
 {
   "transport": "stdio",
+  "protocol_version": "2026-07-28",
   "tools": ["lookup_order", "refund"],
   "result": {
     "found": true,
