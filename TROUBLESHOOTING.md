@@ -1158,3 +1158,76 @@ Fix **(tested)**: fork from the save point whose `next` is the node you want to 
 `next(s for s in history if s.next == ("speak",))`. The fork's reply is then the model's new answer, and every old
 save point reads back as it was. Replaying a point before a node that pauses runs the pause again: on the refund
 desk the replay parks with the same question and the ledger keeps one row.
+
+## The LangGraph human-in-the-loop labs (Section 14)
+
+### A refund row is written while the run is still parked, and one approve leaves three rows (lab 14.2)
+
+```
+rows_while_parked 1
+reviewer answers approve
+refund_row {'refunded': True, 'order_id': 'DF-1001', 'amount': 49.0, 'reason': 'written before anyone approved'}
+refund_row {'refunded': True, 'order_id': 'DF-1001', 'amount': 49.0, 'reason': 'written before anyone approved'}
+refund_row {'refunded': True, 'order_id': 'DF-1001', 'amount': 49.0, 'reason': 'reviewer approved'}
+refunds_rows 3
+```
+
+What it means: a write sits above `interrupt()` in the node. It runs before anyone answered, and because the node
+starts again from its first line when the reviewer answers, it runs a second time on resume, then the approved write
+runs too. Nothing raises. Caused on the test machine on 2026-11-13 by adding one `issue_refund.invoke(...)` line just
+above `decision = interrupt(payload)` in `refund_node` in `labs/06_05_02_park_the_refund.py`.
+
+Fix **(tested)**: every write goes below `interrupt()`. Above it, keep only work that is safe to repeat, such as a
+lookup or a policy search.
+
+### The reviewer approved, no refund was written, and the thread still waits at `('refund',)` (lab 14.3)
+
+```
+answer approve on lab-14-3-aprove
+reply looked up none. I could not find that order (no order id in the ticket).
+parked_again False
+rows_written 0
+...
+final lab-14-3-approve next ('refund',)
+```
+
+What it means: the answer was sent to a thread id that never ran. LangGraph does not check a thread id against
+anything, so a new id is a new conversation: the run started fresh with no ticket, and the classifier sent the empty
+ticket somewhere (here the lookup desk). The approval never reached the parked thread. Caused on the test machine on
+2026-11-13 by changing `"lab-14-3-approve"` to `"lab-14-3-aprove"` in the approve `answer(...)` line of
+`labs/06_05_03_resume_approve_reject.py`.
+
+Fix **(tested)**: resume with exactly the thread id the run parked on. Before you resume, `graph.get_state(config).next`
+on that config should show `('refund',)`.
+
+### The refund is paid at the old amount while the state shows the edited one (lab 14.4)
+
+```
+state_after lab-14-4-state next () refund_amount 20.0
+reply Refund issued for order DF-1001. Amount: 49.0.
+checkpoints lab-14-4-state ['input', 'loop', 'loop', 'loop', 'update']
+```
+
+What it means: `update_state` ran after the resume, when the refund was already written. It still succeeds: it adds a
+new checkpoint (the `update` at the end of the list) with the new amount, and changes nothing already paid. Caused on
+the test machine on 2026-11-13 by moving the `graph.update_state(...)` line below the `resume_with(...)` line in
+`edit_the_state` in `labs/06_05_04_edit_state_before_resume.py`.
+
+Fix **(tested)**: edit while the thread is parked (`next` is `('refund',)`), then resume. Or put the new amount in
+the resume value itself, `{"decision": "approve", "amount": 20.0, "actor": ...}`.
+
+### `FAIL test_refund_always_parks looked up DF-1001. ...` (lab 14.5)
+
+```
+PASS test_lookup_never_parks
+FAIL test_refund_always_parks looked up DF-1001. Order DF-1001 is delivered. Item: desk lamp.
+PASS test_refund_road_alone
+```
+
+What it means: the classifier sent a refund ticket to the lookup desk, so the run never reached the pause, and the
+test printed the reply the lookup desk wrote. Caused on the test machine on 2026-11-13 by changing `route="refund"` to
+`route="lookup"` in `test_refund_always_parks` in `labs/06_05_06_policy_lookup_free_refund_parks.py`, the way a
+classifier with a broken prompt would.
+
+Fix **(tested)**: when this test fails on a real change, the fault is in the classifier or its prompt, not in the
+pause: the refund node never ran.
