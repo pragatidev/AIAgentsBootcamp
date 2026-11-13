@@ -155,8 +155,14 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 13_01_04_mcp_client.py      call_lookup typed; stdio from a host folder, 2026-07-28; no env cannot import
 13_01_05_resources_and_prompts.py  wiki template and decline prompt typed; policy pinned; no check escapes
 13_01_06_mcpadapter.py      mcp_tools typed; schemas and hints, desk answers DF-1002; bare string ValueError
-13_01_07_gated_mcp_refund.py  park, deny A, approve B, no-checkpointer resume
+13_01_07_gated_mcp_refund.py  needs_approval typed; deny A, approve B, lookup runs, server restarted then approve lands; trusting the claim lets mark_resolved write
 13_01_09_two_servers.py     two_servers typed; prefixed names, both servers answer; bare refund gate writes
+13_03_02_serve_http.py      serve_http and mcp_headers typed; 2026-07-28 over HTTP, headers by hand, no session id; lying Mcp-Name is -32020
+13_03_03_token_audience.py  build_auth typed; 401 and the metadata pointer, other service's token refused; no audience lets it in
+13_03_04_scopes.py          TOOL_SCOPES typed; read-only clerk sees lookup only, Unknown tool on refund; refund under orders:read refunds
+13_03_06_poisoned_description.py  screen_tool typed; poison word for word, obeying model refunds, both poisons refused; no name check binds the rewrite
+13_03_07_server_allowlist.py  check_server typed; unlisted server refused, changed description refused until approved; names only lets it load
+13_03_09_audit_log.py       on_call_tool typed; one line per call, subject, traceparent, reason redacted; include_all logs the bearer token
 13_02_02_load_skill.py        refund loads, billing skips, vague description steals
 13_02_04_fat_vs_thin.py       fat vs thin tokens, L3 pointer brings the policy line
 13_02_06_three_doors.py       python, MCP, Skill traces; Skill path cannot write
