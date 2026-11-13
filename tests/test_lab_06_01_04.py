@@ -24,9 +24,13 @@ def scripted(monkeypatch):
 def test_lab_runs_the_ticket_and_three_tests_pass(scripted, capsys):
     runpy.run_path(str(LAB), run_name="__main__")
     out = capsys.readouterr().out.splitlines()
-    assert "route orders" in out
-    assert "reply Order DF-1001 is delivered. Item: desk lamp." in out
-    assert out[-3:] == [f"PASS {name}" for name in NAMES]
+    assert out[-7:-4] == [f"PASS {name}" for name in NAMES]
+    assert out[-3:] == [
+        "route orders",
+        "order {'found': True, 'order_id': 'DF-1001', 'item': 'desk lamp', 'status': 'delivered', 'days_since_delivery': 12, "
+        "'amount': 49.0, 'customer_id': 'C-2001', 'region': 'NA'}",
+        "reply Order DF-1001 is delivered. Item: desk lamp.",
+    ]
 
 
 def test_the_students_tests_pass_when_called(scripted):
@@ -41,8 +45,8 @@ def test_break_without_the_injected_model_fails_on_the_connection(scripted, tmp_
     broken = lab_copy_dataflow(LAB, tmp_path, ', model=FakeChatModel(route="policy"))', ")")
     lab = runpy.run_path(str(broken), run_name="__main__")
     out = capsys.readouterr().out.splitlines()
-    assert out[-3].startswith("FAIL test_classify_alone httpx.ConnectError: ")
-    assert out[-2:] == ["PASS test_lookup_miss", "PASS test_classify_node_on_a_fresh_graph"]
+    assert out[-7].startswith("FAIL test_classify_alone httpx.ConnectError: ")
+    assert out[-6:-4] == ["PASS test_lookup_miss", "PASS test_classify_node_on_a_fresh_graph"]
     with pytest.raises(Exception) as err:
         lab["test_classify_alone"]()
     assert type(err.value).__name__ == "ConnectError"
