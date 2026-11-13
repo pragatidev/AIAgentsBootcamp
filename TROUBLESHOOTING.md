@@ -837,3 +837,83 @@ kernel does not have one, which is why the stdio MCP labs carry a `no-twin` line
 the test machine on 2026-11-13 under pytest's `capsys`, which replaces stderr the same way.
 
 Fix **(tested)**: run the lab from the terminal, `python labs/<lab>.py`. In a test, use `capfd` instead of `capsys`.
+
+## The LangGraph labs (Sections 9 to 11)
+
+### `ValueError: Found edge ending at unknown node` (lab 10.3)
+
+```
+ValueError: Found edge ending at unknown node `replly`
+```
+
+What it means: an `add_edge` names a node that no `add_node` added, usually a typo. `compile()` checks that every
+edge starts and ends at a node it knows, and stops before anything runs. Caused on the test machine on 2026-11-13 by
+writing `builder.add_edge("lookup", "replly")` in `labs/06_01_03_build_triage_graph.py`.
+
+Fix **(tested)**: spell the node the way its `add_node` names it. `print(list(graph.get_graph().nodes))` on a graph
+that compiles lists the names. Note what compile does not check: delete the edge from the last node to `END` and the
+graph still compiles and runs, and the drawing still shows the run ending, because a node with no way out simply ends
+the run on this version (same lab, langgraph 1.2.11).
+
+### `httpx.ConnectError` from a node test that was meant to need no model (lab 10.4)
+
+```
+FAIL test_classify_alone httpx.ConnectError: [WinError 10061] No connection could be made because the target machine actively refused it
+```
+
+What it means: the test called `classify` without `model=`, so `classify` asked `config` for the real model, and
+nothing was listening on the model's port. Caused on
+the test machine on 2026-11-13 by deleting `, model=FakeChatModel(route="policy")` from `test_classify_alone` in
+`labs/06_01_04_invoke_and_test.py`, with `OLLAMA_BASE_URL` pointed at a closed port.
+
+Fix **(tested)**: pass the scripted model, `classify(state, model=FakeChatModel(route="policy"))`. A node test that
+needs a model always gets it injected, which is how it runs on a laptop with Ollama off and in CI. If the error comes
+from a lab that should call your model, start Ollama (`ollama serve`, or the Ollama app).
+
+### `KeyError` with a route name, raised during task `classify` (lab 11.2)
+
+```
+KeyError: 'billing'
+During task with name 'classify' and id '...'
+```
+
+What it means: the routing function of an `add_conditional_edges` returned a label that its path map does not have.
+`compile()` cannot know what your function will return, so the graph compiles and fails on the first ticket that
+takes that label. Caused on the test machine on 2026-11-13 by making `route_after_classify` in
+`labs/06_02_02_route_three_ways.py` return `"billing"`.
+
+Fix **(tested)**: add the label to the path map, or end the router with a safe default that is in the map (the lab's
+router sends any unknown label to `escalate`). Typing the router's return as `Literal[...]` lists the labels for the
+reader and for the drawing.
+
+### A tool cycle ends on a `tool` message with no answer (lab 11.4)
+
+```
+2 tool lookup_order {"found": true, "order_id": "DF-1002", ...}
+message_count 3
+last_is_answer False
+```
+
+What it means: the edge from the tools node back to the model node is missing, so the tool runs and the run ends
+there, with nobody to read the result. No error is raised, and the drawing shows `tools --> __end__`. Caused on the
+test machine on 2026-11-13 by deleting `builder.add_edge("tools", "agent")` in `labs/06_02_04_tool_cycle.py`.
+
+Fix **(tested)**: put the edge back, `builder.add_edge("tools", "agent")`. If instead the run never ends and stops on
+`GraphRecursionError: Recursion limit of 10 reached`, the model keeps calling a tool; that is the cap doing its job.
+
+### The drawing shows `classify --> __end__` and the desks stand alone, yet the ticket still reaches a desk (lab 11.6)
+
+```
+	__start__ --> classify;
+	classify --> __end__;
+```
+
+What it means: the node routes with `Command(goto=...)`, and nothing declares where it can go. A `Command` road is not
+an edge you drew, so the drawing knows it only from the node's return type, `Command[Literal["orders_desk", ...]]`,
+or from `destinations=` on `add_node`. Without either, the run still follows `goto` (the ticket in the capture
+reached `orders_desk`), but the drawing shows none of the roads. Caused on the test machine on 2026-11-13 by changing
+the return type of `classify_command` in `labs/06_02_06_command_vs_edge.py` to a plain `-> Command`.
+
+Fix **(tested)**: declare the roads, in the return type as the lab does, or as
+`add_node("classify", classify_command, destinations=("orders_desk", "policy_desk", "escalate_desk"))` as
+`dataflow/graphs/v2_command.py` does. The drawing then shows three dotted roads out of `classify`.
