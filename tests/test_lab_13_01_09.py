@@ -22,7 +22,7 @@ from tests.fixtures.lab_copy import lab_copy
 from tests.fixtures.mcp_fixtures import PASSAGE, fake_retrieval_in_children
 
 LAB = Path(__file__).resolve().parents[1] / "labs" / "13_01_09_two_servers.py"
-GATED = '        gated = [name for name in names if name == "refund" or name.endswith("_refund")]\n'
+GATED = '    gated = [name for name in names if name == "refund" or name.endswith("_refund")]\n'
 RT = importlib.import_module("dataflow.tools.retrieve")
 
 
@@ -103,7 +103,7 @@ def test_the_gate_built_from_the_bound_names_parks_the_refund(run_lab):
 
 
 def test_a_gate_on_the_bare_name_lets_the_refund_write(run_lab, tmp_path):
-    copy = lab_copy(LAB, tmp_path, GATED, '        gated = ["refund"]\n')
+    copy = lab_copy(LAB, tmp_path, GATED, '    gated = ["refund"]\n')
     out, ledger = run_lab(copy)
     assert "gated ['refund']" in out
     assert "refund_parked False" in out

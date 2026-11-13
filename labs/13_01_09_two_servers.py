@@ -81,6 +81,32 @@ def tools_ran(state: dict) -> list:
     return [(call["name"], call["args"]) for m in state["messages"] for call in (getattr(m, "tool_calls", None) or [])]
 
 
+# %%
+# The gate, keyed by tool names as in lab 4.14.
+def refund_gate(names: list[str]) -> HumanInTheLoopMiddleware:
+    """Park before every refund tool the desk has bound, whatever prefix its server gave it."""
+    gated = [name for name in names if name == "refund" or name.endswith("_refund")]
+    return HumanInTheLoopMiddleware(interrupt_on={name: True for name in gated})
+
+
+# BREAK: replace the gated line above with gated = ["refund"], the bare name lab 4.14 would have typed, and
+# run. The desk's tool is orders_refund, so nothing parks: the refund runs at once and writes a ledger row.
+# Put the line back and run.
+
+
+# A stand-in model that always asks for the refund, so the gate is the only thing that decides.
+class AlwaysRefunds(FakeMessagesListChatModel):
+    def bind_tools(self, tools, **kwargs):
+        return self
+
+
+ASK_REFUND = AIMessage(
+    content="",
+    tool_calls=[{"name": "orders_refund", "args": {"order_id": "DF-1001", "amount": 49.0, "reason": "unused lamp"}, "id": "r1", "type": "tool_call"}],
+)
+
+
+# %%
 try:
     print("protocol_versions", run_async(negotiated(group)))
     tools = bind_mcp_tools(group)
@@ -95,29 +121,9 @@ try:
         print("  tools_ran", tools_ran(state))
         print("  reply", reply_text(state))
 
-    # %%
-    # The gate. A stand-in model that always asks for the refund, so the gate is the only thing that decides.
-    class AlwaysRefunds(FakeMessagesListChatModel):
-        def bind_tools(self, tools, **kwargs):
-            return self
-
-    ask_refund = AIMessage(
-        content="",
-        tool_calls=[{"name": "orders_refund", "args": {"order_id": "DF-1001", "amount": 49.0, "reason": "unused lamp"}, "id": "r1", "type": "tool_call"}],
-    )
-    stand_in = AlwaysRefunds(responses=[ask_refund, AIMessage(content="The refund is done.")])
-
-    def refund_gate(names: list[str]) -> HumanInTheLoopMiddleware:
-        """Park before every refund tool the desk has bound, whatever prefix its server gave it."""
-        gated = [name for name in names if name == "refund" or name.endswith("_refund")]
-        return HumanInTheLoopMiddleware(interrupt_on={name: True for name in gated})
-
-    # BREAK: replace the gated line above with gated = ["refund"], the bare name lab 4.14 would have typed, and
-    # run. The desk's tool is orders_refund, so nothing parks: the refund runs at once and writes a ledger row.
-    # Put the line back and run.
-
     gate = refund_gate(names)
     print("gated", sorted(gate.interrupt_on))
+    stand_in = AlwaysRefunds(responses=[ASK_REFUND, AIMessage(content="The refund is done.")])
     gated_desk = build_desk(model=stand_in, tools=tools, middleware=[gate], checkpointer=InMemorySaver())
     thread = {"configurable": {"thread_id": "lab-28-9-refund"}}
     out = gated_desk.invoke({"messages": [HumanMessage(content="Please refund order DF-1001, the lamp is unused.")]}, thread)
