@@ -54,12 +54,16 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 05_28_custom_middleware.py       approver miss then row, trace, token budget refusal, PII
 05_30_permissions_and_tenants.py  check, grant three ways, empty envelope miss
 05_32_desk_behind_a_door.py      caller_for, five smoke steps, eval table and count
-06_01_03_build_triage_graph.py   three-node DataFlow graph, mermaid, compile
-06_01_04_invoke_and_test.py      invoke a real ticket, classify alone, pytest
-06_02_02_route_three_ways.py     three tickets, three labeled routes, mermaid
-06_02_04_tool_cycle.py           ToolNode cycle: call, result, final answer
-06_02_05_test_routes.py          pytest tests/test_dataflow_routes.py
-06_02_06_command_vs_edge.py      Command versus a conditional edge, both mermaids
+06_00_01_where_the_desk_runs_out.py  9.1: three tickets walk the Section 8 desk's one loop; the graph desk's roads
+06_00_02_what_create_agent_is_made_of.py  9.2: create_agent and its middleware are a CompiledStateGraph; deep agent too
+06_00_03_smallest_graph.py       9.3: two nodes, InMemorySaver, get_state, history, two threads, no model
+06_00_04_rubric_probe.py         9.4: park, survive a kill (two processes), test one decision, see every step
+06_01_03_build_triage_graph.py   10.3: TriageState and build_triage typed; no-END edge runs, misspelt node fails
+06_01_04_invoke_and_test.py      10.4: real ticket, three node tests typed; fresh-graph node, no-model break
+06_02_02_route_three_ways.py     11.2: route_after_classify and build_route typed; unmapped label KeyError
+06_02_04_tool_cycle.py           11.4: build_tool_cycle typed; no edge back ends on a tool, cap of 10
+06_02_05_test_routes.py          11.5: test_routes_are_right typed; weak assert passes a wrong route
+06_02_06_command_vs_edge.py      11.6: classify_command typed; plain Command loses the roads in the drawing
 06_03_03_add_messages_on_the_thread.py  two turns, count grows per node
 06_03_04_plant_a_collision.py    InvalidUpdateError, then both log lines
 06_03_05_trim_and_summarize.py   token count before and after, plus summary
