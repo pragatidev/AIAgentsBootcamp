@@ -71,5 +71,6 @@ for label, make_model in (("right routes", FakeChatModel), ("every ticket sent t
         print("FAIL test_routes_are_right,", label, err)
 
 # %%
+sys.stdout.flush()  # the lines above reach the screen before pytest's own output
 result = subprocess.run([sys.executable, "-m", "pytest", "tests/test_dataflow_routes.py", "-q"], cwd=root, check=False)
 print("pytest_exit", result.returncode)

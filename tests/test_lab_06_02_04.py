@@ -66,6 +66,7 @@ def test_break_no_edge_back_ends_on_the_tool_message(scripted, tmp_path, capsys)
     out = capsys.readouterr().out.splitlines()
     assert out[-3].startswith('2 tool lookup_order {"found": true, "order_id": "DF-1002"')
     assert out[-2:] == ["message_count 3", "last_is_answer False"]
+    assert "	tools --> __end__;" in out and "	tools --> agent;" not in out
 
 
 def test_a_model_that_always_calls_a_tool_hits_the_cap(scripted):

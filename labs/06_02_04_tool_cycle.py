@@ -63,7 +63,7 @@ def build_tool_cycle(model=None):
 
 # BREAK: delete the line builder.add_edge("tools", "agent") and run. The tool still runs, and the run ends
 # on the tool's message: the last message printed is the tool result and last_is_answer is False, because
-# nothing sends the result back to the model. Put it back and run.
+# nothing sends the result back to the model. The drawing says so too: tools --> __end__. Put it back and run.
 
 # %%
 graph = build_tool_cycle(model=chat)
