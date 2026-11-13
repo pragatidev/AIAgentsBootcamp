@@ -130,18 +130,6 @@ def render_decline(order_id: str, reason: str) -> str:
     return run_async(_go())
 
 
-def lookup_order_open(order_id: str, table: str = "orders") -> dict:
-    """Plant: any table name is accepted. Lab 13.1.3 only. Not the committed tool."""
-    if table == "orders":
-        return lookup_order_by_id(order_id)
-    return {
-        "accepted_table": table,
-        "order_id": order_id,
-        "rows": [],
-        "note": "no such table on disk",
-    }
-
-
 if __name__ == "__main__":
     os.environ.setdefault("FASTMCP_SHOW_SERVER_BANNER", "false")
     PID_PATH.parent.mkdir(parents=True, exist_ok=True)
