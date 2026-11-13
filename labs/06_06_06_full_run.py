@@ -4,7 +4,7 @@
 What we build: one small printer, show, that turns a v2 stream of the DataFlow v4 refund desk into the lines a
 support screen would show, and one function that runs the desk three times through it: a lookup ticket that goes
 straight through, a refund ticket that parks for a person, and the person's approval that resumes the refund on
-the same thread. Then the package's own streaming tests run, so you see your printer and the repo agree.
+the same thread. Then the repo's tests/test_dataflow_stream.py runs: five tests on a fake model, not on your printer.
 
 What you learn: one printer serves every run, because every run is the same kind of stream: updates say which
 node finished and what it wrote, a parked run says so in an update named __interrupt__ that carries the question

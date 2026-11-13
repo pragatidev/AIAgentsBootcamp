@@ -11,7 +11,7 @@ What you learn: a stream is the same run seen through taps. updates says which n
 wrote. messages carries the model's tokens, each with the name of the node that is talking, and it also carries
 the messages a node writes into state, like the customer's ticket. custom carries whatever a node sends with
 get_stream_writer, here "calling the model" and "model finished". values, the fourth tap, is the whole state
-after every step: right for a debugger, wrong for a chat screen.
+after each step that wrote keys, and once for the input: right for a debugger, wrong for a chat screen.
 
 What will be true on your screen: the model line and the versions, then T-3001's run as it happens: the ticket
 on the messages lane as the human message ingest writes, a line per node with the keys it wrote, the classify
@@ -76,8 +76,8 @@ def watch(graph, payload, config):
 
 
 # BREAK: in the stream_mode list, change "messages" to "values" and run. The typing stops: no tokens line at all.
-# Instead a values line arrives after every step, carrying the whole state, ticket, route, reply and the rest,
-# again and again. That is the debugger's tap, not the chat screen's. Put "messages" back and run.
+# Instead a values line comes for the input and after each step that wrote keys: the whole state, ticket, route,
+# reply and the rest, again and again. That is the debugger's tap, not the chat screen's. Put "messages" back and run.
 
 # %%
 tickets_path = root / "dataflow" / "data" / "tickets.jsonl"
