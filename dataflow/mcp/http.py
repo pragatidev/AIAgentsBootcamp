@@ -18,7 +18,7 @@ import contextlib
 import socket
 import threading
 import time
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 
 import uvicorn
 from fastmcp import FastMCP
@@ -67,9 +67,11 @@ def url_for(port: int) -> str:
     return f"http://{HOST}:{port}{PATH}"
 
 
-@contextlib.contextmanager
-def serve(server: FastMCP, port: int | None = None) -> Iterator[str]:
-    """Serve server over Streamable HTTP in a background thread; yield its URL; stop it on exit."""
+def start_http(server: FastMCP, port: int | None = None) -> tuple[str, Callable[[], bool]]:
+    """Serve server over Streamable HTTP in a background thread. Return its URL and a stop function.
+
+    stop() asks uvicorn to finish, waits for the thread and returns True once it has ended.
+    """
     port = port or free_port()
     app = server.http_app(path=PATH)
     web = uvicorn.Server(uvicorn.Config(app, host=HOST, port=port, log_level="warning"))
@@ -80,11 +82,23 @@ def serve(server: FastMCP, port: int | None = None) -> Iterator[str]:
         if not thread.is_alive():
             raise RuntimeError(f"the MCP server did not start on {url}")
         time.sleep(0.05)
+
+    def stop() -> bool:
+        web.should_exit = True
+        thread.join(timeout=5)
+        return not thread.is_alive()
+
+    return url, stop
+
+
+@contextlib.contextmanager
+def serve(server: FastMCP, port: int | None = None) -> Iterator[str]:
+    """start_http as a with block: yield the URL, stop the server when the block ends."""
+    url, stop = start_http(server, port)
     try:
         yield url
     finally:
-        web.should_exit = True
-        thread.join(timeout=5)
+        stop()
 
 
 def mcp_headers(body: dict, token: str | None = None) -> dict[str, str]:
