@@ -1231,3 +1231,57 @@ classifier with a broken prompt would.
 
 Fix **(tested)**: when this test fails on a real change, the fault is in the classifier or its prompt, not in the
 pause: the refund node never ran.
+
+## The LangGraph Studio and trace labs (Section 18)
+
+### `UnprocessableEntityError: Invalid assistant: 'desks'` from the Agent Server (lab 18.2)
+
+```
+langgraph_sdk.errors.UnprocessableEntityError: Invalid assistant: 'desks'. Must be either:
+- A valid assistant UUID, or
+- One of the registered graphs: desk, team, nightly, replay
+```
+
+What it means: the client asked the server to run a graph id that `langgraph.json` does not name. The server answers
+with status 422 and lists the graph ids it does serve. The server started and listed its assistants; the thread was
+created; the run call is what was refused, so nothing ran and no refund was written. Caused on the test machine on
+2026-11-13 by changing `GRAPH_ID = "desk"` to `GRAPH_ID = "desks"` in `labs/06_10_02_studio.py` (langgraph-api 0.10.3,
+langgraph-sdk 0.4.14).
+
+Fix **(tested)**: use one of the ids the message lists, which are the keys under `"graphs"` in `langgraph.json`
+(`GRAPH_ID = "desk"` for the refund desk). To serve a new graph, add a `"name": "./path/file.py:variable"` line there and
+start the server again.
+
+### `RuntimeError: port 2186 is already in use` when lab 18.2 starts its server (lab 18.2)
+
+```
+RuntimeError: port 2186 is already in use; stop what holds it, or set DATAFLOW_DEV_PORT to a free port
+```
+
+What it means: something already listens on the port the lab wants, most often a `langgraph dev` you started yourself
+in another terminal for Studio (the lab uses 2024 unless `DATAFLOW_DEV_PORT` says otherwise). The lab refuses to start
+a second server on the same port and never stops a process it did not start. Caused on the test machine on 2026-11-13
+by running the lab while another `langgraph dev` already served port 2186.
+
+Fix **(tested)**: stop the other server (Ctrl+C in its terminal), or run the lab on another port with
+`DATAFLOW_DEV_PORT`, for example `set DATAFLOW_DEV_PORT=2186` in the Windows command prompt or
+`export DATAFLOW_DEV_PORT=2186` on macOS and Linux. The lab stops its own server when it ends, even when a call inside
+it fails.
+
+### The refund is paid but the trace stops at the pause: no `issue_refund` in the waterfall (lab 18.5)
+
+```
+    chain refund 10.46ms FAIL GraphInterrupt
+      tool search_policy 8.19ms ok
+tools ['search_policy']
+```
+
+What it means: no error is raised. The tracer was in the config of the first call, the one that parked the refund,
+and not in the config of the resume, so the second half of the run (the reviewer's answer, the refund written) left no
+record. `FAIL GraphInterrupt` on the parked refund node is the pause itself, not a failure. Caused on the test machine
+on 2026-11-13 by passing `{"configurable": {"thread_id": thread_id}}` without `"callbacks"` to the resume in
+`labs/06_10_05_wire_the_tracer.py`.
+
+Fix **(tested)**: build the config once, with the thread id and the callbacks, and pass the same config to the first
+call and to every resume. The waterfall then shows two `LangGraph` spans, the second with `search_policy` and
+`issue_refund`.

@@ -90,9 +90,9 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 06_09_03_debug_a_failed_handoff.py  planted bad return, then the good path
 06_09_05_handoffs_with_command.py  history on one thread, then parallel collision
 06_09_06_overspawn_and_the_cap.py  planted loop, token climb, then the cap
-06_10_02_studio.py               langgraph.json, langgraph dev, two graphs
-06_10_03_read_a_failed_run.py    waterfall FAIL plus checkpoint rail
-06_10_05_wire_the_tracer.py      tracing_callbacks, traced_invoke, pytest
+06_10_02_studio.py               18.2: run_to_the_pause and answer typed, desk through the server, park, approve; desks break
+06_10_03_read_a_failed_run.py    18.3: traced_run and first_failure typed, node, input, error; planted DF-9999 break
+06_10_05_wire_the_tracer.py      18.5: run_traced and waterfall typed, park and resume traced, pytest; untraced resume
 06_11_02_create_deep_agent.py    virtual filesystem, stream events, todos
 06_11_03_filesystem_and_todo.py  real folder backend, todo changes on disk
 06_11_05_portfolio_research_agent.py  python -m research_agent, then pytest
