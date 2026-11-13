@@ -15,7 +15,8 @@ pins (langchain-core 1.6.2), each piece shows the arguments it carried; on newer
 shows only the new part of each piece; the finished call is the same either way.
 
 What will be true on your screen: the model line and the versions, then T-3002 streamed: each tool-call piece,
-the finished call, the tool's result, the answer, the counts of pieces, text tokens and quiet chunks, then the call
+the finished call, the tool's result, the answer, the counts of pieces, text tokens and quiet chunks (chunks with
+no text and no call; qwen3:8b sends a couple of hundred), then the call
 added up from the pieces, the call from the update, and same_call True.
 """
 

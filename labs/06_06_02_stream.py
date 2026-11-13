@@ -13,9 +13,11 @@ the messages a node writes into state, like the customer's ticket. custom carrie
 get_stream_writer, here "calling the model" and "model finished". values, the fourth tap, is the whole state
 after every step: right for a debugger, wrong for a chat screen.
 
-What will be true on your screen: the model line and the versions, then T-3001's run as it happens: a line per
-node with the keys it wrote, the classify tokens, the two progress lines around speak, the reply typed out token
-by token, then the count of parts per lane and the reply.
+What will be true on your screen: the model line and the versions, then T-3001's run as it happens: the ticket
+on the messages lane as the human message ingest writes, a line per node with the keys it wrote, the classify
+tokens (its JSON route), the two progress lines around speak, the reply typed out token by token as
+AIMessageChunk, then the same reply once more, whole, as the ai message speak writes into state, then the count
+of parts per lane (a few hundred on messages) and the reply.
 """
 
 from importlib.metadata import version

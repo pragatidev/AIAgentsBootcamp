@@ -11,7 +11,8 @@ What you learn: an event stream is not a list of raw events you sort through. It
 values (the state after each step), messages (the model's output as it is made), and three answers a screen needs,
 interrupted (did it park), interrupts (what it is waiting for, with the payload the refund node built) and output
 (the state when the stream ended). output on a parked run is the state so far, not an answer: it has a route and
-no reply. Only interrupted tells you which one you are holding.
+no reply. Only interrupted tells you which one you are holding. On the version this course pins, each v3 stream
+also prints a LangChainBetaWarning that the v3 protocol is experimental: a warning, not an error.
 
 What will be true on your screen: the model line and the versions, then T-3001: three value steps, output_keys
 with a route and no reply, interrupted True, the refund it parked on with its order and amount, the reviewer's question, no refund row yet; then the

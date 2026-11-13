@@ -77,8 +77,9 @@ def full_run(graph, lookup_text, refund_text):
 
 # BREAK: in full_run's last show line, delete refund_thread, (the resume stream with no thread config) and run.
 # The lookup and the refund run as before, then the resume stops on ValueError: Checkpointer requires one or more
-# of the following 'configurable' keys: thread_id, checkpoint_ns, checkpoint_id. Without the thread there is no
-# parked run to find. Put it back and run.
+# of the following 'configurable' keys: thread_id, checkpoint_ns, checkpoint_id. The traceback points into show, at
+# for part in stream: a stream starts only when it is read. Without the thread there is no parked run to find.
+# Put it back and run.
 
 # %%
 tickets_path = root / "dataflow" / "data" / "tickets.jsonl"
