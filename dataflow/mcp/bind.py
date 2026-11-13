@@ -1,13 +1,17 @@
-"""Bind DataFlow MCP tools through langchain.mcp MCPAdapter.
+"""Bind DataFlow MCP tools through langchain.mcp MCPAdapter, and build the desk on them.
 
 MCPAdapter is beta in LangChain 1.4. It infers the transport from the
-target: an in-process FastMCP server, a stdio MCPConfig, or an http URL.
-The tools it returns are async only. This module wraps them so the
-existing desk `invoke` path still runs.
+target: an in-process FastMCP server, a stdio MCPConfig, a ClientGroup,
+or an http URL. The tools it returns are async only. This module wraps
+them so the desk's plain `invoke` still runs.
 
-FastMCP sessions die if the loop that opened them is closed. bind keeps
-the adapter connected on the long-lived loop in runtime.py until
-close_mcp() runs.
+A FastMCP client's connection dies if the event loop that opened it is
+closed. bind keeps the adapter connected on the long-lived loop in
+runtime.py until close_mcp() runs.
+
+The desk is the create_agent desk of dataflow/rag/desk.py with the MCP
+tools in place of the local ones and a system prompt that names each
+tool by the name it was bound under.
 """
 
 from __future__ import annotations
@@ -16,8 +20,8 @@ from typing import Any
 
 from langchain_core.tools import StructuredTool
 
-from dataflow.graphs.rag_tool_cycle import build_rag_tool_cycle
 from dataflow.mcp.runtime import run_async
+from dataflow.rag.desk import build_rag_desk
 
 _ADAPTERS: list[Any] = []
 
@@ -44,9 +48,11 @@ def close_mcp() -> None:
 
 
 def _sync_wrap(tool: Any) -> Any:
-    """MCPAdapter tools have no sync invoke. Wrap so ToolNode.invoke works.
+    """MCPAdapter tools have no sync invoke. Wrap so the desk's invoke works.
 
     The call hops onto the long-lived MCP loop so it never hits a closed loop.
+    The adapter's metadata (metadata["mcp"]: the server and the annotations)
+    rides along on the wrapped tool.
     """
 
     def call(**kwargs: Any) -> Any:
@@ -59,6 +65,7 @@ def _sync_wrap(tool: Any) -> Any:
         name=str(getattr(tool, "name", "tool")),
         description=str(getattr(tool, "description", "") or call.__name__),
         args_schema=getattr(tool, "args_schema", None),
+        metadata=getattr(tool, "metadata", None),
     )
 
 
@@ -101,7 +108,54 @@ def bound_names(tools: list[Any] | None = None) -> list[str]:
     return [str(getattr(tool, "name", "")) for tool in rows]
 
 
-def build_desk(*, model: Any = None, tools: list[Any] | None = None, system: str | None = None):
-    """Desk with MCP-bound tools (or the list you pass)."""
+def mcp_desk_system(names: list[str]) -> str:
+    """The desk's system prompt, naming each MCP tool by the name it was bound under.
+
+    One server binds lookup_order; two servers bind orders_lookup_order. The
+    prompt reads the names from the bound list, so it never names a tool the
+    desk does not have.
+    """
+
+    def named(suffix: str) -> str | None:
+        return next((name for name in names if name == suffix or name.endswith("_" + suffix)), None)
+
+    lines = ["You are the DataFlow support desk. Your tools come from MCP servers."]
+    lookup, retrieve, refund = named("lookup_order"), named("retrieve"), named("refund")
+    if lookup:
+        lines.append(f"When the user names an order id like DF-1001, call {lookup}.")
+    if retrieve:
+        lines.append(f"When they ask a policy or guide question, call {retrieve}.")
+    if refund:
+        lines.append(f"Call {refund} only when the user asks for a refund on a named order.")
+    lines.append(
+        "After you receive a tool result, write one short reply. "
+        "Do not call a tool for thanks, chitchat, or when you already have the result."
+    )
+    return " ".join(lines)
+
+
+MCP_DESK_SYSTEM = mcp_desk_system(["lookup_order", "refund"])
+
+
+def build_desk(
+    *,
+    model: Any = None,
+    tools: list[Any] | None = None,
+    system: str | None = None,
+    middleware: list | None = None,
+    checkpointer: Any = None,
+):
+    """The create_agent desk (dataflow/rag/desk.py) with MCP-bound tools, or the list you pass.
+
+    system=None names the bound tools (mcp_desk_system). middleware=None keeps the
+    desk's one guard, the tool call limit; a list you pass is used as it is.
+    """
     tool_list = tools if tools is not None else bind_mcp_tools()
-    return build_rag_tool_cycle(model=model, tools=tool_list, system=system)
+    prompt = system or mcp_desk_system(bound_names(tool_list))
+    return build_rag_desk(
+        model=model,
+        tools=tool_list,
+        system_prompt=prompt,
+        middleware=middleware,
+        checkpointer=checkpointer,
+    )

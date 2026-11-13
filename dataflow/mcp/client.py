@@ -59,18 +59,6 @@ def load_config(python_cmd: str | None = None) -> dict:
     return cfg
 
 
-def load_http_config(url: str = "http://127.0.0.1:1/mcp") -> dict:
-    """Plant: streamable HTTP to a URL nothing serves. Lab 13.1.4 only."""
-    return {
-        "mcpServers": {
-            "dataflow": {
-                "url": url,
-                "transport": "http",
-            }
-        }
-    }
-
-
 async def _call(cfg: dict, order_id: str, timeout: float) -> dict:
     from fastmcp import Client
 
@@ -86,6 +74,7 @@ async def _call(cfg: dict, order_id: str, timeout: float) -> dict:
                     cfg.get("mcpServers", {}).get("dataflow", {}).get("transport")
                     or "stdio"
                 ),
+                "protocol_version": client.protocol_version,
                 "tools": names,
                 "result": result.data,
             }
@@ -106,7 +95,11 @@ def run_lookup(
     timeout: float = 30,
     write: bool = True,
 ) -> dict:
-    """List tools, call lookup_order, optionally write runs/client.json."""
+    """List tools, call lookup_order, optionally write runs/client.json.
+
+    The payload carries the transport, the protocol revision the client negotiated, the tool
+    names and the row.
+    """
     config = cfg if cfg is not None else load_config()
     payload = run_async(_call(config, order_id, timeout))
     if write:

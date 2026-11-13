@@ -1,7 +1,6 @@
-"""DataFlow FastMCP server: lookup, returns policy, decline prompt, refund write.
+"""DataFlow FastMCP server: lookup, returns policy, wiki pages, decline prompt, refund write.
 
-The refund tool writes and nothing else. The graph holds the gate.
-"""
+The refund tool writes and nothing else. The desk in front of it holds the gate."""
 
 from __future__ import annotations
 
@@ -10,6 +9,7 @@ import sys
 from pathlib import Path
 
 from fastmcp import FastMCP
+from fastmcp.exceptions import ResourceError
 
 from dataflow.mcp.runtime import run_async
 from dataflow.tools.orders import lookup_order_by_id
@@ -26,7 +26,7 @@ DECLINE_TEMPLATE = (
 mcp = FastMCP("dataflow")
 
 
-@mcp.tool
+@mcp.tool(annotations={"readOnlyHint": True})
 def lookup_order(order_id: str, table: str = "orders") -> dict:
     """Look up a DataFlow order by id like DF-1001. table must be orders."""
     if table not in TABLES:
@@ -46,7 +46,19 @@ def decline_refund(order_id: str, reason: str) -> str:
     return DECLINE_TEMPLATE.format(order_id=order_id, reason=reason)
 
 
-@mcp.tool
+WIKI_DIR = DATAFLOW / "wiki"
+
+
+@mcp.resource("dataflow://wiki/{page}")
+def wiki_page(page: str) -> str:
+    """One DataFlow help page by file name, like return_policy.md. A name outside the wiki folder is refused."""
+    path = (WIKI_DIR / page).resolve()
+    if not path.is_relative_to(WIKI_DIR.resolve()) or not path.is_file():
+        raise ResourceError(f"no wiki page named {page!r}")
+    return path.read_text(encoding="utf-8")
+
+
+@mcp.tool(annotations={"destructiveHint": True})
 def refund(order_id: str, amount: float, reason: str) -> dict:
     """Issue a pretend refund. Writes one ledger row. No gate inside this tool."""
     return write_refund(order_id, amount, reason)
