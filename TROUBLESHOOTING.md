@@ -985,3 +985,87 @@ deleting `"messages"` from `stream_mode` in `labs/06_06_07_stream_the_tool_cycle
 Fix **(tested)**: `stream_mode=["messages", "updates"]`. With qwen3:8b on Ollama the call then arrives as one
 piece with the whole arguments; a provider that streams arguments sends the id and name first and the rest in pieces. Act on
 the finished call either way.
+
+## The MCP labs (Section 29)
+
+### `ToolError: Unknown tool: 'refund'` over HTTP, though the server has a refund (lab 29.4)
+
+```
+read_only_clerk refund_refused ToolError Unknown tool: 'refund'
+wire status 200
+wire isError True
+```
+
+What it means: your token does not carry the scope the tool needs. On FastMCP 4.0.3 a tool whose scope the token
+lacks is hidden: it is missing from the tool list and a call to it is answered as an unknown tool, with HTTP status
+200 and `isError` true, not with a 403. The same rule hides a scoped tool from every client that has no token at all,
+which is why the scopes live on the HTTP build only (`build_http_server` in `dataflow/mcp/http.py`); put
+`require_scopes` on the stdio server and the refund disappears from the Section 28 labs. A scope required by the
+whole server (`JWTVerifier(required_scopes=...)`) is different: a token without it is refused with 401
+`invalid_token`, again not 403. Caused on the test machine on 2026-11-13 by lab 29.4's read-only clerk, and by a probe
+with `required_scopes=["orders:read"]` and a token carrying only `orders:refund`.
+
+Fix **(tested)**: mint the token with the scope the tool needs (`TOOL_SCOPES` names them), as the refund clerk's
+token in lab 29.4 does.
+
+### `MCPError: Server returned an error response` when a client connects with a token (lab 29.3)
+
+```
+other_service refused MCPError Server returned an error response
+```
+
+What it means: the server refused the token, and the reason is only in the server's own log, printed on stderr in a
+box: `Bearer token rejected for client agent-desk: audience mismatch (got 'https://billing.dataflow.test/mcp',
+expected 'http://127.0.0.1:50859/mcp')`. The audience a token names must be this server's full URL, port and `/mcp`
+included. Caused on the test machine on 2026-11-13 by lab 29.3's token minted for the billing service.
+
+Fix **(tested)**: mint the token with `audience=url`, where `url` is the address the server was started on
+(`url_for(port)` in `dataflow/mcp/http.py`), as lab 29.3's second token does. If the log says the issuer or the
+signature is wrong instead, the token came from a different key pair or issuer than the one `build_auth` was given.
+
+### `httpx.ConnectError: [WinError 10061] ... actively refused it` just after starting an HTTP lab server
+
+What it means: nothing listens on the address you called. `start_http(server)` with no port picks a free port of its
+own, so a URL or a token audience you built from another port points at nothing. Caused on the test machine on
+2026-11-13 by a probe that built its token audience from `free_port()` and then started the server without passing
+that port.
+
+Fix **(tested)**: pick the port once and pass it everywhere: `port = free_port()`, `url = url_for(port)`, the token's
+audience, and `start_http(server, port)`, the order labs 29.3, 29.4 and 29.9 use.
+
+### `400` with error `-32020`, `mcp-name header does not match the request body's 'name' parameter` (lab 29.2)
+
+What it means: over Streamable HTTP the `Mcp-Method` and `Mcp-Name` headers must say what the body says, so a gateway
+can route on them; the server refuses a request whose header disagrees. Caused on the test machine on 2026-11-13 by
+lab 29.2's BREAK, `Mcp-Name` fixed to `lookup_order` while the body called `refund`. A missing `Mcp-Name` on a
+`tools/call` is refused the same way.
+
+Fix **(tested)**: build the headers from the body, as `mcp_headers` in `dataflow/mcp/http.py` does. A FastMCP or
+`httpx`-based MCP client does this for you; it matters when you write requests by hand or put a proxy in front.
+
+### `tests/test_lab_13_03_07.py` fails with `changed since it was approved` after you edit a tool
+
+```
+AssertionError: assert ['dataflow.lookup_order changed since it was approved'] == []
+```
+
+What it means: the allowlist is doing its job. `dataflow/mcp/allowlist.json` pins each tool of the dataflow and kb
+servers by the SHA-256 of its name, description and input schema, and you changed one of the three in
+`dataflow/mcp/server.py` or `dataflow/mcp/kb_server.py`. Caused on the test machine on 2026-11-13 by lab 29.7's
+updated `lookup_order`, whose description gained one sentence.
+
+Fix **(tested)**: read the new description first. Then pin it again from the repo root:
+
+```
+python -c "import json; from dataflow.mcp.allowlist import ALLOWLIST_PATH, approve, load_allowlist; from dataflow.mcp.bind import bind_mcp_tools, close_mcp; from dataflow.mcp.server import mcp; a = approve(load_allowlist(), 'dataflow', bind_mcp_tools(mcp)); ALLOWLIST_PATH.write_text(json.dumps(a, indent=2) + chr(10), encoding='utf-8'); close_mcp()"
+```
+
+### A `traceparent` you sent arrives as `None` in your own middleware (lab 29.9)
+
+What it means: on FastMCP 4.0.3 `context.message.meta` (the tool call's `_meta`) is `None` inside `on_call_tool`
+even when the client sent `meta={"traceparent": ...}`; the whole `_meta`, protocol keys included, is on the request
+context instead. Caused on the test machine on 2026-11-13 by a probe middleware that read `context.message.meta` while its
+client sent a traceparent.
+
+Fix **(tested)**: read `context.fastmcp_context.request_context.meta`, as `request_meta()` in `dataflow/mcp/audit.py`
+does.
