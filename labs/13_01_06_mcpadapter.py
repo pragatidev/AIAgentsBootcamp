@@ -2,7 +2,7 @@
 """Lab 28.8: bind MCP tools to the DataFlow desk with MCPAdapter.
 
 What we build: the desk answering through MCP. You type mcp_tools, which opens LangChain's MCPAdapter on a
-server and returns its tools as LangChain tools. Then the create_agent desk from Parts 2 and 3 gets those
+server and returns its tools as LangChain tools. Then the create_agent desk from the memory and RAG parts gets those
 tools in place of its local ones and answers "Where is order DF-1002?".
 
 What you learn: the adapter is an MCP client that lives inside LangChain. FastMCP does the wire; out come

@@ -1,6 +1,6 @@
 """Run an async coroutine from sync lab and test code.
 
-MCPAdapter and FastMCP bind session tasks to the event loop that
+MCPAdapter and FastMCP bind connection tasks to the event loop that
 opened them. asyncio.run closes that loop, so the next tool call dies
 with "Event loop is closed". Keep one loop for the process and run
 every MCP coroutine on it.
@@ -26,7 +26,7 @@ def _run_loop(loop: asyncio.AbstractEventLoop) -> None:
 
 
 def get_mcp_loop() -> asyncio.AbstractEventLoop:
-    """The long-lived loop FastMCP sessions live on."""
+    """The long-lived loop FastMCP connections live on."""
     global _loop, _thread
     with _lock:
         if _loop is not None and _loop.is_running():
