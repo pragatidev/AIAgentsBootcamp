@@ -1285,3 +1285,99 @@ on 2026-11-13 by passing `{"configurable": {"thread_id": thread_id}}` without `"
 Fix **(tested)**: build the config once, with the thread id and the callbacks, and pass the same config to the first
 call and to every resume. The waterfall then shows two `LangGraph` spans, the second with `search_policy` and
 `issue_refund`.
+
+## The LangGraph parallel and durable labs (Sections 16 and 17)
+
+### `InvalidUpdateError: At key 'scores'` after every copy has already run (lab 16.4)
+
+```
+langgraph.errors.InvalidUpdateError: At key 'scores': Can receive only one value per step. Use an Annotated key to handle multiple values.
+For troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/INVALID_CONCURRENT_GRAPH_UPDATE
+```
+
+What it means: the copies a `Send` fan starts all run in one superstep, and their writes are applied together when
+that step ends (`langgraph/pregel/_loop.py` line 692, `after_tick`). The key they write has no reducer, so it keeps
+one value and refuses ten. The error comes only after every copy has called the model: in the capture the whole
+run took 34.8 seconds, ten real calls among them, and kept none of their scores. Caused on the test machine on 2026-11-13 by changing
+`scores: Annotated[list, operator.add]` to `scores: list` in `labs/06_07_04_map_reduce_resumes.py`. The same error,
+at key `'results'` and after only two lookups, comes from `results: list` in `labs/06_07_02_two_lookups_in_parallel.py`.
+
+Fix **(tested)**: give the key the reducer, `scores: Annotated[list, operator.add]`, and have each copy return a
+one-item list (`{"scores": [row]}`). If the error instead says `Channel 'scores' already exists with a different
+type`, a node in the graph is type-hinted with another notebook class that has the reducer: type the node on your own
+state class, as the lab's `rank` does.
+
+### The desk still pauses, but the subgraph's notebook is `None` and the room runs again on resume (lab 16.6)
+
+```
+desk next ('billing',) question Approve this adjustment of 22.0 on order DF-1010?
+inner_state None inner next None
+resume with approve
+   billing fetch_invoice
+   billing decide_adjustment
+   billing approve_adjustment
+```
+
+What it means: the billing room was compiled with `checkpointer=False`, so nothing inside it is saved. The desk
+still pauses on the room's `interrupt()` and the answer still arrives, but the room has no save point to come back
+to, so it runs from its first node again and asks the model again before it reaches the approval. If the model
+reads the ticket differently the second time, the answer you gave may never be used. Caused on the test machine on
+2026-11-13 by changing `SUBGRAPH_CHECKPOINTER = None` to `SUBGRAPH_CHECKPOINTER = False` in
+`labs/06_07_06_billing_subgraph.py`.
+
+Fix **(tested)**: compile a room that can pause with `checkpointer=None` (the default: saved inside the one call)
+or `True` (its own history on the thread). With `None` the inner notebook reads `['adjustment', 'invoice', 'ticket']`
+while parked and the resume runs only `approve_adjustment`. Keep `False` for rooms that never pause.
+
+### Every retry spent on an order id that can never pass (lab 17.2)
+
+```
+typo update from __error_handler__carrier_check
+   typo attempt 1 rejected DF-10
+   typo attempt 2 rejected DF-10
+   typo attempt 3 rejected DF-10
+typo carrier {'found': False, 'reason': 'carrier rejected the order id', 'error': 'CarrierRejected'} ...
+```
+
+What it means: the retry policy retries every error, and the carrier's rejection of a bad id is a `ValueError` that
+fails the same way on every call, so three attempts and their backoff waits buy nothing. The update coming from
+`__error_handler__carrier_check` means the handler, not the node, wrote the carrier's result. Caused on the test
+machine on 2026-11-13 by changing `retry_on=CarrierTimeout` to `retry_on=Exception` in
+`labs/06_08_02_retry_and_error_handler.py`.
+
+Fix **(tested)**: retry only the world's failures, `retry_on=CarrierTimeout` (or leave `retry_on` out: LangGraph's
+default list retries a `ConnectionError` and not a `ValueError`). The bad id then takes one attempt, and the error
+handler still writes the typed miss.
+
+### A receipt written twice after a crash and a resume (lab 17.3)
+
+```
+receipts_after_crash 1 next ('send_receipt',) carrier_calls 3
+receipts_after_resume 2 carrier_calls 3
+task_remembered False
+```
+
+What it means: on resume a crashed node runs again from its first line. The receipt was written by a plain function
+inside the node, so nothing remembered it, and the second run wrote it again. Caused on the test machine on
+2026-11-13 by changing `row = write_receipt(ticket, order_id, status).result()` to
+`row = write_receipt.func(ticket, order_id, status)` (the plain function under the task) in
+`labs/06_08_03_task_survives_crash.py`.
+
+Fix **(tested)**: put the side effect in a `@task` and call it from the node, `write_receipt(...).result()`. The
+finished task's row is saved with the run, so the resumed node gets it back: `receipts_after_resume 1`. A task that
+started but did not finish may still run again, so key a write on something already saved when it must never repeat.
+
+### `ValueError: Node timeouts are only supported for async nodes` (lab 17.5)
+
+```
+ValueError: Node timeouts are only supported for async nodes because sync Python execution cannot be safely cancelled in-process. Node 'slow_lookup' is sync.
+```
+
+What it means: `add_node(..., timeout=1)` was given a plain `def`, and the error comes when the graph compiles
+(`langgraph/pregel/_utils.py`, `validate_timeout_supported`), not when `add_node` runs. A plain function that is
+sleeping or waiting cannot be stopped from inside Python. Caused on the test machine on 2026-11-13 by handing
+`slow_lookup_sync` to `add_node` in place of `slow_lookup` in `labs/06_08_06_cap_a_runaway.py`.
+
+Fix **(tested)**: write the node as `async def` and wait with `await` (`await asyncio.sleep(3)` in the lab, an async
+client call in real code), and run the graph with `ainvoke`. The timeout then stops each attempt, the retry policy
+may try once more, and the error handler writes the typed miss.

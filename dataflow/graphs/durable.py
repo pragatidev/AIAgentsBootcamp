@@ -377,3 +377,89 @@ def build_two_length_fan(model=None, defer: bool = True):
     builder.add_edge("deep_check", "summarize")
     builder.add_edge("summarize", END)
     return builder.compile()
+
+# Lecture 17.2 (LG-R5): the carrier node on the carrier that checks the id first, the typed miss that says why the
+# carrier gave nothing, and the desk built on them. retry_on is the one setting Lab 17.2 breaks.
+from dataflow.tools.flaky import CarrierRejected, fetch_carrier_status_checked  # noqa: E402
+
+
+def carrier_check_checked(
+    state: DurableState,
+    runtime: Runtime[DeskContext] | None = None,
+) -> dict[str, Any]:
+    """carrier_check on fetch_carrier_status_checked. A bad order id raises CarrierRejected, a ValueError."""
+    ticket = str(state.get("ticket") or "")
+    order_id = _order_id(ticket)
+    attempt = _attempt_number(runtime)
+    if not order_id:
+        line = f"attempt {attempt} skipped: no order id"
+        CARRIER_LOG.append(line)
+        return {"carrier": {"found": False, "reason": "no order id in the ticket"}, "log": [line]}
+    try:
+        result = fetch_carrier_status_checked.invoke({"order_id": order_id})
+    except CarrierRejected:
+        CARRIER_LOG.append(f"attempt {attempt} rejected {order_id}")
+        raise
+    except CarrierTimeout:
+        CARRIER_LOG.append(f"attempt {attempt} timeout")
+        raise
+    CARRIER_LOG.append(f"attempt {attempt} success")
+    return {"carrier": result, "order": result, "log": list(CARRIER_LOG)}
+
+
+def carrier_miss_handler(state: DurableState, error: NodeError) -> Command:
+    """Retries spent, or an error not worth retrying: a typed miss that names why, then on to policy_search."""
+    cause = getattr(error, "error", error)
+    if isinstance(cause, ValueError):
+        reason = "carrier rejected the order id"
+    else:
+        reason = "carrier unreachable after retries"
+    miss = {"found": False, "reason": reason, "error": type(cause).__name__}
+    return Command(goto="policy_search", update={"carrier": miss, "log": list(CARRIER_LOG) or [reason]})
+
+
+def build_durable_checked(
+    checkpointer=None,
+    model=None,
+    cache=None,
+    cache_ttl: int = POLICY_CACHE_TTL,
+    retry_on: Any = CarrierTimeout,
+):
+    """build_durable on carrier_check_checked and carrier_miss_handler. Lab 17.2's finished version."""
+    if checkpointer is None:
+        checkpointer = InMemorySaver()
+    if cache is None:
+        cache = InMemoryCache()
+
+    def speak_node(
+        state: DurableState,
+        runtime: Runtime[DeskContext] | None = None,
+    ) -> dict[str, str]:
+        return speak(state, runtime=runtime, model=model)
+
+    builder = StateGraph(DurableState, context_schema=DeskContext)
+    builder.add_node(
+        "carrier_check",
+        carrier_check_checked,
+        retry_policy=RetryPolicy(
+            max_attempts=3,
+            initial_interval=0.2,
+            backoff_factor=2.0,
+            retry_on=retry_on,
+        ),
+        error_handler=carrier_miss_handler,
+    )
+    builder.add_node(
+        "policy_search",
+        policy_search,
+        input_schema=PolicyInput,
+        cache_policy=CachePolicy(ttl=cache_ttl),
+    )
+    builder.add_node("send_receipt", send_receipt)
+    builder.add_node("speak", speak_node)
+    builder.add_edge(START, "carrier_check")
+    builder.add_edge("carrier_check", "policy_search")
+    builder.add_edge("policy_search", "send_receipt")
+    builder.add_edge("send_receipt", "speak")
+    builder.add_edge("speak", END)
+    return builder.compile(checkpointer=checkpointer, cache=cache)

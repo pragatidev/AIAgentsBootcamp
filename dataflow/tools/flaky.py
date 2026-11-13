@@ -64,3 +64,27 @@ def fetch_carrier_status(order_id: str) -> dict:
         "status": row.get("status"),
         "item": row.get("item"),
     }
+
+# Lecture 17.2 (LG-R5): the bad-input case. The carrier reads the order id before anything else, so an id it
+# cannot read fails the same way on every call: a retry sends the same id again.
+import re  # noqa: E402
+
+ORDER_ID_SHAPE = re.compile(r"DF-\d{4}")
+
+
+class CarrierRejected(ValueError):
+    """The carrier refused the order id. Bad input, not a flaky world: asking again cannot fix it."""
+
+
+@tool
+def fetch_carrier_status_checked(order_id: str) -> dict:
+    """fetch_carrier_status with the carrier's own id check first.
+
+    An id that is not DF- and four digits raises CarrierRejected (a ValueError) on every call. A good id goes
+    on to the flaky carrier: two timeouts, then the order row.
+    """
+    global _CALLS
+    if not ORDER_ID_SHAPE.fullmatch(order_id or ""):
+        _CALLS += 1
+        raise CarrierRejected(f"carrier rejects order id {order_id!r}: not DF- and four digits")
+    return fetch_carrier_status.invoke({"order_id": order_id})
