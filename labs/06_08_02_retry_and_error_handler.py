@@ -22,8 +22,9 @@ update now comes from __error_handler__carrier_check, with three timeouts and th
 after retries"; the typo ticket: the handler again, one attempt, rejected DF-10, and the miss "carrier rejected
 the order id"; the default retry list's answer for a ValueError (False) and a
 ConnectionError (True); then the cache: policy body runs 1, then still 1 on the second thread, then 2 after
-the ttl. With the break, the typo ticket shows three rejected attempts and the wait between them, then the same
-miss: every try was spent on an error that could never pass.
+the ttl. With the break, the typo ticket shows three rejected attempts, then the same miss: every try was spent
+on an error that could never pass. (The seconds line times the whole run, the model's reply included, so it barely
+moves; the attempts are the proof.)
 """
 
 from importlib.metadata import version
@@ -92,9 +93,9 @@ def add_carrier(builder: StateGraph) -> None:
 
 
 # BREAK: change retry_on=CarrierTimeout to retry_on=Exception (retry everything) and run. T-3002 and the carrier
-# down look the same. Read the typo ticket: attempt 1, 2 and 3 all rejected DF-10, the seconds grow by the backoff
-# between them, and the miss is the same as with one try. A ValueError from bad input fails the same way every
-# time, which is why LangGraph's default list does not retry it. Put it back and run.
+# down look the same. Read the typo ticket: attempt 1, 2 and 3 all rejected DF-10, with a backoff wait before each
+# retry, and the miss is the same as with one try. A ValueError from bad input fails the same way every time, which
+# is why LangGraph's default list does not retry it. Put it back and run.
 
 # %%
 def build_desk(cache_ttl: int = CACHE_TTL):

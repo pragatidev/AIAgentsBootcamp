@@ -16,7 +16,8 @@ saves nothing inside the room, so the desk still pauses but the room has no note
 
 What will be true on your screen: the model line and the versions; the room alone on T-3012 with four keys,
 then the desk on T-3012 with three (invoice and adjustment stayed inside); T-3005 streamed with subgraphs on:
-classify, then billing's fetch_invoice and decide_adjustment, then the pause; the desk waiting at billing with
+classify, then billing's fetch_invoice and decide_adjustment, then the pause, an __interrupt__ line inside the
+room and one at the desk; the desk waiting at billing with
 the question about 22.0 on DF-1010, the room's own notebook (adjustment, invoice, ticket) waiting at
 approve_adjustment; the resume, where only approve_adjustment runs inside; the reply; the drawing with the room
 opened. With the break, the desk still pauses with the same question, the room's notebook reads None, and the

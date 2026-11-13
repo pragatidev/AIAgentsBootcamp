@@ -95,8 +95,8 @@ def send_receipt(state: DurableState) -> dict:
 
 # BREAK: in send_receipt, change the row = ... line to row = write_receipt.func(ticket, order_id, status) (the plain
 # function under the task, called directly) and run. The crash looks the same, with 1 receipt. Read the resume:
-# receipts_after_resume 2 and task_remembered False. send_receipt ran again from its first line and wrote the row
-# again, because nothing saved it. Put it back and run.
+# receipts_after_resume 2 and task_remembered False, and both durability lines say 2 as well. send_receipt ran
+# again from its first line and wrote the row again, because nothing saved it. Put it back and run.
 
 # %%
 def build_desk(saver):
