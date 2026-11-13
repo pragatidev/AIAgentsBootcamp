@@ -78,6 +78,10 @@ Open `.env`. Pick one:
 - leave it on Ollama (default) and run `ollama pull qwen3:8b` (5.2 GB). No key. This is the student default in `config.py`.
 - set `OPENAI_API_KEY` and `OPENAI_CHAT_MODEL`.
 - set `ANTHROPIC_API_KEY` and `ANTHROPIC_CHAT_MODEL`.
+- set `GOOGLE_API_KEY` and `GOOGLE_CHAT_MODEL` (Gemini), after `pip install langchain-google-genai`. Use it for the chat
+  model only and keep the embeddings on Ollama `nomic-embed-text`: the course's indexes are 768 wide, and Google's
+  embedding models make a different width. A free tier has rate limits, so a lab that makes many calls can stop with a
+  too-many-requests error; wait a minute and run it again.
 
 Set the key and its model id together. With a key and no model id, `config.py` prints a warning and uses the local
 model.
