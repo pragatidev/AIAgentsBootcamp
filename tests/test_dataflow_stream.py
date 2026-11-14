@@ -1,4 +1,4 @@
-"""6.6 DataFlow streaming and time travel. Pytest stays green with no live model."""
+"""DataFlow streaming and time travel. Pytest stays green with no live model."""
 
 from dataflow.graphs.v3_memory import build_v3_memory
 from dataflow.graphs.v5_stream import build_v5_stream

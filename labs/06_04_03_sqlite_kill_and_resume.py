@@ -18,8 +18,8 @@ What will be true on your screen: no flag: the model line and the versions, turn
 count, turn two's reply with turns 2 and a higher count, the fresh thread with turns 1. --start: the file,
 the process id, turn one's reply, the checkpoint count, then "dies now" and nothing after. --resume: a
 different process id, the saved notebook (turns 1 and turn one's reply), the thread's rows in the file, then
-turn two with turns 2. With the break, resume finds no notebook, 0 rows, and turn two runs with turns 1, a
-stranger.
+turn two with turns 2. With the break, resume finds no notebook, 0 rows, and turn two runs with turns 1:
+no memory of turn one, though the reply may still read fine.
 
 The file is dataflow/data/checkpoints.sqlite unless DATAFLOW_CHECKPOINTS_PATH names another one.
 """
@@ -60,7 +60,7 @@ def turn(text: str) -> dict:
 
 
 # %%
-# Old lecture 10.2's run: a thread in memory. Runs when no flag is given.
+# The in-memory run: a thread in memory. Runs when no flag is given.
 if not FLAG:
     desk = build_v3_memory(checkpointer=InMemorySaver(), model=chat)
     same = {"configurable": {"thread_id": "lab-13-2-memory"}}
@@ -108,8 +108,8 @@ def resume(db_path: Path) -> None:
 
 # BREAK: in resume, change thread = THREAD to thread = {"configurable": {"thread_id": "lab-13-2-other"}} and run
 # --start, then --resume. Nothing fails. The saved notebook is empty (turns None), the file has 0 rows for that
-# thread, and turn two runs with turns 1: the desk answers the follow-up as a stranger, because the turn-one
-# notebook is filed under another thread id. Put it back and run --start, then --resume.
+# thread, and turn two runs with turns 1: no memory of turn one, though the reply may still read fine. The
+# turn-one notebook is filed under another thread id. Put it back and run --start, then --resume.
 
 # %%
 if FLAG:

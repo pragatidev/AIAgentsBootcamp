@@ -249,12 +249,12 @@ def refund_node(state: HitlState) -> dict[str, Any]:
     return out
 
 
-# PLANTED TRAP for lab 11.2. The write sits before the interrupt, so it
-# runs when the node first executes, before any person answered, and the
-# node re-runs from its top on resume, so it runs again. Never ship this
-# shape.
+# PLANTED TRAP, used by tests/test_dataflow_hitl.py. The write sits before
+# the interrupt, so it runs when the node first executes, before any person
+# answered, and the node re-runs from its top on resume, so it runs again.
+# Never ship this shape.
 def refund_node_planted(state: HitlState) -> dict[str, Any]:
-    """Copy of refund_node with the write before interrupt. Lab 11.2 only."""
+    """Copy of refund_node with the write before interrupt. Tests only."""
     ticket = state.get("ticket", "")
     order = lookup_order_from_ticket(ticket)
     hit = search_policy.invoke({"question": ticket})
