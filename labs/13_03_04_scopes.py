@@ -8,7 +8,7 @@ also carries orders:refund.
 
 What you learn: a scope says what this caller may ever do; the person in front of the refund (lab 29.8)
 decides whether this one call happens now. A company wants both. A desk asks for the scopes it needs and
-no more, and a wildcard scope like full-access is on the specification's list of common mistakes. Scopes
+no more, and a wildcard scope like full-access is on the MCP security best practices page's list of common mistakes. Scopes
 go on the HTTP build only: a tool with a scope rule is hidden from any client that has no token, so on
 the stdio server of Section 28 the refund would simply disappear. On this FastMCP a scope the token lacks
 hides the tool, so the caller sees "Unknown tool", not an HTTP 403.
