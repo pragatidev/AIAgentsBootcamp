@@ -1,5 +1,5 @@
 # %%
-"""Lab 24.7, second file: rerank a shortlist on the DataFlow graph. Run this one after LangGraph.
+"""Extra, taught in the Advanced RAG course: rerank a shortlist on the DataFlow graph. Run it after LangGraph.
 
 What we build: the error code that dense search ranked worst in labs/08_03_07_hybrid_and_rerank.py goes
 through the DataFlow RAG graph twice, with hybrid search and then with hybrid search and a rerank: the

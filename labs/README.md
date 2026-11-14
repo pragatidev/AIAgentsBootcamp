@@ -119,7 +119,7 @@ Curriculum labs are numbered Part.Lecture. Older S1-S16 files stay while that sp
 08_03_03_agentic_rag_graph.py    type grade: nodes and edges, customer and all folders, handbook not cited
 08_03_05_corrective_rag.py       type after_grade: six rows, two grade passes, corrected, REFUSE, runaway
 08_03_07_hybrid_and_rerank.py    type the rank fusion: 20 codes dense, BM25, fused, the create_agent desk dense then hybrid
-08_03_07_rerank_on_the_graph.py  after LangGraph: the same code on the graph, hybrid then hybrid with a rerank, calls and tokens
+08_03_07_rerank_on_the_graph.py  extra, taught in the Advanced RAG course; run after LangGraph: the same code on the graph, hybrid then hybrid with a rerank, calls and tokens
 08_04_02_print_citations.py      type format_sources, on the create_agent desk: support lead and customer, csv row 0, a citation with lines
 08_04_04_refuse_on_empty.py      type should_refuse: retrieved 3 kept 0, REFUSE, cites_rejected; refuse check off, generate_read 0
 08_04_05_rag_evals.py            type refusal_scores: naive vs agentic, tokens and calls, naive answers
