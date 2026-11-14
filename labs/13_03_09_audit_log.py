@@ -87,7 +87,7 @@ class LabAudit(Middleware):
                 log.write(json.dumps(row) + "\n")
 
 
-# BREAK: "log the whole request". Change get_http_headers() above to get_http_headers(include_all=True)
+# BREAK: "log the whole request". Change get_http_headers() on line 75 to get_http_headers(include_all=True)
 # and run. Every line now carries the authorization header, so each clerk's bearer token sits in the log
 # file, and token_in_log prints True. Put it back and run.
 

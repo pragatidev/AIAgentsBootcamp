@@ -1,6 +1,6 @@
 """Local tracer for the DataFlow desk.
 
-Records model-call and tool-call spans as jsonl. Never writes graph state.
+Records run, chain (the graph and each node), model-call and tool-call spans as jsonl. Never writes graph state.
 Works with no LangSmith key. LANGSMITH_TRACING plus LANGSMITH_API_KEY let
 the hosted tracer run on its own; this module does not invent a hosted URL.
 """
@@ -217,7 +217,7 @@ def _error_text(error: BaseException) -> str:
 
 
 class LocalTraceHandler(BaseCallbackHandler):
-    """Records chat-model and tool spans to one jsonl file. Never touches state."""
+    """Records run, chain, chat-model and tool spans to one jsonl file. Never touches state."""
 
     def __init__(
         self,

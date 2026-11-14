@@ -1,5 +1,5 @@
 # %%
-"""Lab 24.7: find a DataFlow error code with hybrid search and a rerank.
+"""Lab 24.7: find a DataFlow error code with hybrid search.
 
 What we build: the DataFlow troubleshooting guide lists its errors by code. For every code in it, we ask
 "What does error <code> mean and how do I fix it?" and print where the chunk holding that code ranks three
@@ -10,7 +10,7 @@ tool searching dense and then hybrid, with the model calls and tokens each run c
 What you learn: an embedding puts meaning in a vector, so an exact token like an error code can sit far
 from its question, while keyword search scores the exact word; fusing by rank needs no shared score scale.
 The search mode is the deployment's switch, never the model's. The rerank, a model reading a shortlist, is
-labs/08_03_07_rerank_on_the_graph.py, for after LangGraph. Advanced RAG owns the depth of both.
+labs/08_03_07_rerank_on_the_graph.py, an extra taught in the Advanced RAG course, which owns the depth of both.
 
 What will be true on your screen: one probe line per code with its three ranks (None when not in the top
 ten), the code dense ranks worst, then for that code each desk's search rank, tool call and passages,

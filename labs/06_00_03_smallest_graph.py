@@ -1,8 +1,8 @@
 # %%
 """Lab 9.3: the smallest graph, every piece of the picture seen working once.
 
-What we build: a graph with a two-key notebook (the state), two nodes and the two fixed edges START to
-classify and reply to END, compiled with an in-memory checkpointer, then run on thread t1 and on thread t2.
+What we build: a graph with a two-key notebook (the state), two nodes and three fixed edges, START to
+classify to reply to END, compiled with an in-memory checkpointer, then run on thread t1 and on thread t2.
 No model is called, so it runs on any machine in about a second.
 
 What you learn: a node is a plain function that reads the notebook and returns only the lines it changes;
