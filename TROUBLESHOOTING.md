@@ -933,8 +933,8 @@ it, because a stream starts only when it is read. Caused on the test machine on 
 `refund_thread, ` from the resume line of `full_run` in `labs/06_06_06_full_run.py`.
 
 Fix **(tested)**: pass the same config the refund parked on, `graph.stream(Command(resume="approve"), refund_thread,
-...)`. A config with a different `thread_id` does not raise: it starts that thread fresh and parks again, and the
-approval is lost (lab 14.3).
+...)`. A config with a different `thread_id` does not raise: it starts a fresh run on that thread with no ticket,
+and the approval is lost (lab 14.3).
 
 ### A parked run is shown as finished, with `reply None` (lab 15.3)
 
