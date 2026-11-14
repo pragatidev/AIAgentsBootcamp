@@ -217,7 +217,7 @@ def _error_text(error: BaseException) -> str:
 
 
 class LocalTraceHandler(BaseCallbackHandler):
-    """Records chat-model and tool spans to one jsonl file. Never touches state."""
+    """Records run, chain, chat-model and tool spans to one jsonl file. Never touches state."""
 
     def __init__(
         self,
