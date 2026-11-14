@@ -5,8 +5,8 @@ What we build: three tests that pin the DataFlow v4 desk's policy, typed here in
 parks: it answers and nothing is left to run. A refund always parks at the refund node before any row is written.
 And a partial run, the docs' way to test one branch: on a fresh checkpointer, update_state(..., as_node="classify")
 writes the state as if classify had just run with route refund, then invoke(None, ..., interrupt_after=["refund"])
-runs from there and stops at the refund node. The classifier is never asked. Then the same two tickets go through
-the real model, and the last cell runs the package's own human-in-the-loop tests.
+runs from there and stops at the refund node's own interrupt(). The classifier is never asked. Then the same two
+tickets go through the real model, and the last cell runs the package's own human-in-the-loop tests.
 
 What you learn: a pause is a policy, and a policy needs a test that would fail if someone broke it. Each test gets
 its own InMemorySaver, so no thread leaks from one test into the next. The partial run tests the refund road on its
