@@ -5,7 +5,7 @@ What we build: a small client for the DataFlow refund desk that talks to the Age
 graph in this process. The lab starts `langgraph dev` (the server that serves every graph langgraph.json names, on one
 port), and the client you type starts a thread on the desk, streams a refund run until it parks at the reviewer's
 question, reads the thread's saved state from the server, and resumes it with the reviewer's answer. The same server
-is the one Studio draws: open the Studio link it prints while the server runs and the thread you just ran is there.
+is the one Studio draws. It stops after the approval; set STUDIO_HOLD_SECONDS to keep it up for the Studio link.
 
 What you learn: langgraph.json is the menu. Each graph id on it (desk, team, nightly, replay) points at a file and a
 variable, and the server keeps every thread's checkpoints itself, which is why the served desk is compiled with no

@@ -1,6 +1,6 @@
 """Local tracer for the DataFlow desk.
 
-Records model-call and tool-call spans as jsonl. Never writes graph state.
+Records run, chain (the graph and each node), model-call and tool-call spans as jsonl. Never writes graph state.
 Works with no LangSmith key. LANGSMITH_TRACING plus LANGSMITH_API_KEY let
 the hosted tracer run on its own; this module does not invent a hosted URL.
 """
