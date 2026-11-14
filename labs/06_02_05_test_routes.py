@@ -9,8 +9,8 @@ escalate, the way a broken prompt would. Then it runs the package's own route te
 
 What you learn: a test is worth what it would catch. Yours fails when the route is wrong, and says which
 ticket. A test that only checks there is a reply passes on a wrong route, because every desk writes a reply:
-it passes for a reason that proves nothing. The scripted model (tests/fixtures/fake_model.py) is what
-makes all of this run with no model and no network, which is why every later test in the course uses it.
+it passes for a reason that proves nothing. The scripted model (tests/fixtures/fake_model.py) makes all of
+this run with no model and no network, which is why every later test that needs a stand-in model uses it.
 
 What will be true on your screen: the model line (none: only the scripted model) and the versions, PASS for
 your test with the right routes, FAIL with the ticket and the wrong route when every ticket is sent to
