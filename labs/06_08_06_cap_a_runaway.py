@@ -18,9 +18,9 @@ the error handler turns the last one into a typed miss. A spend cap is plain sta
 What will be true on your screen: the model line and the versions, default_recursion_limit 10007, then one
 stopped_by line per brake: recursion_limit with Recursion limit of 8 reached; remaining_steps with the steps
 taken and "The desk could not finish this request within its step budget."; timeout with NodeTimeoutError, the
-seconds the two attempts and the wait between them took in all, and the detail line saying the last attempt was
-stopped at its one second; spend_cap with the tokens spent over the budget of 600 and the model calls. With the break, the run stops when build_timeout compiles, on ValueError: Node timeouts are only
-supported for async nodes because sync Python execution cannot be safely cancelled in-process.
+seconds the two attempts and the wait between them took in all, and the detail line naming the one second timeout and the attempt's elapsed
+time; spend_cap with the tokens spent over the budget of 600 and the model calls. With the break, the run stops when build_timeout compiles,
+on ValueError: Node timeouts are only supported for async nodes because sync Python execution cannot be safely cancelled in-process.
 """
 
 from importlib.metadata import version
