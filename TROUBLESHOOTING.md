@@ -1381,3 +1381,53 @@ sleeping or waiting cannot be stopped from inside Python. Caused on the test mac
 Fix **(tested)**: write the node as `async def` and wait with `await` (`await asyncio.sleep(3)` in the lab, an async
 client call in real code), and run the graph with `ainvoke`. The timeout then stops each attempt, the retry policy
 may try once more, and the error handler writes the typed miss.
+
+## The LangGraph graph-change and fork runs (Section 18, lab 18.4 and lab 18.2 by code)
+
+### An approved refund pays nothing after a deploy, and the thread shows `next ()` (lab 18.4)
+
+```
+resume lab-18-4-b error none reply None
+resume lab-18-4-b save_points 3 to 3 refunds_rows 1 to 1
+resume lab-18-4-b pending_writes ['__resume__', '__interrupt__']
+```
+
+What it means: the thread was parked in a node called `refund`, and the graph you resumed it with no longer has a node
+by that name. On langgraph 1.2.11 nothing fails: the resume returns the old values, runs no node, pays nothing and
+writes no new save point; the approval is only kept in the file as a pending write. The new graph cannot see the
+waiting task, so `get_state` through it shows `next ()` and no interrupt, which looks like a finished thread. Caused on
+the test machine on 2026-11-14 by building the desk with the refund node renamed to `refunds` and resuming a thread
+parked in `refund` (change 2 in `labs/06_10_04_change_a_graph_under_parked_threads.py`).
+
+Fix **(tested)**: build the graph with the old node name again. The thread is read as parked at `('refund',)` with its
+interrupt, and an approve pays (the lab's rollback cell: `refunds_rows 1 to 2`). To rename for real, add the new node
+beside the old one, send new runs to the new one, and remove the old one only when no parked thread names it.
+
+### The check before you ship says `ship True` while a thread waits in the node you rename (lab 18.4)
+
+```
+leaving ['refund'] blocked {} ship True
+```
+
+What it means: the parked threads were read through the graph you are about to ship. That graph has no node called
+`refund`, so a thread waiting there shows no interrupt and the check finds nothing to block. Caused on the test machine
+on 2026-11-14 by changing `parked = parked_threads(saver, live_graph)` to `parked = parked_threads(saver, new_graph)`
+in `labs/06_10_04_change_a_graph_under_parked_threads.py`.
+
+Fix **(tested)**: read the parked threads through the graph that is live today, the one they parked in. As the lab
+ships it prints `leaving ['refund'] blocked {'lab-18-4-b': ('refund',)} ship False`.
+
+### Two refund rows for one ticket after a re-run from before `refund` (lab 18.2 by code)
+
+```
+fork reply Refund issued for order DF-1001. Amount: 49.0. refunds_rows 2
+```
+
+What it means: a fork runs the nodes after its save point again, for real. The refund node parks again with the same
+question, and an approve on the fork calls `issue_refund` again, which appends to the same ledger; the fork does not
+know the first approval happened. Caused on the test machine on 2026-11-14 by forking from the save point where
+`refund` runs next, after the first approval, and answering the fork with approve
+(`labs/06_10_02_fork_before_refund.py`).
+
+Fix **(tested)**: answer a fork of a paid refund with reject, which writes no row (`refunds_rows` stays 1). A refund
+node that reads the ledger for the order before it writes would stop the second row too; this lab does not build one.

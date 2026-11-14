@@ -77,3 +77,25 @@ def test_break_planted_bad_order_finds_check(traces, tmp_path, capsys):
     ]
     waterfall = out[out.index("waterfall") + 1 :]
     assert not any("carrier" in line for line in waterfall)
+
+
+def test_raw_trace_lines_in_file_order(traces, capsys):
+    # LG-R7: the last cell prints the trace file's lines as they sit on disk, each after its line number.
+    import json
+
+    _, out = _run(LAB, capsys)
+    start = next(i for i, line in enumerate(out) if line.startswith("trace_file_lines "))
+    raw = out[start + 1 :]
+    numbers, lines = zip(*(line.split(" ", 1) for line in raw))
+    assert list(numbers) == [str(n) for n in range(1, len(raw) + 1)]
+    assert list(lines) == next(traces.glob("*.jsonl")).read_text(encoding="utf-8").splitlines()
+    spans = [json.loads(line) for line in lines]
+    assert [(span["kind"], span["name"], span["status"]) for span in spans] == [
+        ("chain", "stash", "ok"),
+        ("chain", "check", "ok"),
+        ("tool", "fetch_carrier_status", "error"),
+        ("chain", "carrier", "error"),
+        ("chain", "LangGraph", "error"),
+        ("run", "lab-18-3", "error"),
+    ]
+    assert {span.get("error") for span in spans[2:]} == {CARRIER_ERROR}

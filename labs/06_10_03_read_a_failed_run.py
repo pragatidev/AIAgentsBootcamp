@@ -123,3 +123,12 @@ found = first_failure(trace_file, graph, config)
 print("waterfall")
 print(render_waterfall(trace_file))
 reset_flaky()
+
+# %%
+# The trace file as it sits on disk: one line per step, each written when its step ended, so a step's line comes
+# after the lines of the steps inside it. Read the status on each line from the top. The first line with status
+# error is where the failure began (the tool); the carrier node, the graph (LangGraph) and the run come after it,
+# each repeating the same error on its way out. Every line printed below is the file's line, unchanged.
+print("trace_file_lines", Path(trace_file).name)
+for number, line in enumerate(Path(trace_file).read_text(encoding="utf-8").splitlines(), start=1):
+    print(number, line)
