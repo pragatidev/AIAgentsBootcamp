@@ -235,11 +235,20 @@ _warned_thinking: set[str] = set()
 # OpenAI. Older GPT-4 and GPT-3.5 models have no thinking to switch. gpt-6-astra and gpt-6.1-sol list
 # low as their lowest effort, no "none"; every other model gets "none".
 _OPENAI_NO_THINKING = ("gpt-4", "gpt-3.5", "chatgpt-4o")
-_OPENAI_LOWEST_IS_LOW = ("gpt-6-astra", "gpt-6.1-sol")
+_OPENAI_LOWEST_IS_LOW = ("gpt-6-astra", "gpt-6.1-sol", "o1", "o3", "o4")
+# The first GPT-5 models (gpt-5, gpt-5-mini, gpt-5-nano) came before "none"; "minimal" is their least.
+# gpt-5.1 and later take "none", so only "gpt-5" itself and "gpt-5-..." match here, never "gpt-5.1".
+_OPENAI_LOWEST_IS_MINIMAL = ("gpt-5-",)
 # Anthropic. These refuse thinking {"type": "disabled"}; low effort is their least thinking.
 _CLAUDE_CANNOT_SWITCH_OFF = ("claude-opus-5-5", "claude-fable-5", "claude-mythos")
 # Sonnet 5.5 refuses "disabled" too; "between_tools" switches off the thinking before its answer.
 _CLAUDE_BETWEEN_TOOLS = ("claude-sonnet-5-5",)
+# Claude's thinking docs: these models answer 400 to any non-default temperature, thinking or not, so
+# the temperature 0 that _anthropic_chat sets is taken off again for them.
+_CLAUDE_DEFAULT_TEMPERATURE_ONLY = (
+    "claude-fable", "claude-mythos", "claude-opus-5", "claude-opus-4-8", "claude-opus-4-7",
+    "claude-sonnet-5", "claude-haiku-5",
+)
 # These refuse adaptive thinking; they think only with a budget of at least 1,024 tokens.
 _CLAUDE_BUDGET_ONLY = (
     "claude-opus-4-5", "claude-sonnet-4-5", "claude-haiku-4-5",
@@ -268,6 +277,9 @@ def _openai_thinking(model: str, on: bool) -> dict:
     if name.startswith(_OPENAI_LOWEST_IS_LOW):
         _warn_thinking(model, 'cannot switch thinking off, so reasoning=False asks for reasoning_effort "low".')
         return {"reasoning_effort": "low"}
+    if name == "gpt-5" or name.startswith(_OPENAI_LOWEST_IS_MINIMAL):
+        _warn_thinking(model, 'cannot switch thinking off, so reasoning=False asks for reasoning_effort "minimal".')
+        return {"reasoning_effort": "minimal"}
     return {"reasoning_effort": "none"}
 
 
@@ -312,6 +324,8 @@ def get_chat_model(**kwargs):
     reasoning = kwargs.get("reasoning")
     num_predict = kwargs.get("num_predict")
     update: dict = {}
+    if kind == "ChatAnthropic" and chat.model.startswith(_CLAUDE_DEFAULT_TEMPERATURE_ONLY):
+        update["temperature"] = None
     if num_predict is not None:
         update["max_output_tokens" if kind == "ChatGoogleGenerativeAI" else "max_tokens"] = int(num_predict)
     if reasoning is not None:
