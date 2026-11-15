@@ -40,10 +40,10 @@ else:
 
 # %%
 # A provider is ready when its key and its model id are both set.
-# The order is the one get_chat_model uses: OpenAI first, then Anthropic.
+# The order is the one get_chat_model uses: OpenAI first, then Anthropic, then Google.
 providers = [
     ("OPENAI", config.OPENAI_CHAT_MODEL),
-    ("ANTHROPIC", config.ANTHROPIC_CHAT_MODEL),
+    ("ANTHROPIC", config.ANTHROPIC_CHAT_MODEL), ("GOOGLE", config.GOOGLE_CHAT_MODEL),
 ]
 keyed = [(name, model) for name, model in providers if os.environ.get(f"{name}_API_KEY", "").strip()]
 hosted_id = next((model for _, model in keyed if model), "")
