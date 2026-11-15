@@ -24,10 +24,11 @@ def _no_hosted_call(**kwargs):
 
 @pytest.fixture
 def lab(monkeypatch, capsys):
-    for name in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY"):
+    for name in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY"):
         monkeypatch.delenv(name, raising=False)
     monkeypatch.setattr(config, "OPENAI_CHAT_MODEL", "")
     monkeypatch.setattr(config, "ANTHROPIC_CHAT_MODEL", "")
+    monkeypatch.setattr(config, "GOOGLE_CHAT_MODEL", "")
     monkeypatch.setattr(config, "get_local_chat_model", lambda **kwargs: _StubLocal())
     monkeypatch.setattr(config, "get_chat_model", _no_hosted_call)
 

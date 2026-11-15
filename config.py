@@ -215,3 +215,111 @@ def _price(name: str) -> float | None:
 
 PRICE_PER_MTOK_IN = _price("PRICE_PER_MTOK_IN")
 PRICE_PER_MTOK_OUT = _price("PRICE_PER_MTOK_OUT")
+
+
+# Thinking and reply length on every provider (added 2026-11-15, from a student's question).
+# get_chat_model above picks the provider. On the local path it hands reasoning= and num_predict= to
+# ChatOllama; its three hosted branches build their model without them. The get_chat_model below runs
+# the one above, then gives the hosted model the same two settings in that provider's own words:
+#   num_predict=N    at most N output tokens, thinking included: num_predict on Ollama, max_tokens on
+#                    OpenAI and Anthropic, max_output_tokens on Google. Left out, a hosted model keeps
+#                    its library's default.
+#   reasoning=False  thinking off. Where a model cannot switch it off, the least thinking it allows,
+#                    and one warning line says so.
+#   reasoning=True   thinking on.
+#   left out         the model's own default, exactly as before.
+# Which model takes which value comes from each provider's docs, read 2026-11-15.
+_pick_chat_model = get_chat_model
+_warned_thinking: set[str] = set()
+
+# OpenAI. Older GPT-4 and GPT-3.5 models have no thinking to switch. gpt-6-astra and gpt-6.1-sol list
+# low as their lowest effort, no "none"; every other model gets "none".
+_OPENAI_NO_THINKING = ("gpt-4", "gpt-3.5", "chatgpt-4o")
+_OPENAI_LOWEST_IS_LOW = ("gpt-6-astra", "gpt-6.1-sol")
+# Anthropic. These refuse thinking {"type": "disabled"}; low effort is their least thinking.
+_CLAUDE_CANNOT_SWITCH_OFF = ("claude-opus-5-5", "claude-fable-5", "claude-mythos")
+# Sonnet 5.5 refuses "disabled" too; "between_tools" switches off the thinking before its answer.
+_CLAUDE_BETWEEN_TOOLS = ("claude-sonnet-5-5",)
+# These refuse adaptive thinking; they think only with a budget of at least 1,024 tokens.
+_CLAUDE_BUDGET_ONLY = (
+    "claude-opus-4-5", "claude-sonnet-4-5", "claude-haiku-4-5",
+    "claude-opus-4-1", "claude-opus-4-0", "claude-sonnet-4-0", "claude-opus-4-2", "claude-sonnet-4-2",
+)
+# Google. Gemini has no level that switches thinking off. These four take "minimal", the others "low".
+# gemini-2.5-flash-lite is the one model that does not think unless asked.
+_GEMINI_MINIMAL = ("gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3-flash")
+_GEMINI_OFF_BY_DEFAULT = ("gemini-2.5-flash-lite",)
+
+
+def _warn_thinking(model: str, said: str) -> None:
+    """One plain line, once per model, when reasoning=False cannot switch thinking fully off."""
+    if model in _warned_thinking:
+        return
+    _warned_thinking.add(model)
+    print(f"warning: {model} {said}", file=sys.stderr)
+
+
+def _openai_thinking(model: str, on: bool) -> dict:
+    name = model.lower()
+    if name.startswith(_OPENAI_NO_THINKING):
+        return {}
+    if on:
+        return {"reasoning_effort": "medium"}
+    if name.startswith(_OPENAI_LOWEST_IS_LOW):
+        _warn_thinking(model, 'cannot switch thinking off, so reasoning=False asks for reasoning_effort "low".')
+        return {"reasoning_effort": "low"}
+    return {"reasoning_effort": "none"}
+
+
+def _anthropic_thinking(model: str, on: bool, max_tokens: int) -> dict:
+    if model.startswith(_CLAUDE_BUDGET_ONLY):
+        if not on:
+            return {"thinking": {"type": "disabled"}}
+        if max_tokens <= 1024:
+            raise ValueError(
+                f"{model} thinks only with a budget of at least 1024 tokens, inside max_tokens. "
+                "Raise num_predict above 1024, or use reasoning=False."
+            )
+        return {"thinking": {"type": "enabled", "budget_tokens": 1024}, "temperature": None}
+    if on:
+        return {"thinking": {"type": "adaptive"}, "temperature": None}
+    if model.startswith(_CLAUDE_CANNOT_SWITCH_OFF):
+        _warn_thinking(model, 'cannot switch thinking off, so reasoning=False asks for effort "low".')
+        return {"thinking": {"type": "adaptive"}, "reasoning_effort": "low"}
+    if model.startswith(_CLAUDE_BETWEEN_TOOLS):
+        _warn_thinking(model, 'cannot switch thinking fully off, so reasoning=False sends "between_tools".')
+        return {"thinking": {"type": "between_tools"}}
+    return {"thinking": {"type": "disabled"}}
+
+
+def _google_thinking(model: str, on: bool) -> dict:
+    name = model.removeprefix("models/")
+    if name.startswith(_GEMINI_OFF_BY_DEFAULT):
+        return {"reasoning_effort": "medium"} if on else {}
+    if on:
+        return {}
+    lowest = "minimal" if name.startswith(_GEMINI_MINIMAL) else "low"
+    _warn_thinking(name, f'cannot switch thinking off, so reasoning=False asks for thinking_level "{lowest}".')
+    return {"reasoning_effort": lowest}
+
+
+def get_chat_model(**kwargs):
+    """The chooser above, with reasoning= and num_predict= kept on every provider, hosted ones too."""
+    chat = _pick_chat_model(**kwargs)
+    kind = type(chat).__name__
+    if kind == "ChatOllama":
+        return chat
+    reasoning = kwargs.get("reasoning")
+    num_predict = kwargs.get("num_predict")
+    update: dict = {}
+    if num_predict is not None:
+        update["max_output_tokens" if kind == "ChatGoogleGenerativeAI" else "max_tokens"] = int(num_predict)
+    if reasoning is not None:
+        on = bool(reasoning)
+        if kind == "ChatOpenAI":
+            update.update(_openai_thinking(chat.model_name, on))
+        elif kind == "ChatAnthropic":
+            update.update(_anthropic_thinking(chat.model, on, update.get("max_tokens", chat.max_tokens)))
+        elif kind == "ChatGoogleGenerativeAI":
+            update.update(_google_thinking(chat.model, on))
+    return chat.model_copy(update=update) if update else chat
