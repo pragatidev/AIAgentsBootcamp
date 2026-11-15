@@ -83,6 +83,25 @@ def test_openai_lowest_effort_is_low_on_astra_and_sol_with_one_warning(only, cap
     assert all("cannot switch thinking off" in line for line in err)
 
 
+@pytest.mark.parametrize("model", ["gpt-5", "gpt-5-mini", "gpt-5-nano", "gpt-5-2025-08-07"])
+def test_openai_first_gpt5_models_take_minimal_not_none(only, capsys, model):
+    only("OPENAI", model)
+    body = openai_body(config.get_chat_model(reasoning=False))
+    assert body["reasoning_effort"] == "minimal"
+    assert '"minimal"' in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("model", ["gpt-5.1", "gpt-5.4-mini", "gpt-5.6-terra"])
+def test_openai_gpt5_1_and_later_take_none(only, model):
+    only("OPENAI", model)
+    assert openai_body(config.get_chat_model(reasoning=False))["reasoning_effort"] == "none"
+
+
+def test_openai_o_series_lowest_is_low(only):
+    only("OPENAI", "o4-mini")
+    assert openai_body(config.get_chat_model(reasoning=False))["reasoning_effort"] == "low"
+
+
 def test_openai_gpt4_gets_the_cap_and_no_effort(only):
     only("OPENAI", "gpt-4.1-mini")
     body = openai_body(config.get_chat_model(reasoning=False, num_predict=64))

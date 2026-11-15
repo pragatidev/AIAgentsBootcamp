@@ -35,12 +35,19 @@ def test_anthropic_request_builds_for_every_current_model(no_keys, model_id):
     assert payload["model"] == model_id
 
 
-def test_fable_gets_the_default_temperature_and_opus_keeps_zero(no_keys):
+def test_new_claude_models_get_the_default_temperature_and_older_ones_keep_zero(no_keys):
+    # Claude's thinking docs (read 2026-11-15): Fable, Mythos, Opus 5.5, Opus 5, Opus 4.8, Opus 4.7,
+    # Sonnet 5.5, Sonnet 5 and Haiku 5.5 answer 400 to any non-default temperature.
     no_keys.setenv("ANTHROPIC_API_KEY", FAKE_ANTHROPIC_KEY)
-    no_keys.setattr(config, "ANTHROPIC_CHAT_MODEL", "claude-fable-5-1")
-    assert config.get_chat_model().temperature is None
-    no_keys.setattr(config, "ANTHROPIC_CHAT_MODEL", "claude-opus-5-5")
-    assert config.get_chat_model().temperature == 0
+    for model_id in ("claude-fable-5-1", "claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"):
+        no_keys.setattr(config, "ANTHROPIC_CHAT_MODEL", model_id)
+        chat = config.get_chat_model()
+        assert chat.temperature is None, model_id
+        body = chat._get_request_payload([HumanMessage(content="hi")])
+        assert "temperature" not in body and "temperature" not in body.get("extra_body", {}), model_id
+    for model_id in ("claude-sonnet-4-6", "claude-haiku-4-5-20251001"):
+        no_keys.setattr(config, "ANTHROPIC_CHAT_MODEL", model_id)
+        assert config.get_chat_model().temperature == 0, model_id
 
 
 @pytest.mark.parametrize(
