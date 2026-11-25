@@ -53,7 +53,7 @@ for day in candidates:
         chosen = day
         break
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("date_counts", dict(sorted(counts.items())))
 print("max_tickets", max_n)
 print("date", chosen)

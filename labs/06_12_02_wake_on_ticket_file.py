@@ -67,7 +67,7 @@ for extra in ("", "-wal", "-shm"):
     if leftover.exists():
         leftover.unlink()
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("drop", drop.as_posix())
 print("sqlite", db_path.as_posix())
 print("files", sorted(p.name for p in drop.glob("*.json")))

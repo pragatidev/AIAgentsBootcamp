@@ -40,7 +40,7 @@ db_path = root / "dataflow" / "data" / "checkpoints_14.sqlite"
 receipts_path = get_receipts_path()
 thread = {"configurable": {"thread_id": "lab-14-3"}}
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("ticket_id", ticket["ticket_id"])
 print("db", db_path.as_posix())
 print("receipts", receipts_path.as_posix())

@@ -30,7 +30,7 @@ from techcorp.harness.coding_agent import (
 
 notes_path = root / "techcorp" / "harness" / "sandbox" / "notes.md"
 committed_notes = notes_path.read_text(encoding="utf-8")
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("agents_path", AGENTS_PATH.as_posix())
 
 # %%

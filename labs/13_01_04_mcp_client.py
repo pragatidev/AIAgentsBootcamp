@@ -28,7 +28,7 @@ from dataflow.mcp.server import PID_PATH
 run_path = root / "dataflow" / "mcp" / "runs" / "client.json"
 committed_run = run_path.read_text(encoding="utf-8") if run_path.is_file() else ""
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("python", sys.executable)
 print("config_command_was", "python")
 cfg = load_config(sys.executable)

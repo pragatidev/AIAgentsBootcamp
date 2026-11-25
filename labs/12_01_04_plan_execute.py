@@ -22,7 +22,7 @@ FIXTURE_PLAN = {
     "steps": [{"tool": "retrieve", "why": "read the refund policy"}],
 }
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("ticket", TICKET)
 
 graph = build_plan_execute()

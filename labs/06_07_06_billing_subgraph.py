@@ -35,7 +35,7 @@ for line in tickets_path.read_text(encoding="utf-8").splitlines():
 
 ticket_3012 = by_id["T-3012"]
 ticket_3005 = by_id["T-3005"]
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("ticket_3012", ticket_3012["ticket_id"], ticket_3012["text"])
 print("ticket_3005", ticket_3005["ticket_id"], ticket_3005["text"])
 

@@ -31,7 +31,7 @@ fixture_path = root / "dataflow" / "guardrails" / "fixtures" / "escalate.md"
 run_path = root / "dataflow" / "guardrails" / "runs" / "unguarded_comply.json"
 committed_fixture = fixture_path.read_text(encoding="utf-8")
 committed_run = run_path.read_text(encoding="utf-8") if run_path.is_file() else ""
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("fixture", fixture_path.as_posix())
 
 PHRASINGS = [

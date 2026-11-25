@@ -42,7 +42,7 @@ group.add_argument("--start", action="store_true")
 group.add_argument("--resume", action="store_true")
 args, _ = parser.parse_known_args()
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("db", db_path.as_posix())
 print("thread", "lab-10-3")
 

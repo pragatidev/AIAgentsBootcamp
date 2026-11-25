@@ -23,7 +23,7 @@ from dataflow.graphs.v3_memory import (
     preference_namespace,
 )
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 
 store = InMemoryStore()
 saver = InMemorySaver()

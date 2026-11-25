@@ -35,7 +35,7 @@ from dataflow.tracing import (
 )
 
 TICKET = "What is the customer return window?"
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("ticket", TICKET)
 print(
     "tracing_callbacks_types",

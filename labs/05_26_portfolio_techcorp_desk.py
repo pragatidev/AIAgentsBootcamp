@@ -22,7 +22,7 @@ from techcorp.agent.context import DeskContext
 from techcorp.agent.desk import DEFAULT_MIDDLEWARE, build_techcorp_desk
 from techcorp.tools import accounts as accounts_mod
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("readme", (root / "techcorp" / "README.md").is_file())
 print( (root / "techcorp" / "README.md").read_text(encoding="utf-8")[:400] )
 

@@ -26,7 +26,7 @@ from dataflow.graphs.v4_hitl import build_v4_hitl
 from dataflow.ui.desk_core import events_as_json, stream_tokens
 from dataflow.ui.page_server import run_page_shot
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 
 handle = tempfile.NamedTemporaryFile(prefix="refunds-", suffix=".jsonl", delete=False)
 handle.close()

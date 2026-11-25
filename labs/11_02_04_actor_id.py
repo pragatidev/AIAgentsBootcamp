@@ -26,7 +26,7 @@ from dataflow.tools.refund import (
     resume_confirm,
 )
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 handle = tempfile.NamedTemporaryFile(prefix="refunds-", suffix=".jsonl", delete=False)
 handle.close()
 os.environ["DATAFLOW_REFUNDS_PATH"] = handle.name

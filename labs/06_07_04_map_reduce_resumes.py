@@ -22,7 +22,7 @@ from talentflow.graphs.score_resumes import (
     load_resumes,
 )
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 
 loaded = load_resumes()
 sends = fan_out(loaded)

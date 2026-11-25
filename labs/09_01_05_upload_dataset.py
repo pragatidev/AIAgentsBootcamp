@@ -38,7 +38,7 @@ from eval.langsmith_dataset import (
 ROW_IDS = ["policy-return", "policy-shipping", "refuse-coffee"]
 MISSING_ID = "policy-shipping"
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("dataset_name", DATASET_NAME)
 rows = load_named_rows(ROW_IDS)
 print("n_rows", len(rows))

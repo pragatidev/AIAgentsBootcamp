@@ -25,7 +25,7 @@ if hasattr(sys.stdout, "reconfigure"):
 import config
 from eval.ui.test_dataflow_chat import read_answer_early
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 
 
 def free_port() -> int:

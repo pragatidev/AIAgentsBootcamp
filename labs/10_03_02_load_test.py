@@ -21,7 +21,7 @@ import config
 from eval.load.replay import print_table, run_replay
 from eval.runners.golden import load_golden
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("cell", "run_replay")
 report = run_replay(concurrency=4, timeout=60.0)
 print_table(report)

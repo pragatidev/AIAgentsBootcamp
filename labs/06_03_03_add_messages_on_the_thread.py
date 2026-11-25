@@ -29,7 +29,7 @@ for line in tickets_path.read_text(encoding="utf-8").splitlines():
 # Same customer, same order: T-3001 then the follow-up T-3028.
 turn_ids = ["T-3001", "T-3028"]
 print("turn_ticket_ids", turn_ids)
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 for ticket_id in turn_ids:
     print("chosen", ticket_id, by_id[ticket_id]["text"])
 

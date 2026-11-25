@@ -33,7 +33,7 @@ for line in tickets_path.read_text(encoding="utf-8").splitlines():
         ticket = row
         break
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("ticket_id", ticket["ticket_id"])
 print("text", ticket["text"])
 

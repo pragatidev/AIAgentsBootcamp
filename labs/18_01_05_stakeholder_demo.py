@@ -26,7 +26,7 @@ if hasattr(sys.stdout, "reconfigure"):
 import config
 from deploy.smoke import DEFAULT_LOOKUP, DEFAULT_PARK, DEFAULT_REFUSE
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("spec", (root / "career" / "pm" / "spec.md").as_posix())
 print("demo_script", (root / "career" / "pm" / "demo_script.md").as_posix())
 print("spec_page")
@@ -130,7 +130,7 @@ demo = {
 try:
     wait_health(url)
     print("service", url)
-    print("model_from_config", config.CHAT_MODEL)
+    print("model_from_config", config.chat_model_id())
 
     status, body = post_run(url, {"ticket": DEFAULT_LOOKUP})
     print("lookup_status", status)

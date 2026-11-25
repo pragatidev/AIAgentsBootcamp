@@ -27,7 +27,7 @@ from dataflow.mcp.bind import bind_mcp_tools, bound_names, build_desk, close_mcp
 from dataflow.mcp.client import load_config
 from dataflow.mcp.server import PID_PATH
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("import", "from langchain.mcp import MCPAdapter")
 
 cfg = load_config(sys.executable)

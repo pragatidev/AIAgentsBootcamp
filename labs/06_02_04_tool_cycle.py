@@ -27,7 +27,7 @@ for line in tickets_path.read_text(encoding="utf-8").splitlines():
         break
 print("ticket_id", ticket["ticket_id"])
 print("text", ticket["text"])
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 
 # %%
 graph = build_v2_tools()

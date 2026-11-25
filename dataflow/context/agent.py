@@ -157,7 +157,7 @@ def compact_messages(
 def chat_caller(num_predict: int = 80):
     """Plain chat, no tools. Used by the rot and compaction labs."""
     import config
-
+    config.local_on_purpose("on this branch the context and memory labs share one caller with the context rot lab, which needs Ollama's own default context window")
     model = config.get_local_chat_model(reasoning=False, num_predict=num_predict)
 
     def call(messages: list) -> dict:

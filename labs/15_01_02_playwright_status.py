@@ -29,7 +29,7 @@ from techcorp.browser.playwright_tool import (
     serve_fixtures,
 )
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("outage_line_expected", OUTAGE_LINE)
 
 server = serve_fixtures()

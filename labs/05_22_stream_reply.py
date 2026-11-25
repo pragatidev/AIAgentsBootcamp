@@ -20,7 +20,7 @@ import config
 from techcorp.agent.context import DeskContext
 from techcorp.agent.desk import build_techcorp_desk
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 
 tickets_path = root / "techcorp" / "data" / "tickets.jsonl"
 ticket = None

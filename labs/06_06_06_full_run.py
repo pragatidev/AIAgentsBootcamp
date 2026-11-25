@@ -31,7 +31,7 @@ for line in tickets_path.read_text(encoding="utf-8").splitlines():
 
 lookup_ticket = by_id["T-3002"]
 refund_ticket = by_id["T-3001"]
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("lookup_ticket_id", lookup_ticket["ticket_id"])
 print("lookup_text", lookup_ticket["text"])
 print("refund_ticket_id", refund_ticket["ticket_id"])

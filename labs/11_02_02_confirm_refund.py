@@ -24,7 +24,7 @@ from dataflow.tools.refund import (
     resume_confirm,
 )
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 run_path = root / "dataflow" / "guardrails" / "runs" / "confirm.json"
 committed_run = run_path.read_text(encoding="utf-8") if run_path.is_file() else ""
 

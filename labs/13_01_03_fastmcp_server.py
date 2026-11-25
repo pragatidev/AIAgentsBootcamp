@@ -24,7 +24,7 @@ from dataflow.mcp.server import (
     render_decline,
 )
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 schemas = list_tool_schemas()
 lookup_schema = next(row for row in schemas if row["name"] == "lookup_order")
 print("tool_schema")

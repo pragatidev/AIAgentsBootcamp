@@ -30,7 +30,7 @@ for line in tickets_path.read_text(encoding="utf-8").splitlines():
         tickets.append(row)
 tickets.sort(key=lambda row: row["ticket_id"])
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("schema", TicketClass.model_json_schema())
 print("Literal", TicketClass.model_fields["category"].annotation)
 

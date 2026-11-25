@@ -37,7 +37,7 @@ from dataflow.tools.retrieve import (
 )
 
 ticket = "What are the DataFlow password rules and session timeout?"
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("ticket", ticket)
 
 runs = root / "dataflow" / "guardrails" / "runs"

@@ -22,7 +22,7 @@ QUESTION = (
     "policy lines apply? Write a short report with sources."
 )
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("entry", "python -m research_agent")
 print("question", QUESTION)
 

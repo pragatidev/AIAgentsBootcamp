@@ -70,7 +70,7 @@ def run_door(label: str, tools, system: str, model, ticket: str = TICKET) -> dic
     return trace
 
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 model = config.get_chat_model()
 python_tool = StructuredTool.from_function(
     func=lookup_order_by_id,

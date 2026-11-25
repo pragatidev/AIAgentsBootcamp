@@ -27,7 +27,7 @@ REFUSE_LINE = "I do not have that in the knowledge base"
 COFFEE = "Do you sell coffee beans in the DataFlow shop?"
 PYTEST = [sys.executable, "-m", "pytest", "-q"]
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("starter", STARTER.as_posix())
 print("solution", SOLUTION.as_posix())
 
@@ -210,7 +210,7 @@ print("smoke_exit", smoke_code)
 
 # %%
 print("cell", "golden_run_real_model")
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 from config import get_chat_model
 
 real_graph = filled_graph.build_desk(model=get_chat_model())

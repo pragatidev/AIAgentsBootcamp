@@ -18,7 +18,7 @@ import config
 from techcorp.agent.context import DeskContext
 from techcorp.agent.desk import build_techcorp_desk, run_ticket
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 
 
 def content_text(msg) -> str:

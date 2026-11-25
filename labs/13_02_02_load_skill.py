@@ -24,7 +24,7 @@ committed_run = run_path.read_text(encoding="utf-8") if run_path.is_file() else 
 REFUND_ASK = "Please refund order DF-1001, the lamp is unused"
 BILLING_ASK = "How much is an extra user on Professional?"
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 skills = load_skills()
 print("skills", [row.get("name") for row in skills])
 model = config.get_chat_model()

@@ -28,7 +28,7 @@ QUESTION = (
 )
 RECURSION_LIMIT = 40
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("backend", "StateBackend")
 print("question", QUESTION)
 print("recursion_limit", RECURSION_LIMIT)

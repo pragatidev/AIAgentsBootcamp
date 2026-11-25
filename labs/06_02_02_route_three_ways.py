@@ -27,7 +27,7 @@ for line in tickets_path.read_text(encoding="utf-8").splitlines():
 # T-3002 names an order, T-3003 asks a policy, T-3027 asks to escalate.
 chosen_ids = ["T-3002", "T-3003", "T-3027"]
 print("chosen_ticket_ids", chosen_ids)
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 for ticket_id in chosen_ids:
     print("chosen", ticket_id, by_id[ticket_id]["text"])
 

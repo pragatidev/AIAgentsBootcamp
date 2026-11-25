@@ -158,3 +158,4 @@ else:
         print("retry_outcome", "still_invalid")
         print("retry_validation_error")
         print(str(exc))
+config.local_on_purpose("its raw calls speak the OpenAI wire to Ollama's /v1, and its JSON fallback uses Ollama's format setting")

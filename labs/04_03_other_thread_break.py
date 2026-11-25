@@ -35,7 +35,7 @@ class S(TypedDict):
 
 
 def chat(state):
-    m = config.get_local_chat_model(reasoning=False, num_predict=80)
+    m = config.get_chat_model(reasoning=False, num_predict=80)
     r = m.invoke([SystemMessage(content=SYSTEM), *state["messages"]])
     return {"messages": [AIMessage(content=str(r.content))]}
 

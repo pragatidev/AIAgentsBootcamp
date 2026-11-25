@@ -50,7 +50,7 @@ for row in by_id.values():
     refund_ticket = row
     break
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("lookup_ticket_id", lookup_ticket["ticket_id"])
 print("lookup_text", lookup_ticket["text"])
 print("refund_ticket_id", refund_ticket["ticket_id"])

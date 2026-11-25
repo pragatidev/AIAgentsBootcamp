@@ -22,7 +22,7 @@ names = [
     "context_rot.json",
     "real_model_limit.json",
 ]
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("diag_dir", diag_dir.as_posix())
 original_texts = {name: (diag_dir / name).read_text(encoding="utf-8") for name in names}
 

@@ -22,7 +22,7 @@ from harness.permissions import ALLOWED_REFUND_ACTORS
 
 ticket = load_ticket("T-3005")
 actor = "customer-C-2010"
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("ticket_id", ticket["ticket_id"])
 print("ticket_text", ticket["text"])
 print("actor_id", actor)
@@ -67,7 +67,7 @@ payload = {
     "refunds_after": read_refunds(),
     "refunds_unchanged": blocked["refund_count"] == 0,
     "steps": blocked["steps"],
-    "model_id": config.CHAT_MODEL,
+    "model_id": config.chat_model_id(),
     "note": "Real model proposed; harness blocked an actor off the list.",
 }
 dest = root / "harness" / "runs" / "blocked_write.json"

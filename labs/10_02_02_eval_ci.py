@@ -17,7 +17,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 import config
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 script = root / "scripts" / "eval_ci.py"
 workflow = root / ".github" / "workflows" / "eval.yml"
 makefile = root / "Makefile"

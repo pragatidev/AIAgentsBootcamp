@@ -27,7 +27,7 @@ QUESTION = (
     "and which policy lines apply? Write a short report with sources."
 )
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 
 
 def count_todo(folder: Path) -> int:
@@ -86,7 +86,7 @@ import agent as starter_agent
 
 # %%
 print("cell", "empty_source_run")
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 empty_path = work / "reports" / "empty.md"
 written = starter_agent.write_report(
     QUESTION,

@@ -20,7 +20,7 @@ tickets_path = root / "dataflow" / "data" / "tickets.jsonl"
 ticket = json.loads(tickets_path.read_text(encoding="utf-8").splitlines()[0])
 print("ticket_id", ticket["ticket_id"])
 print("text", ticket["text"])
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 
 # %%
 graph = build_v1_triage()

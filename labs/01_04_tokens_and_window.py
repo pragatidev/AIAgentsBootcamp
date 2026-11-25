@@ -210,3 +210,4 @@ print(
     if end_kept
     else "the model did not continue from the last line, so this run does not show which end was kept",
 )
+config.local_on_purpose("it reads and sets Ollama's own context window (num_ctx); a hosted model has no num_ctx, its provider fixes the window")

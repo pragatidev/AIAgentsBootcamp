@@ -46,7 +46,7 @@ for row in tickets:
     chosen = {"ticket": row, "order": order, "order_id": match.group(0)}
     break
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("chosen", chosen["ticket"]["ticket_id"], chosen["ticket"]["text"])
 print("order_id", chosen["order_id"])
 print("status", chosen["order"]["status"])

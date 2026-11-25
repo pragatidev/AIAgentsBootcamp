@@ -18,7 +18,7 @@ if hasattr(sys.stdout, "reconfigure"):
 import config
 from dataflow.guardrails.pii import export_trace, run_pii_ticket
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 ticket = (
     "Hi, I am jordan@dataflow.example about order DF-1001. "
     "My test key is sk-abcdefghijklmnopqrstuvwxyz1234 and it should not leak."

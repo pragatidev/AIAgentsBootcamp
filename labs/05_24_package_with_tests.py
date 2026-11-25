@@ -17,7 +17,7 @@ sys.path.insert(0, str(root))
 import config
 from techcorp.agent.desk import build_techcorp_desk, run_ticket
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("imported", "techcorp.agent.desk")
 
 desk = build_techcorp_desk(middleware=[])

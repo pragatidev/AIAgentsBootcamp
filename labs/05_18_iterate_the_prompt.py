@@ -16,7 +16,7 @@ import config
 from techcorp.agent.desk import build_techcorp_desk, run_ticket
 from techcorp.agent.prompts import DESK_SYSTEM_PROMPT, WEAK_PROMPT
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("WEAK_PROMPT")
 print(WEAK_PROMPT)
 print("DESK_SYSTEM_PROMPT")

@@ -19,7 +19,7 @@ import config
 from talentflow.graphs.eval_optimize import RUBRIC_PATH, run_eval_optimize
 from talentflow.graphs.score_resumes import load_resumes
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("rubric_path", RUBRIC_PATH.as_posix())
 rubric_text = RUBRIC_PATH.read_text(encoding="utf-8")
 print("rubric")

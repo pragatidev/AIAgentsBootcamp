@@ -19,7 +19,7 @@ from eval.judges.llm_judge import NOTE, judge_labelled, write_note
 
 note_path = NOTE
 committed_note = note_path.read_text(encoding="utf-8") if note_path.is_file() else ""
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("labels", (root / "eval" / "judges" / "human_labels.jsonl").as_posix())
 
 # %%

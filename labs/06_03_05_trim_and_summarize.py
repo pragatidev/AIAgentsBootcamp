@@ -34,7 +34,7 @@ for row in rows:
 
 print("turns", len(rows))
 print("messages", len(messages))
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("token_budget", TOKEN_BUDGET)
 print("tokens_before", count_message_tokens(messages))
 

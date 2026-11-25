@@ -18,7 +18,7 @@ from langchain_ollama import ChatOllama
 import config
 from techcorp.agent.desk import build_techcorp_desk, run_ticket
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("ollama_base", config.OLLAMA_BASE_URL)
 
 bad = ChatOllama(

@@ -20,7 +20,7 @@ import config
 from talentflow.graphs.critic import build_critic
 from talentflow.graphs.score_resumes import load_resumes
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 
 loaded = load_resumes()
 row = next(r for r in loaded["resumes"] if r["name"] == "Sarah Chen")

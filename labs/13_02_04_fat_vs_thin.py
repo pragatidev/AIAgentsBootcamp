@@ -60,7 +60,7 @@ def run_desk(system: str, model) -> str:
     return last_reply(out.get("messages"))
 
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("token_method", TOKEN_METHOD)
 skills = load_skills()
 thin_body = load_body(skills[0])

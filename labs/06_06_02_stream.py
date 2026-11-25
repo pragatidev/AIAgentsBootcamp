@@ -27,7 +27,7 @@ for line in tickets_path.read_text(encoding="utf-8").splitlines():
 
 ticket = by_id["T-3001"]
 payload = {"ticket": ticket["text"]}
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("ticket_id", ticket["ticket_id"])
 print("ticket_text", ticket["text"])
 

@@ -21,7 +21,7 @@ from tests.fixtures.fake_model import FakeChatModel
 
 parts_path = root / "harness" / "parts.md"
 parts = parts_path.read_text(encoding="utf-8")
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("parts_path", parts_path.as_posix())
 print(parts)
 print("heading_tools", "## Tools" in parts)

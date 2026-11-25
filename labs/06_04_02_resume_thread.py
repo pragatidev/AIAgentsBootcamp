@@ -29,7 +29,7 @@ for line in tickets_path.read_text(encoding="utf-8").splitlines():
 
 turn_one = by_id["T-3001"]
 turn_two = by_id["T-3028"]
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("turn_ticket_ids", ["T-3001", "T-3028"])
 print("chosen T-3001", turn_one["text"])
 print("chosen T-3028", turn_two["text"])

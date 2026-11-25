@@ -28,7 +28,7 @@ for line in tickets_path.read_text(encoding="utf-8").splitlines():
         tickets.append(row)
 tickets.sort(key=lambda row: row["ticket_id"])
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 desk = build_techcorp_desk(middleware=[])
 print("desk_type", type(desk).__name__)
 

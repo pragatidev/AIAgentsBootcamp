@@ -23,7 +23,7 @@ log_path = root / "harness" / "failure_log.md"
 committed_log = log_path.read_text(encoding="utf-8") if log_path.is_file() else ""
 
 failing = json.loads(failing_path.read_text(encoding="utf-8"))
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("failing_path", failing_path.as_posix())
 print("ticket_id", failing.get("ticket_id"))
 print("ticket", failing.get("ticket"))

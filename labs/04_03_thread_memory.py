@@ -30,7 +30,7 @@ class ThreadState(TypedDict):
 
 
 def chat(state: ThreadState) -> dict:
-    model = config.get_local_chat_model(reasoning=False, num_predict=80)
+    model = config.get_chat_model(reasoning=False, num_predict=80)
     result = model.invoke([SystemMessage(content=SYSTEM), *state["messages"]])
     return {"messages": [AIMessage(content=str(result.content))]}
 

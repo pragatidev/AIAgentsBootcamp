@@ -30,7 +30,7 @@ from dataflow.mcp.server import PID_PATH
 from dataflow.tools.refund import read_refunds
 from langgraph.types import Command
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 
 
 def temp_refunds() -> str:

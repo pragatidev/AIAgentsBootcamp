@@ -20,7 +20,7 @@ if hasattr(sys.stdout, "reconfigure"):
 import config
 from eval.runners.red_team import SUITE_PATH, run_red_team
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("red_team_path", (root / "eval" / "red_team.jsonl").as_posix())
 committed_suite = SUITE_PATH.read_text(encoding="utf-8") if SUITE_PATH.is_file() else ""
 

@@ -313,3 +313,41 @@ def get_chat_model(**kwargs):
         elif kind == "ChatGoogleGenerativeAI":
             update.update(_google_thinking(chat.model, on))
     return chat.model_copy(update=update) if update else chat
+
+
+# Which model a lab runs on (added 2026-11-25, from a student's question). Every lab that builds its
+# model with get_chat_model follows .env. A few labs stay on the local model on purpose: the raw-wire
+# labs speak to Ollama's /v1 endpoint, and the window labs set num_ctx, which only a local server takes.
+# When .env picks a hosted model, those labs print one note on stderr that says so and why.
+_noted_local: set[str] = set()
+
+
+def hosted_choice() -> tuple[str, str] | None:
+    """The (provider, model id) get_chat_model would use, by the same test in the same order, or None for local."""
+    pairs = (("OPENAI", OPENAI_CHAT_MODEL), ("ANTHROPIC", ANTHROPIC_CHAT_MODEL), ("GOOGLE", GOOGLE_CHAT_MODEL))
+    for provider, model_id in pairs:
+        if os.environ.get(f"{provider}_API_KEY", "").strip() and model_id:
+            return provider, model_id
+    return None
+
+
+def chat_model_id() -> str:
+    """The id of the model get_chat_model would use: the hosted id, or CHAT_MODEL on a local run."""
+    choice = hosted_choice()
+    return choice[1] if choice else CHAT_MODEL
+
+
+def local_on_purpose(why: str) -> None:
+    """One line on stderr, once per reason, when this lab stays local while .env picks a hosted model.
+
+    Silent on a local run. Never prints a key.
+    """
+    choice = hosted_choice()
+    if choice is None or why in _noted_local:
+        return
+    _noted_local.add(why)
+    print(
+        f"note: this lab runs on the local model {CHAT_MODEL} on purpose, "
+        f"not on your {choice[0]} model {choice[1]}: {why}",
+        file=sys.stderr,
+    )

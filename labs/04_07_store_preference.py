@@ -26,7 +26,7 @@ from dataflow.graphs.v3_memory import (
 )
 from dataflow.memory.profile import forget, put_profile, read_profile
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 
 store = InMemoryStore()
 saver = InMemorySaver()
