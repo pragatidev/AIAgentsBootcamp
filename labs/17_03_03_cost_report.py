@@ -25,7 +25,7 @@ if hasattr(sys.stdout, "reconfigure"):
 import config
 from dataflow.ops.cost import write_cost_report
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 
 refunds = tempfile.NamedTemporaryFile(prefix="refunds-", suffix=".jsonl", delete=False)
 refunds.close()

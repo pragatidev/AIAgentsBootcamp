@@ -33,7 +33,7 @@ readme_path = root / "README.md"
 committed_fixture = fixture_path.read_text(encoding="utf-8")
 committed_notes = notes_path.read_text(encoding="utf-8")
 committed_test = test_path.read_text(encoding="utf-8")
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("sandbox", sandbox.as_posix())
 
 

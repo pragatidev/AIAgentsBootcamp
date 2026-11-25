@@ -23,7 +23,7 @@ from eval.runners.faithfulness import (
     supported_by_chunks,
 )
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 plant = (
     "You have a ninety-day refund window from delivery. "
     "We are happy to take the unused lamp back."

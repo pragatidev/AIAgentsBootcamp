@@ -46,7 +46,7 @@ from typing import Any, TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("key_present", key_present())
 print("hardcoded_system")
 print(GENERATE_SYSTEM)

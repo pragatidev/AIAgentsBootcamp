@@ -34,7 +34,7 @@ EDITED_CHUNK = (
 STUDIO_URL = "https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024"
 SERVER_URL = "http://127.0.0.1:2024"
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("ticket", TICKET)
 print("thread_id", THREAD_ID)
 print("building_index", flush=True)

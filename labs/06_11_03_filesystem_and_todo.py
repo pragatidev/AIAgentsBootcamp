@@ -30,7 +30,7 @@ QUESTION = (
 RECURSION_LIMIT = 40
 
 backend = make_real_backend()
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("backend", type(backend).__name__)
 print("backend_root", PACKAGE_DIR.as_posix())
 print("reports_dir", REPORTS_DIR.as_posix())

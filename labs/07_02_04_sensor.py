@@ -26,7 +26,7 @@ from dataflow.tools.refund import read_refunds
 from harness.sensors.refund_diff import refund_diff
 
 ticket = load_ticket("T-3005")
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("ticket_id", ticket["ticket_id"])
 print("ticket_text", ticket["text"])
 print("sensor_fn", refund_diff.__name__)
@@ -117,7 +117,7 @@ save_run(
     {
         "ticket_id": ticket["ticket_id"],
         "ticket": ticket["text"],
-        "model_id": config.CHAT_MODEL,
+        "model_id": config.chat_model_id(),
         "refund_count": chosen["refund_count"],
         "refunds": chosen["refunds"],
         "steps": chosen["steps"],

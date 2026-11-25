@@ -36,7 +36,7 @@ committed_blocked = (
     blocked_path.read_text(encoding="utf-8") if blocked_path.is_file() else ""
 )
 ticket = fixture_path.read_text(encoding="utf-8")
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("ticket_has_df_1001", "DF-1001" in ticket)
 
 # %%

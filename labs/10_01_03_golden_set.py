@@ -29,7 +29,7 @@ committed_baseline = (
     baseline_path.read_text(encoding="utf-8") if baseline_path.is_file() else ""
 )
 rows = load_golden(GOLDEN)
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("golden", GOLDEN.as_posix())
 print("row_count", len(rows))
 print("unique_tickets", unique_tickets(rows))

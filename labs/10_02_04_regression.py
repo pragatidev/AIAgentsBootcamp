@@ -26,7 +26,7 @@ committed_regress = (
     regress_path.read_text(encoding="utf-8") if regress_path.is_file() else ""
 )
 committed_last = LAST_RUN.read_text(encoding="utf-8") if LAST_RUN.is_file() else ""
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("baseline", BASELINE.as_posix())
 
 

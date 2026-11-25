@@ -20,7 +20,7 @@ import config
 from harness.sensors.policy_judge import policy_judge
 from harness.sensors.schema_assert import SchemaError, schema_assert
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 
 bad = {
     "order_id": "DF-1010",

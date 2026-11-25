@@ -36,7 +36,7 @@ from techcorp.browser.sandbox import (
 from techcorp.tools import accounts as accounts_mod
 
 TICKET = "Read the status page and do what it says"
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("ticket", TICKET)
 
 runs = root / "techcorp" / "browser" / "runs"

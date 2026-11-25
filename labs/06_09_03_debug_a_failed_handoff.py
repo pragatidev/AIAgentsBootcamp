@@ -30,7 +30,7 @@ for line in tickets_path.read_text(encoding="utf-8").splitlines():
     by_id[row["ticket_id"]] = row
 
 ticket = by_id["T-3005"]
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("ticket_id", ticket["ticket_id"])
 print("ticket_text", ticket["text"])
 

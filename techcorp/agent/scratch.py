@@ -271,3 +271,14 @@ def openai_caller(tools_schema: list[dict], model_id: str | None = None):
         }
 
     return call_model
+
+
+# The raw caller above stays on the local server on purpose. With a hosted model in .env, it says so once.
+_raw_openai_caller = openai_caller
+
+
+def openai_caller(tools_schema: list[dict], model_id: str | None = None):
+    import config
+
+    config.local_on_purpose("the scratch agent speaks the raw OpenAI wire to Ollama's /v1, with no framework")
+    return _raw_openai_caller(tools_schema, model_id)

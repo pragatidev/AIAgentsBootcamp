@@ -20,7 +20,7 @@ from dataflow.tools.refund import read_refunds
 from harness.guides import VAGUE_GUIDE, load_guide
 
 ticket = load_ticket("T-3005")
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("ticket_id", ticket["ticket_id"])
 print("ticket_text", ticket["text"])
 print("agents_map", (root / "AGENTS.md").read_text(encoding="utf-8"))
@@ -56,7 +56,7 @@ payload = {
     "ticket": ticket["text"],
     "order_id": "DF-1010",
     "guide_mode": "tight",
-    "model_id": config.CHAT_MODEL,
+    "model_id": config.chat_model_id(),
     "refund_count": tight["refund_count"],
     "refunds": tight["rows"],
     "steps": tight["out"]["steps"],

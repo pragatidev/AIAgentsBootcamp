@@ -23,7 +23,7 @@ from eval.harness import (
 )
 import evals.harness as evals_harness
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("harness", "eval/harness.py")
 print("shim", "evals/harness.py")
 print("shim_has_run_harness", hasattr(evals_harness, "run_harness"))

@@ -18,7 +18,7 @@ LAB = Path(__file__).resolve().parents[1] / "labs" / "03_02_context_rot.py"
 FILLER_REPLY = "Noted. We keep every detail of this account on file and answer each question in turn for you. " * 2
 
 
-def scripted_chat_caller(num_predict: int = 80, num_ctx: int | None = None):
+def scripted_chat_caller(num_predict: int = 80, num_ctx: int | None = None, local: bool = False):
     def call(messages: list) -> dict:
         kept = list(messages)
         if num_ctx is not None:

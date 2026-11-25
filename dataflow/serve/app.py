@@ -567,7 +567,7 @@ def _real_run(
     resume: Any,
     request_id: str,
 ) -> dict[str, Any]:
-    from config import CHAT_MODEL, get_chat_model
+    from config import chat_model_id, get_chat_model
 
     if _flag("DATAFLOW_SKIP_INTERRUPT") and _looks_like_refund(ticket):
         return _skip_interrupt_write(ticket, actor)
@@ -636,7 +636,7 @@ def _real_run(
         "actor": actor,
         "tokens": tokens,
         "trace_path": str(handler.path),
-        "model": CHAT_MODEL,
+        "model": chat_model_id(),
     }
 
 
@@ -657,9 +657,9 @@ def run_ticket(
         body = _fixture_run(ticket, tid, actor, resume)
         tokens = {"input": 0, "output": 0, "total": 0}
         trace_path = ""
-        from config import CHAT_MODEL
+        from config import chat_model_id
 
-        model = CHAT_MODEL
+        model = chat_model_id()
     else:
         body = _real_run(ticket, tid, actor, resume, request_id)
         tokens = body.pop("tokens", {"input": 0, "output": 0, "total": 0})

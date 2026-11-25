@@ -123,17 +123,17 @@ def repo_path(path: Path) -> str:
 def applied_window() -> int | None:
     """The context window the Ollama server applied to the chat model, read from /api/ps.
 
-    The server reports it after a call has loaded the model. None when the
-    server cannot be reached or reports no context length.
+    The server reports it after a call has loaded the model. None when the server cannot be reached,
+    reports no context length, or this run's chat calls went to a hosted model (it has no Ollama window).
     """
     import urllib.error
     import urllib.request
 
     import config
 
-    url = config.OLLAMA_BASE_URL.rstrip("/")
-    if url.endswith("/v1"):
-        url = url[:-3]
+    if config.hosted_choice() is not None and not chat_caller.ran_local:
+        return None
+    url = config._ollama_base()
     try:
         with urllib.request.urlopen(url + "/api/ps", timeout=10) as resp:
             payload = json.loads(resp.read().decode("utf-8"))
@@ -262,17 +262,25 @@ def compact_messages(
     return new, True, before, after
 
 
-def chat_caller(num_predict: int = 80, num_ctx: int | None = None, tools: list[dict] | None = None):
-    """The local model through config.py, as one function: messages in, a reply dict out.
+def chat_caller(num_predict: int = 80, num_ctx: int | None = None, tools: list[dict] | None = None, local: bool = False):
+    """The configured model through config.py, as one function: messages in, a reply dict out.
 
-    num_ctx is the context window in tokens. None leaves it to the Ollama
-    server's default; a number makes the window a setting you can print.
+    It follows .env like get_chat_model: a hosted model when a key and its model id are set, the
+    local one otherwise. num_ctx is the context window in tokens, a setting only a local server
+    takes, so a number keeps this caller on the local model on purpose and makes the window a
+    setting you can print. None leaves the window to the server or the provider. local=True keeps
+    it on the local model with the server's own window, for a lab that compares windows on one model.
     tools are function schemas bound to the model; with none it is plain chat.
     """
     import config
 
-    extra = {} if num_ctx is None else {"num_ctx": int(num_ctx)}
-    model = config.get_local_chat_model(reasoning=False, num_predict=num_predict, **extra)
+    if num_ctx is None and not local:
+        model = config.get_chat_model(reasoning=False, num_predict=num_predict)
+    else:
+        config.local_on_purpose("this lab sets the context window (num_ctx), a setting only a local server takes")
+        extra = {} if num_ctx is None else {"num_ctx": int(num_ctx)}
+        model = config.get_local_chat_model(reasoning=False, num_predict=num_predict, **extra)
+        chat_caller.ran_local = True
     if tools:
         model = model.bind_tools(tools)
 
@@ -291,8 +299,10 @@ def chat_caller(num_predict: int = 80, num_ctx: int | None = None, tools: list[d
                     "function": {"name": item.get("name"), "arguments": json.dumps(args)},
                 }
             )
+        # A Claude or Gemini reply can hold a list of parts; .text joins its text parts into one string.
+        text = getattr(reply, "text", None)
         return {
-            "content": str(getattr(reply, "content", "")),
+            "content": str(text if isinstance(text, str) else getattr(reply, "content", "")),
             "tool_calls": calls,
             "raw_tool_calls": raw,
             "usage": {
@@ -303,8 +313,12 @@ def chat_caller(num_predict: int = 80, num_ctx: int | None = None, tools: list[d
         }
 
     call.tool_names = [t["function"]["name"] for t in tools or []]
-    call.model = config.CHAT_MODEL
+    call.model = config.CHAT_MODEL if num_ctx is not None or local else config.chat_model_id()
     return call
+
+
+# True once a chat_caller in this run has used the local model, so applied_window knows Ollama's window counts.
+chat_caller.ran_local = False
 
 
 def context_caller(
@@ -331,14 +345,15 @@ def summarise_with_usage(text: str, prompt: str = SUMMARIZE_PROMPT) -> tuple[str
     """One real summariser call. Returns the summary and the server's count for that call."""
     import config
 
-    chat = config.get_local_chat_model(reasoning=False, num_predict=160)
+    chat = config.get_chat_model(reasoning=False, num_predict=160)
     reply = chat.invoke(
         [
             {"role": "system", "content": prompt},
             {"role": "user", "content": text[:6000]},
         ]
     )
-    return str(getattr(reply, "content", reply)), _usage(reply)
+    said = getattr(reply, "text", None)
+    return str(said if isinstance(said, str) else getattr(reply, "content", reply)), _usage(reply)
 
 
 def default_summariser(text: str) -> str:

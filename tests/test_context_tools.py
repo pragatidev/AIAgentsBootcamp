@@ -50,12 +50,12 @@ def test_chat_caller_passes_num_ctx(monkeypatch):
     from dataflow.context.agent import chat_caller
 
     seen = []
-    monkeypatch.setattr(config, "get_local_chat_model", lambda **kw: seen.append(kw) or object())
+    monkeypatch.setattr(config, "get_local_chat_model", lambda **kw: seen.append(("local", kw)) or object())
+    monkeypatch.setattr(config, "get_chat_model", lambda **kw: seen.append(("configured", kw)) or object())
     chat_caller(num_ctx=16384)
     chat_caller()
-    assert seen[0]["num_ctx"] == 16384
-    assert seen[0]["reasoning"] is False
-    assert "num_ctx" not in seen[1]
+    assert seen[0][0] == "local" and seen[0][1]["num_ctx"] == 16384 and seen[0][1]["reasoning"] is False
+    assert seen[1][0] == "configured" and "num_ctx" not in seen[1][1] and seen[1][1]["reasoning"] is False
 
 
 def test_openai_caller_returns_usage(monkeypatch):

@@ -32,7 +32,7 @@ def main(argv: list[str] | None = None) -> int:
     question = " ".join(args.question)
     backend = make_real_backend()
     agent = build_research_agent(backend=backend)
-    print("model", config.CHAT_MODEL)
+    print("model", config.chat_model_id())
     print("backend", type(backend).__name__)
     print("root", PACKAGE_DIR.as_posix())
     print("question", question)

@@ -25,7 +25,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 import config
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("cue", "dataflow/serve/app.py focus PostgresSaver")
 
 refunds = tempfile.NamedTemporaryFile(prefix="refunds-", suffix=".jsonl", delete=False)

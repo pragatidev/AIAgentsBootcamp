@@ -19,7 +19,7 @@ import config
 
 test_path = root / "tests" / "test_harness_control.py"
 log_path = root / "harness" / "failure_log.md"
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("test_path", test_path.as_posix())
 committed_test = test_path.read_text(encoding="utf-8") if test_path.is_file() else ""
 committed_log = log_path.read_text(encoding="utf-8") if log_path.is_file() else ""

@@ -30,7 +30,7 @@ from eval.judges.langsmith_judge import (
 from eval.langsmith_dataset import print_experiment
 from eval.runners.rag_metrics import run_agentic
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 
 print("building_index")
 get_index(scope="all")

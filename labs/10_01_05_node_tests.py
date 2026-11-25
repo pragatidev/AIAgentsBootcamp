@@ -29,7 +29,7 @@ from tests.test_nodes_dataflow import (
     test_refuse_on_empty_retrieve,
 )
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 print("running_two_node_tests")
 test_classify_three_tickets()
 print("test_classify_three_tickets", "PASS")

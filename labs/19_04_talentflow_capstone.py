@@ -24,7 +24,7 @@ from langgraph.errors import InvalidUpdateError
 STARTER = root / "labs" / "19_talentflow" / "starter"
 SOLUTION = root / "labs" / "19_talentflow" / "solution"
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 
 
 def count_todo(folder: Path) -> int:
@@ -146,7 +146,7 @@ print("fixture_resumes_scored", len(list(fixture_out.get("scores") or [])))
 
 # %%
 print("cell", "real_model_summary")
-print("model", config.CHAT_MODEL, flush=True)
+print("model", config.chat_model_id(), flush=True)
 from config import get_chat_model
 from talentflow.graphs.score_resumes import load_resumes as load_finished
 

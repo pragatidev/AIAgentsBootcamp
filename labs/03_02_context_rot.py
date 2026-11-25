@@ -62,7 +62,7 @@ print("probe", PROBE)
 
 def run(name: str, window: int | None) -> dict:
     print("run", name, "starts, one model call per turn")
-    agent = ContextAgent(chat_caller(num_ctx=window), system=SYSTEM)
+    agent = ContextAgent(chat_caller(num_ctx=window, local=True), system=SYSTEM)
     out = agent.run_turns(turns, progress_every=10)
     rows = {row["turn"]: row for row in out["token_trace"]}
     probe = rows[len(turns)]

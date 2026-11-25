@@ -67,7 +67,7 @@ def open_desk(db_path: Path):
     return conn, saver, graph
 
 
-print("model", config.CHAT_MODEL)
+print("model", config.chat_model_id())
 db_path = Path(AMBIENT_DB)
 for extra in ("", "-wal", "-shm"):
     leftover = Path(str(db_path) + extra)

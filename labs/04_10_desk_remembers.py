@@ -27,7 +27,7 @@ def handle(store, customer_id: str, ticket: str) -> dict:
     before = read_profile(store, customer_id)
     print("customer_id", customer_id)
     print("profile_before", before["profile"])
-    model = config.get_local_chat_model(reasoning=False, num_predict=80)
+    model = config.get_chat_model(reasoning=False, num_predict=80)
     structured = model.with_structured_output(PreferenceDecision)
     decision = structured.invoke(
         [
